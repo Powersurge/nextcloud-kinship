@@ -1,0 +1,123 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { NcButton, NcLoadingIcon, NcNoteCard } from '@nextcloud/vue'
+import { generateUrl } from '@nextcloud/router'
+import axios from '@nextcloud/axios'
+import Upload from 'vue-material-design-icons/Upload.vue'
+
+const fileInput = ref<HTMLInputElement | null>(null)
+const importing = ref(false)
+const message = ref('')
+const error = ref('')
+
+function pickFile() {
+	fileInput.value?.click()
+}
+
+async function onFileChange(event: Event) {
+	const input = event.target as HTMLInputElement
+	const file = input.files?.[0]
+	if (!file) {
+		return
+	}
+
+	importing.value = true
+	message.value = ''
+	error.value = ''
+
+	try {
+		const content = await file.text()
+		const response = await axios.post(
+			generateUrl('/apps/kinship/api/v1/import/gedcom'),
+			{ content },
+		)
+		message.value = `Imported ${response.data.imported} people.`
+	} catch (e) {
+		error.value = 'Could not import the file. Please try again.'
+		console.error('Failed to import GEDCOM', e)
+	} finally {
+		importing.value = false
+		input.value = ''
+	}
+}
+</script>
+
+<template>
+	<div class="import">
+		<div class="import__header">
+			<h2 class="import__title">
+				Import GEDCOM
+			</h2>
+		</div>
+
+		<div class="import__content">
+			<p class="import__intro">
+				Upload a GEDCOM (.ged) file to import people into Kinship.
+			</p>
+
+			<input
+				ref="fileInput"
+				type="file"
+				accept=".ged,.gedcom"
+				class="import__file-input"
+				@change="onFileChange">
+
+			<NcButton
+				variant="primary"
+				:disabled="importing"
+				@click="pickFile">
+				<template #icon>
+					<NcLoadingIcon v-if="importing" :size="20" />
+					<Upload v-else :size="20" />
+				</template>
+				Choose file
+			</NcButton>
+
+			<NcNoteCard v-if="message" type="success">
+				{{ message }}
+			</NcNoteCard>
+
+			<NcNoteCard v-if="error" type="error">
+				{{ error }}
+			</NcNoteCard>
+		</div>
+	</div>
+</template>
+
+<style scoped>
+.import {
+	display: flex;
+	flex-direction: column;
+}
+
+.import__header {
+	display: flex;
+	gap: var(--default-grid-baseline);
+	align-items: center;
+	flex: 0 0;
+	max-width: 100%;
+	margin-block: var(--app-navigation-padding, 4px);
+	margin-inline: calc(var(--default-clickable-area) + 2 * var(--app-navigation-padding, 4px)) var(--app-navigation-padding, 4px);
+}
+
+.import__title {
+	margin: 0;
+}
+
+.import__content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	margin: 16px;
+}
+
+.import__intro {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+}
+
+.import__file-input {
+	display: none;
+}
+</style>

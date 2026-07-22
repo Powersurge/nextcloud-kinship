@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Family tree trunk -->
+    <path d="M32 52V32"></path>
+
+    <!-- Branches -->
+    <path d="M32 38L18 24"></path>
+    <path d="M32 38L46 24"></path>
+    <path d="M32 30V16"></path>
+
+    <!-- Family nodes -->
+    <circle cx="18" cy="22" r="7" fill="#ffffff" stroke="none"></circle>
+    <circle cx="46" cy="22" r="7" fill="#ffffff" stroke="none"></circle>
+    <circle cx="32" cy="14" r="7" fill="#ffffff" stroke="none"></circle>
+
+    <!-- Roots -->
+    <path d="M32 52C26 52 22 56 20 58"></path>
+    <path d="M32 52C38 52 42 56 44 58"></path>
+
+  </g>
+
+  <!-- Subtle heart/family symbol -->
+  <path d="M32 45c-6-5-11-8-11-14 0-4 3-7 7-7 2 0 4 1 4 3 0-2 2-3 4-3 4 0 7 3 7 7 0 6-5 9-11 14z" fill="#ffffff" opacity="0.25"></path>
+</svg>

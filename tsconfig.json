@@ -1,0 +1,12 @@
+{
+    "extends": "@vue/tsconfig",
+    "include": [
+        "./src/**/*.ts",
+        "./src/**/*.vue"
+    ],
+    "compilerOptions": {
+        "erasableSyntaxOnly": true,
+        "outDir": "js",
+        "rootDir": "src"
+    }
+}

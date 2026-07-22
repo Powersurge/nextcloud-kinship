@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	  xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>kinship</id>
+	<name>Kinship</name>
+	<summary>A family management and genealogy platform for Nextcloud.</summary>
+	<description>Kinship helps families preserve history through:
+
+- People
+- Relationships
+- Events
+- Family trees
+
+Designed as an extensible genealogy platform.</description>
+	<version>1.0.0</version>
+	<licence>AGPL-3.0-or-later</licence>
+	<author mail="hello@mahmudz.dev" homepage="https://mahmudz.dev">Mahmudul Hasan</author>
+	<namespace>Kinship</namespace>
+	<category>social</category>
+	<bugs>https://github.com/mahmudz/kinship</bugs>
+	<dependencies>
+		<nextcloud min-version="31" max-version="34"/>
+	</dependencies>
+	<navigations>
+		<navigation>
+			<id>kinship</id>
+			<name>Kinship</name>
+			<route>kinship.page.index</route>
+			<icon>app.svg</icon>
+			<type>link</type>
+		</navigation>
+	</navigations>
+</info>

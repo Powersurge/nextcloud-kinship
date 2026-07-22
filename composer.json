@@ -1,0 +1,51 @@
+{
+    "name": "kinship/kinship",
+    "description": "A family management and genealogy platform for Nextcloud.",
+    "version": "0.0.1",
+    "license": "AGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Mahmuddul Hassan",
+            "email": "hello@mahmudz.dev",
+            "homepage": "https://mahmudz.dev"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "OCA\\Kinship\\": "lib/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@composer bin all install --ansi"
+        ],
+        "post-update-cmd": [
+            "@composer bin all install --ansi"
+        ],
+        "lint": "find . -name \\*.php -not -path './vendor/*' -not -path './vendor-bin/*' -not -path './build/*' -print0 | xargs -0 -n1 php -l",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "psalm": "psalm --threads=1 --no-cache",
+        "test:unit": "phpunit tests -c tests/phpunit.xml --colors=always --fail-on-warning --fail-on-risky",
+        "openapi": "generate-spec",
+        "rector": "rector && composer cs:fix"
+    },
+    "require": {
+        "bamarni/composer-bin-plugin": "^1.8",
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "nextcloud/ocp": "dev-stable31",
+        "roave/security-advisories": "dev-latest"
+    },
+    "config": {
+        "allow-plugins": {
+            "bamarni/composer-bin-plugin": true
+        },
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "platform": {
+            "php": "8.1"
+        }
+    }
+}
