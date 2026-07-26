@@ -2,7 +2,7 @@ import type { DateKind } from '../constants.ts'
 
 /**
  * A date as the API returns it (lib/Db/DateValue.php): numeric parts plus the
- * rendered `display` text. Forms edit the `GenologyDateType` shape instead.
+ * rendered `display` text. Forms edit the `GenealogyDateType` shape instead.
  */
 export type GenealogyDateValue = {
 	kind: DateKind | null,
@@ -31,7 +31,7 @@ export interface Person {
 	deathDate: GenealogyDateValue | null;
 }
 
-export type GenologyDateType = {
+export type GenealogyDateType = {
 	start: {
 		year: string | number,
 		month: string | number,

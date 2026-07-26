@@ -5,7 +5,7 @@
  * `end` are partial ISO strings ('YYYY', 'YYYY-MM', 'YYYY-MM-DD') and `display`
  * is the original human text. See lib/Db/DateValue.php.
  */
-import type { GenealogyDateValue, GenologyDateType } from '../types'
+import type { GenealogyDateValue, GenealogyDateType } from '../types'
 
 export type DateKind = 'exact' | 'approx' | 'range' | 'unknown'
 
@@ -20,8 +20,8 @@ export function dateDisplay(value?: { display?: string | null } | null): string 
 	return value?.display || ''
 }
 
-export function toGenologyDate(value?: GenealogyDateValue | null): GenologyDateType {
-	const empty = createEmptyGenologyDate()
+export function toGenealogyDate(value?: GenealogyDateValue | null): GenealogyDateType {
+	const empty = createEmptyGenealogyDate()
 	if (!value) {
 		return empty
 	}
@@ -64,7 +64,7 @@ export function fromDate(value: Date | null): string | null {
 	return `${year}-${month}-${day}`
 }
 
-export function createEmptyGenologyDate(): GenologyDateType {
+export function createEmptyGenealogyDate(): GenealogyDateType {
 	return {
 		start: {
 			year: '',

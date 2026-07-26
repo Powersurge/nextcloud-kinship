@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { NcInputField, NcSelect } from '@nextcloud/vue'
 import { DATE_KIND_OPTIONS, DATE_PRECISION_OPTIONS } from '@/constants.ts'
-import type { GenologyDateType } from '@/types'
-import { createEmptyGenologyDate } from '@/utils/date.ts'
+import type { GenealogyDateType } from '@/types'
+import { createEmptyGenealogyDate } from '@/utils/date.ts'
 
 withDefaults(defineProps<{
 	label: string,
@@ -10,15 +10,15 @@ withDefaults(defineProps<{
 	label: 'Date',
 })
 
-const dateModel = defineModel<GenologyDateType>({
+const dateModel = defineModel<GenealogyDateType>({
 	set(value) {
 		if (!value) {
-			return createEmptyGenologyDate()
+			return createEmptyGenealogyDate()
 		}
 		return value
 	},
 	default: () => {
-		return createEmptyGenologyDate()
+		return createEmptyGenealogyDate()
 	},
 })
 </script>

@@ -6,8 +6,8 @@ import {
 	NcTextField,
 } from '@nextcloud/vue'
 import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
-import type { GenologyDateType } from '../../types'
-import { createEmptyGenologyDate, toGenologyDate } from '../../utils/date.ts'
+import type { GenealogyDateType } from '../../types'
+import { createEmptyGenealogyDate, toGenealogyDate } from '../../utils/date.ts'
 import SelectLivingStatus from './SelectLivingStatus.vue'
 import SelectGender from './SelectGender.vue'
 
@@ -19,8 +19,8 @@ interface PersonFormData {
 	suffix: string
 	gender: string | null
 	livingStatus: string | null
-	birthDate: GenologyDateType
-	deathDate: GenologyDateType
+	birthDate: GenealogyDateType
+	deathDate: GenealogyDateType
 	biography: string
 }
 
@@ -47,8 +47,8 @@ function emptyForm(): PersonFormData {
 		suffix: '',
 		gender: null,
 		livingStatus: null,
-		birthDate: createEmptyGenologyDate(),
-		deathDate: createEmptyGenologyDate(),
+		birthDate: createEmptyGenealogyDate(),
+		deathDate: createEmptyGenealogyDate(),
 		biography: '',
 	}
 }
@@ -70,8 +70,8 @@ watch(
 			form.suffix = person.suffix ?? ''
 			form.gender = person.gender ?? null
 			form.livingStatus = person.livingStatus ?? 'unknown'
-			form.birthDate = toGenologyDate(person.birthDate)
-			form.deathDate = toGenologyDate(person.deathDate)
+			form.birthDate = toGenealogyDate(person.birthDate)
+			form.deathDate = toGenealogyDate(person.deathDate)
 			form.biography = person.biography ?? ''
 		}
 

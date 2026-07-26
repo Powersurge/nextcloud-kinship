@@ -9,14 +9,16 @@ import {
 } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { fromDate, toDateValue } from '@/utils/date.ts'
+import { createEmptyGenealogyDate, toDateValue, toGenealogyDate } from '@/utils/date.ts'
 import { relationshipTypeOptions } from '@/utils/relationships.ts'
+import type { GenealogyDateType } from '@/types'
+import GenealogyDatePicker from '@/components/ui/GenealogyDatePicker.vue'
 
 interface RelationshipFormState {
 	personA: number | null
 	personB: number | null
 	type: string
-	date: string | null
+	date: GenealogyDateType
 	note: string
 }
 
@@ -43,7 +45,7 @@ function emptyForm(): RelationshipFormState {
 		personA: null,
 		personB: null,
 		type: 'parent',
-		date: null,
+		date: createEmptyGenealogyDate(),
 		note: '',
 	}
 }
@@ -56,7 +58,7 @@ watch(
 			form.personA = relationship.personA ?? null
 			form.personB = relationship.personB ?? null
 			form.type = relationship.type ?? 'parent'
-			form.date = relationship.date?.start ?? null
+			form.date = toGenealogyDate(relationship.date)
 			form.note = relationship.note ?? ''
 		}
 	},
@@ -133,13 +135,9 @@ function onSubmit() {
 			:disabled="saving || isEdit()" />
 
 		<div class="rel-form__field">
-			<label class="rel-form__label">Date (optional)</label>
-			<NcDateTimePicker
-				:model-value="toDate(form.date)"
-				type="date"
-				:append-to-body="true"
-				:disabled="saving"
-				@update:model-value="form.date = fromDate($event)" />
+			<GenealogyDatePicker
+				v-model="form.date"
+				label="Date (optional)" />
 		</div>
 
 		<NcTextArea
