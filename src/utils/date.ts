@@ -5,7 +5,7 @@
  * `end` are partial ISO strings ('YYYY', 'YYYY-MM', 'YYYY-MM-DD') and `display`
  * is the original human text. See lib/Db/DateValue.php.
  */
-import type { GenologyDateType } from '../types'
+import type { GenealogyDateValue, GenologyDateType } from '../types'
 
 export type DateKind = 'exact' | 'approx' | 'range' | 'unknown'
 
@@ -16,33 +16,32 @@ export interface DateValue {
 	display: string | null
 }
 
-/**
- * Human-readable label for a date value (empty string when unknown).
- * @param value
- */
-export function dateDisplay(value?: DateValue | null): string {
-	if (!value) {
-		return ''
-	}
-	return value.display || value.start || ''
+export function dateDisplay(value?: { display?: string | null } | null): string {
+	return value?.display || ''
 }
 
-/**
- * Just the sortable start of a cached person birth/death date.
- * @param value
- */
-export function cachedDisplay(value?: { start?: string | null, display?: string | null } | null): string {
+export function toGenologyDate(value?: GenealogyDateValue | null): GenologyDateType {
+	const empty = createEmptyGenologyDate()
 	if (!value) {
-		return ''
+		return empty
 	}
-	return value.display || value.start || ''
+
+	return {
+		kind: value.kind ?? empty.kind,
+		precision: value.precision ?? empty.precision,
+		start: {
+			year: value.start?.year ?? '',
+			month: value.start?.month ?? '',
+			day: value.start?.day ?? '',
+		},
+		end: {
+			year: value.end?.year ?? '',
+			month: value.end?.month ?? '',
+			day: value.end?.day ?? '',
+		},
+	}
 }
 
-/**
- * Build a DateValue payload from a single ISO date string (create/edit forms
- * currently capture an exact day). Returns an unknown-kind value when empty.
- * @param iso
- */
 export function toDateValue(iso: string | null): DateValue {
 	if (!iso) {
 		return { kind: 'unknown', start: null, end: null, display: null }
@@ -50,19 +49,11 @@ export function toDateValue(iso: string | null): DateValue {
 	return { kind: 'exact', start: iso, end: null, display: iso }
 }
 
-/**
- * Parse the `start` of a date value into a JS Date for NcDateTimePicker.
- * @param value
- */
 export function startToDate(value?: DateValue | { start?: string | null } | null): Date | null {
 	const start = value?.start
 	return start ? new Date(start) : null
 }
 
-/**
- * Format a JS Date as an ISO day string (YYYY-MM-DD).
- * @param value
- */
 export function fromDate(value: Date | null): string | null {
 	if (!value) {
 		return null
@@ -85,7 +76,7 @@ export function createEmptyGenologyDate(): GenologyDateType {
 			month: '',
 			day: '',
 		},
-		kind: 'between',
+		kind: 'unknown',
 		precision: 'year',
 	}
 }

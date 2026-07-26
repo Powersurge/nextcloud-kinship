@@ -43,10 +43,6 @@ class Version0001Date20260718000000 extends SimpleMigrationStep {
 				'notnull' => true,
 				'default' => 'unknown',
 			]);
-			$table->addColumn('birth_date_start', 'string', ['length' => 10, 'notnull' => false]);
-			$table->addColumn('birth_date_display', 'string', ['length' => 64, 'notnull' => false]);
-			$table->addColumn('death_date_start', 'string', ['length' => 10, 'notnull' => false]);
-			$table->addColumn('death_date_display', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('biography', 'text', ['notnull' => false]);
 			$table->addColumn('photo_file_id', 'integer', ['notnull' => false, 'unsigned' => true]);
 			$table->addColumn('owner_uid', 'string', ['length' => 64, 'notnull' => false]);

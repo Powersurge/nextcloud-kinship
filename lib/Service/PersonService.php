@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Service;
 
+use OCA\Kinship\Constants\EventType;
 use OCA\Kinship\Constants\LivingStatus;
+use OCA\Kinship\Db\EventMapper;
 use OCA\Kinship\Db\Person;
 use OCA\Kinship\Db\PersonMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserSession;
 
 /**
- * People CRUD. Birth/death dates are cached here for fast display and living
- * status but are owned by their birth/death events; EventService keeps the
- * cache in sync (see EventService::syncPersonLifeDates).
+ * People CRUD. Birth/death dates are not stored on the person: they are read
+ * from the person's birth/death events on the way out (hydrateLifeDates) and
+ * written through EventService::setLifeDate on the way in.
  */
 class PersonService {
 	public function __construct(
 		private PersonMapper $mapper,
+		private EventMapper $eventMapper,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -27,11 +30,38 @@ class PersonService {
 	 * @return Person[]
 	 */
 	public function getAll(): array {
-		return $this->mapper->findAll();
+		return $this->hydrateLifeDates($this->mapper->findAll());
 	}
 
 	public function get(int $id): Person {
-		return $this->mapper->find($id);
+		return $this->hydrateLifeDates([$this->mapper->find($id)])[0];
+	}
+
+	/**
+	 * Fill in birthDate/deathDate from the birth/death events of the given
+	 * people, in one query for the whole set.
+	 *
+	 * @param Person[] $people
+	 * @return Person[]
+	 */
+	public function hydrateLifeDates(array $people): array {
+		$ids = [];
+		foreach ($people as $person) {
+			$ids[] = $person->getId();
+		}
+
+		$lifeEvents = $this->eventMapper->findLifeEventsByPersons($ids);
+
+		foreach ($people as $person) {
+			$events = $lifeEvents[$person->getId()] ?? [];
+			$birth = $events[EventType::BIRTH] ?? null;
+			$death = $events[EventType::DEATH] ?? null;
+
+			$person->setBirthDate($birth?->getDate());
+			$person->setDeathDate($death?->getDate());
+		}
+
+		return $people;
 	}
 
 	public function delete(Person $person): void {

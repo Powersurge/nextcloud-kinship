@@ -75,17 +75,21 @@ class DateValue implements JsonSerializable {
 		return new self(
 			$kind,
 			$precision,
-            !empty($data['start']['year']) ? (int)$data['start']['year'] : null,
-            !empty($data['start']['month']) ? (int)$data['start']['month'] : null,
-            !empty($data['start']['day']) ? (int)$data['start']['day'] : null,
-            !empty($data['end']['year']) ? (int)$data['end']['year'] : null,
-            !empty($data['end']['month']) ? (int)$data['end']['month'] : null,
-            !empty($data['end']['day']) ? (int)$data['end']['day'] : null,
+			!empty($data['start']['year']) ? (int)$data['start']['year'] : null,
+			!empty($data['start']['month']) ? (int)$data['start']['month'] : null,
+			!empty($data['start']['day']) ? (int)$data['start']['day'] : null,
+			!empty($data['end']['year']) ? (int)$data['end']['year'] : null,
+			!empty($data['end']['month']) ? (int)$data['end']['month'] : null,
+			!empty($data['end']['day']) ? (int)$data['end']['day'] : null,
 		);
 	}
 
 	public function isEmpty(): bool {
 		if ($this->kind === self::KIND_UNKNOWN) {
+			return true;
+		}
+
+		if ($this->kind === null) {
 			return true;
 		}
 
@@ -144,7 +148,7 @@ class DateValue implements JsonSerializable {
 			self::KIND_BEFORE => $start !== null ? 'bef. ' . $start : null,
 			self::KIND_AFTER => $start !== null ? 'aft. ' . $start : null,
 			self::KIND_BETWEEN => $start !== null && $end !== null
-				? 'between ' . $start . ' and ' . $end
+				? 'Between ' . $start . ' and ' . $end
 				: $start,
 			default => $start,
 		};

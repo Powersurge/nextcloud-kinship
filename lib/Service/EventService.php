@@ -17,9 +17,9 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserSession;
 
 /**
- * Events CRUD. Persons are attached via participants; when a birth/death event
- * changes, the subject person's cached birth/death dates and living status are
- * refreshed so Person pages stay fast without duplicating the event data.
+ * Events CRUD. Persons are attached via participants. Birth and death dates
+ * live only here: nothing is copied onto the person, only living_status is
+ * derived when a death event exists.
  */
 class EventService {
 	public function __construct(
@@ -163,9 +163,9 @@ class EventService {
 
 		$this->mapper->delete($event);
 
-		if (in_array($event->getType(), [EventType::BIRTH, EventType::DEATH], true)) {
+		if ($event->getType() === EventType::DEATH) {
 			foreach (array_keys($affected) as $personId) {
-				$this->syncPersonLifeDates($personId);
+				$this->syncPersonLivingStatus($personId);
 			}
 		}
 	}
@@ -182,57 +182,74 @@ class EventService {
 	}
 
 	private function syncAffectedPersons(Event $event): void {
-		if (!in_array($event->getType(), [EventType::BIRTH, EventType::DEATH], true)) {
+		if ($event->getType() !== EventType::DEATH) {
 			return;
 		}
 
 		foreach ($this->participantMapper->findByEvent($event->getId()) as $participant) {
 			if ($participant->getRole() === ParticipantRole::SUBJECT) {
-				$this->syncPersonLifeDates($participant->getPersonId());
+				$this->syncPersonLivingStatus($participant->getPersonId());
 			}
 		}
 	}
 
 	/**
-	 * Recompute a person's cached birth/death dates and living status from
-	 * their birth/death events (the source of truth).
+	 * Set a person's birth or death date by writing it to their birth/death
+	 * event, creating that event (with the person as its subject) when they
+	 * do not have one yet. An empty date on a person with no such event is a
+	 * no-op, so that saving a person form without dates does not create empty
+	 * birth/death events.
+	 *
+	 * @param array<string, mixed>|null $date DateValue payload
 	 */
-	public function syncPersonLifeDates(int $personId): void {
+	public function setLifeDate(int $personId, string $type, ?array $date): void {
+		if (!in_array($type, [EventType::BIRTH, EventType::DEATH], true)) {
+			return;
+		}
+
+		$event = $this->mapper->findLifeEvent($personId, $type);
+
+		if ($event !== null) {
+			$this->updateEvent($event->getId(), ['date' => $date]);
+
+			return;
+		}
+
+		if (DateValue::fromArray($date)->isEmpty()) {
+			return;
+		}
+
+		$this->create([
+			'type' => $type,
+			'date' => $date,
+			'participants' => [
+				[
+					'personId' => $personId,
+					'role' => ParticipantRole::SUBJECT,
+				],
+			],
+		]);
+	}
+
+	/**
+	 * A death event means the person is deceased, regardless of whether its
+	 * date is known. Dates themselves stay on the events.
+	 */
+	public function syncPersonLivingStatus(int $personId): void {
 		$person = $this->personMapper->findOrNull($personId);
 		if ($person === null) {
 			return;
 		}
 
-		$birth = null;
-		$death = null;
-		$hasDeathEvent = false;
-
-		foreach ($this->participantMapper->findByPerson($personId) as $participant) {
-			if ($participant->getRole() !== ParticipantRole::SUBJECT) {
-				continue;
-			}
-			$event = $this->mapper->findOrNull($participant->getEventId());
-			if ($event === null) {
-				continue;
-			}
-			if ($event->getType() === EventType::BIRTH) {
-				$birth = $event->getDate();
-			} elseif ($event->getType() === EventType::DEATH) {
-				$death = $event->getDate();
-				$hasDeathEvent = true;
-			}
+		if ($this->mapper->findLifeEvent($personId, EventType::DEATH) === null) {
+			return;
 		}
 
-		$person->setBirthDateStart($birth?->getStartIso());
-		$person->setBirthDateDisplay($birth?->getDisplayText());
-		$person->setDeathDateStart($death?->getStartIso());
-		$person->setDeathDateDisplay($death?->getDisplayText());
-
-		// A death event means deceased regardless of whether its date is known.
-		if ($hasDeathEvent) {
-			$person->setLivingStatus(LivingStatus::DECEASED);
+		if ($person->getLivingStatus() === LivingStatus::DECEASED) {
+			return;
 		}
 
+		$person->setLivingStatus(LivingStatus::DECEASED);
 		$person->setUpdatedAt($this->timeFactory->getTime());
 		$this->personMapper->update($person);
 	}

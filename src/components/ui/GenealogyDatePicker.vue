@@ -1,14 +1,8 @@
 <script setup lang="ts">
 import { NcInputField, NcSelect } from '@nextcloud/vue'
-import { DATE_KIND_OPTIONS } from '../../constants.ts'
-import type { GenologyDateType } from '../../types'
-import { createEmptyGenologyDate } from '../../utils/date.ts'
-
-const precisionOptions = [
-	{ value: 'year', label: 'Year' },
-	{ value: 'yearMonth', label: 'Year, Month' },
-	{ value: 'yearMonthDay', label: 'Year, Month, Day' },
-]
+import { DATE_KIND_OPTIONS, DATE_PRECISION_OPTIONS } from '@/constants.ts'
+import type { GenologyDateType } from '@/types'
+import { createEmptyGenologyDate } from '@/utils/date.ts'
 
 withDefaults(defineProps<{
 	label: string,
@@ -47,7 +41,7 @@ const dateModel = defineModel<GenologyDateType>({
 			class="!min-w-full col-span-3"
 			input-label="Precision"
 			:disabled="dateModel.kind === 'unknown'"
-			:options="precisionOptions"
+			:options="DATE_PRECISION_OPTIONS"
 			:reduce="(option) => option.value" />
 
 		<div v-if="dateModel.kind !== 'unknown'" class="col-span-full">

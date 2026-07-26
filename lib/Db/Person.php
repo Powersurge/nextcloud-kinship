@@ -23,14 +23,6 @@ use OCP\AppFramework\Db\Entity;
  * @method void setGender(?string $gender)
  * @method string getLivingStatus()
  * @method void setLivingStatus(string $livingStatus)
- * @method ?string getBirthDateStart()
- * @method void setBirthDateStart(?string $birthDateStart)
- * @method ?string getBirthDateDisplay()
- * @method void setBirthDateDisplay(?string $birthDateDisplay)
- * @method ?string getDeathDateStart()
- * @method void setDeathDateStart(?string $deathDateStart)
- * @method ?string getDeathDateDisplay()
- * @method void setDeathDateDisplay(?string $deathDateDisplay)
  * @method ?string getBiography()
  * @method void setBiography(?string $biography)
  * @method ?int getPhotoFileId()
@@ -52,10 +44,6 @@ class Person extends Entity implements JsonSerializable {
 	protected ?string $suffix = null;
 	protected ?string $gender = null;
 	protected string $livingStatus = LivingStatus::UNKNOWN;
-	protected ?string $birthDateStart = null;
-	protected ?string $birthDateDisplay = null;
-	protected ?string $deathDateStart = null;
-	protected ?string $deathDateDisplay = null;
 	protected ?string $biography = null;
 	protected ?int $photoFileId = null;
 	protected ?string $ownerUid = null;
@@ -63,10 +51,35 @@ class Person extends Entity implements JsonSerializable {
 	protected ?int $createdAt = null;
 	protected ?int $updatedAt = null;
 
+	/**
+	 * Birth/death dates are not columns on kinship_persons: they belong to the
+	 * person's birth/death events. These two are transient, filled in on read
+	 * by PersonService::hydrateLifeDates() and never persisted (they are set
+	 * outside the Entity magic setters, so no field is marked dirty).
+	 */
+	private ?DateValue $birthDate = null;
+	private ?DateValue $deathDate = null;
+
 	public function __construct() {
 		$this->addType('photoFileId', 'integer');
 		$this->addType('createdAt', 'integer');
 		$this->addType('updatedAt', 'integer');
+	}
+
+	public function getBirthDate(): ?DateValue {
+		return $this->birthDate;
+	}
+
+	public function setBirthDate(?DateValue $birthDate): void {
+		$this->birthDate = $birthDate;
+	}
+
+	public function getDeathDate(): ?DateValue {
+		return $this->deathDate;
+	}
+
+	public function setDeathDate(?DateValue $deathDate): void {
+		$this->deathDate = $deathDate;
 	}
 
 	public function jsonSerialize(): array {
@@ -79,12 +92,8 @@ class Person extends Entity implements JsonSerializable {
 			'suffix' => $this->suffix,
 			'gender' => $this->gender,
 			'livingStatus' => $this->livingStatus,
-			'birthDate' => $this->birthDateStart !== null || $this->birthDateDisplay !== null
-				? ['start' => $this->birthDateStart, 'display' => $this->birthDateDisplay]
-				: null,
-			'deathDate' => $this->deathDateStart !== null || $this->deathDateDisplay !== null
-				? ['start' => $this->deathDateStart, 'display' => $this->deathDateDisplay]
-				: null,
+			'birthDate' => $this->birthDate,
+			'deathDate' => $this->deathDate,
 			'biography' => $this->biography,
 			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,

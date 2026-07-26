@@ -2,13 +2,14 @@
 import { reactive, watch } from 'vue'
 import {
 	NcButton,
-	NcSelect,
 	NcTextArea,
 	NcTextField,
 } from '@nextcloud/vue'
 import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
 import type { GenologyDateType } from '../../types'
-import { createEmptyGenologyDate } from '../../utils/date.ts'
+import { createEmptyGenologyDate, toGenologyDate } from '../../utils/date.ts'
+import SelectLivingStatus from './SelectLivingStatus.vue'
+import SelectGender from './SelectGender.vue'
 
 interface PersonFormData {
 	firstName: string
@@ -17,7 +18,7 @@ interface PersonFormData {
 	preferredName: string
 	suffix: string
 	gender: string | null
-	livingStatus: string
+	livingStatus: string | null
 	birthDate: GenologyDateType
 	deathDate: GenologyDateType
 	biography: string
@@ -35,18 +36,6 @@ const emit = defineEmits<{
 	cancel: []
 }>()
 
-const genderOptions = [
-	{ value: 'male', label: 'Male' },
-	{ value: 'female', label: 'Female' },
-	{ value: 'other', label: 'Other' },
-]
-
-const livingStatusOptions = [
-	{ value: 'living', label: 'Living' },
-	{ value: 'deceased', label: 'Deceased' },
-	{ value: 'unknown', label: 'Unknown' },
-]
-
 const form = reactive<PersonFormData>(emptyForm())
 
 function emptyForm(): PersonFormData {
@@ -57,7 +46,7 @@ function emptyForm(): PersonFormData {
 		preferredName: '',
 		suffix: '',
 		gender: null,
-		livingStatus: 'unknown',
+		livingStatus: null,
 		birthDate: createEmptyGenologyDate(),
 		deathDate: createEmptyGenologyDate(),
 		biography: '',
@@ -66,8 +55,8 @@ function emptyForm(): PersonFormData {
 
 /**
  * Reset the form from the incoming person whenever it changes. The person's
- * birth/death dates arrive as cached value objects ({ start, display }); we
- * edit the sortable `start` day.
+ * birth/death dates come from their birth/death events, so they arrive as API
+ * date values and are converted to the editable shape.
  */
 watch(
 	() => props.person,
@@ -81,8 +70,8 @@ watch(
 			form.suffix = person.suffix ?? ''
 			form.gender = person.gender ?? null
 			form.livingStatus = person.livingStatus ?? 'unknown'
-			form.birthDate = person.birthDate ?? createEmptyGenologyDate()
-			form.deathDate = person.deathDate ?? createEmptyGenologyDate()
+			form.birthDate = toGenologyDate(person.birthDate)
+			form.deathDate = toGenologyDate(person.deathDate)
 			form.biography = person.biography ?? ''
 		}
 
@@ -125,21 +114,12 @@ function onSubmit() {
 			label="Suffix"
 			:disabled="saving" />
 
-		<NcSelect
+		<SelectGender
 			v-model="form.gender"
-			input-label="Gender"
-			:options="genderOptions"
-			:reduce="(option) => option.value"
-			label="label"
 			:disabled="saving" />
 
-		<NcSelect
+		<SelectLivingStatus
 			v-model="form.livingStatus"
-			input-label="Living status"
-			:options="livingStatusOptions"
-			:reduce="(option) => option.value"
-			label="label"
-			:clearable="false"
 			:disabled="saving" />
 
 		<div

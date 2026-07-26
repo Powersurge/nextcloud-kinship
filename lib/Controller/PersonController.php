@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
-use OCA\Kinship\Db\DateValue;
+use OCA\Kinship\Constants\EventType;
 use OCA\Kinship\Db\Person;
 use OCA\Kinship\Service\EventService;
 use OCA\Kinship\Service\PersonService;
@@ -18,6 +18,7 @@ class PersonController extends ApiController {
 		string $appName,
 		IRequest $request,
 		private PersonService $service,
+		private EventService $eventService,
 	) {
 		parent::__construct(
 			$appName,
@@ -40,8 +41,8 @@ class PersonController extends ApiController {
 	}
 
 	/**
-	 * Create person. Birth/death dates are recorded as birth/death events,
-	 * not on the person, so they are not accepted here.
+	 * Create person. `birthDate` / `deathDate` in the payload are stored as
+	 * birth/death events, never as person columns.
 	 */
 	public function create(
 		array $data,
@@ -56,6 +57,7 @@ class PersonController extends ApiController {
 		$instance->setSuffix($data['suffix'] ?? null);
 		$instance->setGender($data['gender'] ?? null);
 		$instance->setBiography($data['biography'] ?? null);
+		$instance->setlivingStatus($data['livingStatus'] ?? null);
 
 		if (isset($data['photoFileId'])) {
 			$instance->setPhotoFileId((int)$data['photoFileId']);
@@ -63,21 +65,10 @@ class PersonController extends ApiController {
 
 		$person = $this->service->create($instance);
 
-		if (isset($data['birthDate'])) {
-			$eventService->create([
-				'type' => 'birth',
-				'date' => $data['birthDate'],
-				'participants' => [
-					[
-						'personId' => $person->getId(),
-						'role' => 'subject'
-					]
-				]
-			]);
-		}
+		$this->saveLifeDates($person->getId(), $data);
 
 		return new DataResponse(
-			$person,
+			$this->service->hydrateLifeDates([$person])[0],
 			Http::STATUS_CREATED
 		);
 	}
@@ -85,34 +76,42 @@ class PersonController extends ApiController {
 	public function update(
 		int $id,
 		array $data,
-        EventService $eventService,
+		EventService $eventService,
 	): DataResponse {
-        try {
-            $person = $this->service->updatePerson($id, $data);
+		try {
+			$person = $this->service->updatePerson($id, $data);
 
-            if (isset($data['birthDate'])) {
-                $eventService->updateEvent([
-                    'type' => 'birth',
-                    'date' => $data['birthDate'],
-                    'participants' => [
-                        [
-                            'personId' => $person->getId(),
-                            'role' => 'subject'
-                        ]
-                    ]
-                ]);
-            }
+			$this->saveLifeDates($person->getId(), $data);
 
-            return new DataResponse(
-                $person
-            );
-        } catch (\Exception $exception) {
-            return new DataResponse(
-                [
-                    'error' => $exception->getMessage()
-                ]
-            );
-        }
+			return new DataResponse(
+				$this->service->get($person->getId())
+			);
+		} catch (\Exception $exception) {
+			return new DataResponse(
+				[
+					'error' => $exception->getMessage()
+				]
+			);
+		}
+	}
+
+	/**
+	 * Route the payload's birth/death dates to their events.
+	 *
+	 * @param array<string, mixed> $data
+	 */
+	private function saveLifeDates(
+		int $personId,
+		array $data,
+	): void {
+		foreach ([
+			'birthDate' => EventType::BIRTH,
+			'deathDate' => EventType::DEATH,
+		] as $key => $type) {
+			if (array_key_exists($key, $data)) {
+				$this->eventService->setLifeDate($personId, $type, $data[$key]);
+			}
+		}
 	}
 
 	public function delete(

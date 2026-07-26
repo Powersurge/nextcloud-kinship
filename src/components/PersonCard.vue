@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
-import { cachedDisplay } from '../utils/date'
+import { dateDisplay } from '@/utils/date.ts'
 
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import Cake from 'vue-material-design-icons/CakeVariant.vue'
 import Cross from 'vue-material-design-icons/Cross.vue'
-import { usePeopleStore } from '../stores/use-people-store.ts'
+import { usePeopleStore } from '@/stores/use-people-store.ts'
 
 const { setSelectedPerson } = usePeopleStore()
 
@@ -37,8 +37,8 @@ const statusLabel = computed(() => {
 	}
 })
 
-const birthLabel = computed(() => cachedDisplay(props.person.birthDate))
-const deathLabel = computed(() => cachedDisplay(props.person.deathDate))
+const birthLabel = computed(() => dateDisplay(props.person.birthDate))
+const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 </script>
 
 <template>

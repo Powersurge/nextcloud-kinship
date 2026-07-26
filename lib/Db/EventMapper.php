@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Db;
 
+use OCA\Kinship\Constants\EventType;
+use OCA\Kinship\Constants\ParticipantRole;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\QBMapper;
@@ -114,6 +116,80 @@ class EventMapper extends QBMapper {
 			);
 
 		return $this->findEntities($qb);
+	}
+
+	/**
+	 * Birth/death events of the given people, keyed personId => type => Event.
+	 *
+	 * Joined through kinship_participants on the `subject` role, so only the
+	 * person the event is about counts (not witnesses or officiants). A person
+	 * is expected to have at most one birth and one death event; if several
+	 * exist the last row read wins.
+	 *
+	 * @param int[] $personIds
+	 * @return array<int, array<string, Event>>
+	 */
+	public function findLifeEventsByPersons(
+		array $personIds,
+	): array {
+		if ($personIds === []) {
+			return [];
+		}
+
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('e.*')
+			->addSelect('p.person_id')
+			->from($this->getTableName(), 'e')
+			->innerJoin(
+				'e',
+				'kinship_participants',
+				'p',
+				$qb->expr()->eq('p.event_id', 'e.id')
+			)
+			->where(
+				$qb->expr()->in(
+					'p.person_id',
+					$qb->createNamedParameter($personIds, IQueryBuilder::PARAM_INT_ARRAY)
+				)
+			)
+			->andWhere(
+				$qb->expr()->eq(
+					'p.role',
+					$qb->createNamedParameter(ParticipantRole::SUBJECT)
+				)
+			)
+			->andWhere(
+				$qb->expr()->in(
+					'e.type',
+					$qb->createNamedParameter(
+						[EventType::BIRTH, EventType::DEATH],
+						IQueryBuilder::PARAM_STR_ARRAY
+					)
+				)
+			);
+
+		$result = $qb->executeQuery();
+
+		$events = [];
+		while ($row = $result->fetch()) {
+			$personId = (int)$row['person_id'];
+			unset($row['person_id']);
+			$events[$personId][(string)$row['type']] = Event::fromRow($row);
+		}
+		$result->closeCursor();
+
+		return $events;
+	}
+
+	/**
+	 * A person's birth or death event, or null when they have none.
+	 */
+	public function findLifeEvent(
+		int $personId,
+		string $type,
+	): ?Event {
+		return $this->findLifeEventsByPersons([$personId])[$personId][$type] ?? null;
 	}
 
 	/**
