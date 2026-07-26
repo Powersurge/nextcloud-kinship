@@ -7,57 +7,72 @@ namespace OCA\Kinship\Db;
 use JsonSerializable;
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method string getType()
+ * @method void setType(string $type)
+ * @method ?int getCustomEventId()
+ * @method void setCustomEventId(?int $customEventId)
+ * @method ?string getTitle()
+ * @method void setTitle(?string $title)
+ * @method ?string getDescription()
+ * @method void setDescription(?string $description)
+ * @method ?int getPlaceId()
+ * @method void setPlaceId(?int $placeId)
+ * @method ?int getFamilyId()
+ * @method void setFamilyId(?int $familyId)
+ * @method ?string getOwnerUid()
+ * @method void setOwnerUid(?string $ownerUid)
+ * @method ?string getCreatedBy()
+ * @method void setCreatedBy(?string $createdBy)
+ * @method ?int getCreatedAt()
+ * @method void setCreatedAt(?int $createdAt)
+ * @method ?int getUpdatedAt()
+ * @method void setUpdatedAt(?int $updatedAt)
+ * @method void setDateKind(?string $dateKind)
+ * @method void setDatePrecision(?string $datePrecision)
+ * @method void setDateStartYear(?string $dateStartYear)
+ * @method void setDateStartMonth(?string $dateStartMonth)
+ * @method void setDateStartDay(?string $dateStartDay)
+ * @method void setDateEndYear(?string $dateEndYear)
+ * @method void setDateEndMonth(?string $dateEndMonth)
+ * @method void setDateEndDay(?string $dateEndDay)
+ */
 class Event extends Entity implements JsonSerializable {
-	protected string $title = '';
-	protected ?string $description = null;
+	use DateValueTrait;
+
 	protected string $type = '';
-	protected ?string $eventDate = null;
-	protected ?string $location = null;
+	protected ?int $customEventId = null;
+	protected ?string $title = null;
+	protected ?string $description = null;
+	protected ?int $placeId = null;
 	protected ?int $familyId = null;
-	protected ?int $personId = null;
-	protected ?int $createdBy = null;
+	protected ?string $ownerUid = null;
+	protected ?string $createdBy = null;
+	protected ?int $createdAt = null;
+	protected ?int $updatedAt = null;
 
 	public function __construct() {
+		$this->addType('customEventId', 'integer');
+		$this->addType('placeId', 'integer');
 		$this->addType('familyId', 'integer');
-		$this->addType('personId', 'integer');
-		$this->addType('createdBy', 'integer');
+		$this->addType('createdAt', 'integer');
+		$this->addType('updatedAt', 'integer');
 	}
 
 	public function jsonSerialize(): array {
 		return [
 			'id' => $this->id,
+			'type' => $this->type,
+			'customEventId' => $this->customEventId,
 			'title' => $this->title,
 			'description' => $this->description,
-			'type' => $this->type,
-			'eventDate' => $this->eventDate,
-			'location' => $this->location,
+			'placeId' => $this->placeId,
+			'date' => $this->getDate(),
 			'familyId' => $this->familyId,
-			'personId' => $this->personId,
+			'ownerUid' => $this->ownerUid,
 			'createdBy' => $this->createdBy,
+			'createdAt' => $this->createdAt,
+			'updatedAt' => $this->updatedAt,
 		];
-	}
-
-	public function getPersonId(): ?int {
-		return $this->personId;
-	}
-
-	public function setPersonId(
-		?int $personId,
-	): void {
-
-		$this->personId = $personId;
-
-	}
-
-	public function getFamilyId(): ?int {
-		return $this->familyId;
-	}
-
-	public function setFamilyId(
-		?int $familyId,
-	): void {
-
-		$this->familyId = $familyId;
-
 	}
 }

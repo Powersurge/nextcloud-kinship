@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
-use OCA\Kinship\Db\EventMapper;
+use OCA\Kinship\Service\EventService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
@@ -14,7 +14,7 @@ class TimelineController extends ApiController {
 	public function __construct(
 		string $appName,
 		IRequest $request,
-		private EventMapper $events,
+		private EventService $events,
 	) {
 
 		parent::__construct(
@@ -29,10 +29,7 @@ class TimelineController extends ApiController {
 	): DataResponse {
 
 		return new DataResponse(
-			$this->events
-				->findByPerson(
-					$personId
-				)
+			$this->events->getForPerson($personId)
 		);
 
 	}

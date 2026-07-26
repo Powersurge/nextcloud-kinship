@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
+import { cachedDisplay } from '../utils/date'
 
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import Cake from 'vue-material-design-icons/CakeVariant.vue'
 import Cross from 'vue-material-design-icons/Cross.vue'
+import { usePeopleStore } from '../stores/use-people-store.ts'
+
+const { setSelectedPerson } = usePeopleStore()
 
 const props = defineProps<{
 	person: Record<string, any>
@@ -21,10 +25,24 @@ const emit = defineEmits<{
 const fullName = computed(() =>
 	`${props.person.firstName ?? ''} ${props.person.lastName ?? ''}`.trim(),
 )
+
+const statusLabel = computed(() => {
+	switch (props.person.livingStatus) {
+	case 'deceased':
+		return 'Deceased'
+	case 'living':
+		return 'Living'
+	default:
+		return 'Unknown'
+	}
+})
+
+const birthLabel = computed(() => cachedDisplay(props.person.birthDate))
+const deathLabel = computed(() => cachedDisplay(props.person.deathDate))
 </script>
 
 <template>
-	<div class="person-card" @click="emit('select', person)">
+	<div class="person-card" @click="setSelectedPerson(person)">
 		<div class="person-card__actions">
 			<NcActions>
 				<NcActionButton @click="emit('edit')">
@@ -59,23 +77,25 @@ const fullName = computed(() =>
 
 		<div
 			class="person-card__status"
-			:class="{ deceased: !person.alive }">
-			{{ person.alive ? 'Living' : 'Deceased' }}
+			:class="{ deceased: person.livingStatus !== 'living' }">
+			{{ statusLabel }}
 		</div>
 
-		<div class="person-card__details">
+		<div
+			v-if="birthLabel || deathLabel"
+			class="person-card__details">
 			<div
-				v-if="person.birthDate"
+				v-if="birthLabel"
 				class="detail">
 				<Cake :size="18" />
-				<span>{{ person.birthDate }}</span>
+				<span>{{ birthLabel }}</span>
 			</div>
 
 			<div
-				v-if="person.deathDate"
+				v-if="deathLabel"
 				class="detail">
 				<Cross :size="18" />
-				<span>{{ person.deathDate }}</span>
+				<span>{{ deathLabel }}</span>
 			</div>
 		</div>
 	</div>

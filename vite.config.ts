@@ -1,6 +1,7 @@
 import { createAppConfig } from '@nextcloud/vite-config'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { join, resolve } from 'node:path'
+import tailwindcss from '@tailwindcss/vite'
 
 export default createAppConfig(
 	{
@@ -9,20 +10,25 @@ export default createAppConfig(
 	{
 		createEmptyCSSEntryPoints: true,
 		config: {
+			define: {
+				appName: JSON.stringify('kinship'),
+				appVersion: '1',
+			},
 			build: {
 				sourcemap: false,
 			},
+			server: {
+				host: '127.0.0.1',
+				port: 5173,
+				cors: true,
+				strictPort: true,
+			},
 			plugins: [
-				visualizer({
-					filename: 'stats.html',
-					gzipSize: true,
-					brotliSize: true,
-				}),
+				tailwindcss(),
 			],
 			resolve: {
 				alias: {
 					'@': resolve(join('src')),
-					'@components': resolve(join('src', 'components')),
 				},
 			},
 		},

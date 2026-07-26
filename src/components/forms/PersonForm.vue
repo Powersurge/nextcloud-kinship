@@ -2,29 +2,30 @@
 import { reactive, watch } from 'vue'
 import {
 	NcButton,
-	NcCheckboxRadioSwitch,
-	NcDateTimePicker,
 	NcSelect,
 	NcTextArea,
 	NcTextField,
 } from '@nextcloud/vue'
-import { getFilePickerBuilder } from '@nextcloud/dialogs'
+import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
+import type { GenologyDateType } from '../../types'
+import { createEmptyGenologyDate } from '../../utils/date.ts'
 
 interface PersonFormData {
 	firstName: string
 	middleName: string
 	lastName: string
 	preferredName: string
+	suffix: string
 	gender: string | null
-	birthDate: string | null
-	deathDate: string | null
-	alive: boolean
-	biography: string | null
+	livingStatus: string
+	birthDate: GenologyDateType
+	deathDate: GenologyDateType
+	biography: string
 }
 
 const props = defineProps<{
 	/** Existing person to edit. When null the form is in create mode. */
-	person?: Partial<PersonFormData> | null
+	person?: Record<string, any> | null
 	/** Disables inputs while a save request is in flight. */
 	saving?: boolean
 }>()
@@ -34,7 +35,17 @@ const emit = defineEmits<{
 	cancel: []
 }>()
 
-const genderOptions = ['female', 'male', 'other', 'unknown']
+const genderOptions = [
+	{ value: 'male', label: 'Male' },
+	{ value: 'female', label: 'Female' },
+	{ value: 'other', label: 'Other' },
+]
+
+const livingStatusOptions = [
+	{ value: 'living', label: 'Living' },
+	{ value: 'deceased', label: 'Deceased' },
+	{ value: 'unknown', label: 'Unknown' },
+]
 
 const form = reactive<PersonFormData>(emptyForm())
 
@@ -44,55 +55,40 @@ function emptyForm(): PersonFormData {
 		middleName: '',
 		lastName: '',
 		preferredName: '',
+		suffix: '',
 		gender: null,
-		birthDate: null,
-		deathDate: null,
-		alive: true,
+		livingStatus: 'unknown',
+		birthDate: createEmptyGenologyDate(),
+		deathDate: createEmptyGenologyDate(),
 		biography: '',
 	}
 }
 
-/** Reset the form from the incoming person whenever it changes. */
+/**
+ * Reset the form from the incoming person whenever it changes. The person's
+ * birth/death dates arrive as cached value objects ({ start, display }); we
+ * edit the sortable `start` day.
+ */
 watch(
 	() => props.person,
 	(person) => {
-		Object.assign(form, emptyForm(), person ?? {})
+		Object.assign(form, emptyForm())
+		if (person) {
+			form.firstName = person.firstName ?? ''
+			form.middleName = person.middleName ?? ''
+			form.lastName = person.lastName ?? ''
+			form.preferredName = person.preferredName ?? ''
+			form.suffix = person.suffix ?? ''
+			form.gender = person.gender ?? null
+			form.livingStatus = person.livingStatus ?? 'unknown'
+			form.birthDate = person.birthDate ?? createEmptyGenologyDate()
+			form.deathDate = person.deathDate ?? createEmptyGenologyDate()
+			form.biography = person.biography ?? ''
+		}
+
 	},
 	{ immediate: true, deep: true },
 )
-
-// NcDateTimePicker works with Date objects; the API stores ISO date strings.
-function toDate(value: string | null): Date | null {
-	return value ? new Date(value) : null
-}
-
-function fromDate(value: Date | null): string | null {
-	if (!value) {
-		return null
-	}
-	const year = value.getFullYear()
-	const month = String(value.getMonth() + 1).padStart(2, '0')
-	const day = String(value.getDate()).padStart(2, '0')
-	return `${year}-${month}-${day}`
-}
-
-// eslint-disable-next-line no-unused-vars
-async function showFilePicker() {
-	const filepicker = getFilePickerBuilder('Pick plain text files')
-		.addMimeTypeFilter('text/plain')
-		.addButton({
-			label: 'Pick',
-			// eslint-disable-next-line no-console
-			callback: (nodes) => console.log('Picked', nodes),
-		})
-		.build()
-
-	// You get the file nodes by the button callback, but also the pick yields the paths of the picked files
-	const paths = await filepicker.pick()
-
-	// eslint-disable-next-line no-console
-	console.log(paths)
-}
 
 function onSubmit() {
 	emit('submit', { ...form })
@@ -100,75 +96,75 @@ function onSubmit() {
 </script>
 
 <template>
-	<form class="person-form" @submit.prevent="onSubmit">
-		<div class="person-form__row">
-			<NcTextField
-				v-model="form.firstName"
-				label="First name"
-				:required="true"
-				:disabled="saving" />
+	<form class="grid grid-cols-2 gap-4" @submit.prevent="onSubmit">
+		<NcTextField
+			v-model="form.firstName"
+			label="First name"
+			:required="true"
+			:disabled="saving" />
 
-			<NcTextField
-				v-model="form.middleName"
-				label="Middle name"
-				:disabled="saving" />
-		</div>
+		<NcTextField
+			v-model="form.middleName"
+			label="Middle name"
+			:disabled="saving" />
 
-		<div class="person-form__row">
-			<NcTextField
-				v-model="form.lastName"
-				label="Last name"
-				:required="true"
-				:disabled="saving" />
+		<NcTextField
+			v-model="form.lastName"
+			label="Last name"
+			:required="true"
+			:disabled="saving" />
 
-			<NcTextField
-				v-model="form.preferredName"
-				label="Preferred name"
-				:disabled="saving" />
-		</div>
+		<NcTextField
+			v-model="form.preferredName"
+			label="Preferred name"
+			:disabled="saving" />
+
+		<NcTextField
+			v-model="form.suffix"
+			class="col-span-full"
+			label="Suffix"
+			:disabled="saving" />
 
 		<NcSelect
 			v-model="form.gender"
 			input-label="Gender"
-			placeholder="Select gender"
 			:options="genderOptions"
+			:reduce="(option) => option.value"
+			label="label"
 			:disabled="saving" />
 
-		<div class="person-form__row">
-			<div class="person-form__field">
-				<label class="person-form__label">Birth date</label>
-				<NcDateTimePicker
-					:model-value="toDate(form.birthDate)"
-					type="date"
-					:append-to-body="true"
-					:disabled="saving"
-					@update:model-value="form.birthDate = fromDate($event)" />
-			</div>
+		<NcSelect
+			v-model="form.livingStatus"
+			input-label="Living status"
+			:options="livingStatusOptions"
+			:reduce="(option) => option.value"
+			label="label"
+			:clearable="false"
+			:disabled="saving" />
 
-			<div class="person-form__field">
-				<label class="person-form__label">Death date</label>
-				<NcDateTimePicker
-					:model-value="toDate(form.deathDate)"
-					type="date"
-					:append-to-body="true"
-					:disabled="saving"
-					@update:model-value="form.deathDate = fromDate($event)" />
-			</div>
+		<div
+			class="col-span-full flex flex-col gap-y-2">
+			<GenealogyDatePicker
+				v-model="form.birthDate"
+				label="Birth Date" />
+
+			<GenealogyDatePicker
+				v-if="form.livingStatus === 'deceased'"
+				v-model="form.deathDate"
+				label="Death Date" />
+
+			<p class="text-sm text-gray-500">
+				Birth and death dates are stored as events; setting a death date marks the person deceased.
+			</p>
 		</div>
-
-		<NcCheckboxRadioSwitch
-			v-model="form.alive"
-			type="switch"
-			:disabled="saving">
-			Living
-		</NcCheckboxRadioSwitch>
 
 		<NcTextArea
 			v-model="form.biography"
+			class="col-span-full"
 			label="Biography"
 			:disabled="saving" />
 
-		<div class="person-form__actions">
+		<div class="flex gap-4 justify-end col-span-full py-10">
 			<NcButton
 				type="button"
 				:disabled="saving"
@@ -185,39 +181,3 @@ function onSubmit() {
 		</div>
 	</form>
 </template>
-
-<style scoped>
-.person-form {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.person-form__row {
-	display: flex;
-	gap: 12px;
-	flex-wrap: wrap;
-}
-
-.person-form__row > * {
-	flex: 1 1 200px;
-}
-
-.person-form__field {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.person-form__label {
-	font-size: 0.9em;
-	color: var(--color-text-maxcontrast);
-}
-
-.person-form__actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 8px;
-	margin-top: 8px;
-}
-</style>

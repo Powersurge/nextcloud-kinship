@@ -104,10 +104,10 @@ class Version0005Date20260718000000 extends SimpleMigrationStep {
 		 * settings without creating their
 		 * own table.
 		 */
-		if (!$schema->hasTable('kin_ext_config')) {
+		if (!$schema->hasTable('kinship_extension_configs')) {
 
 			$table = $schema->createTable(
-				'kin_ext_config'
+				'kinship_extension_configs'
 			);
 
 			$table->addColumn(
@@ -159,7 +159,7 @@ class Version0005Date20260718000000 extends SimpleMigrationStep {
 					'extension_id',
 					'config_key'
 				],
-				'kin_ext_cfg_unique'
+				'kinship_ext_cfg_unique'
 			);
 		}
 

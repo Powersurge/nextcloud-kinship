@@ -28,7 +28,7 @@ function close() {
 	emit('update:open', false)
 }
 
-async function onSubmit(data: Record<string, unknown>) {
+async function onSubmit(formData: Record<string, any>) {
 	saving.value = true
 	error.value = ''
 
@@ -37,12 +37,12 @@ async function onSubmit(data: Record<string, unknown>) {
 		if (isEdit.value) {
 			response = await axios.put(
 				generateUrl(`/apps/kinship/api/v1/people/${props.person!.id}`),
-				{ data },
+				{ data: formData },
 			)
 		} else {
 			response = await axios.post(
 				generateUrl('/apps/kinship/api/v1/people'),
-				{ data },
+				{ data: formData },
 			)
 		}
 

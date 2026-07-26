@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
+use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Person;
+use OCA\Kinship\Service\EventService;
 use OCA\Kinship\Service\PersonService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -38,82 +40,86 @@ class PersonController extends ApiController {
 	}
 
 	/**
-	 * Create person.
+	 * Create person. Birth/death dates are recorded as birth/death events,
+	 * not on the person, so they are not accepted here.
 	 */
 	public function create(
 		array $data,
+		EventService $eventService,
 	): DataResponse {
-		$person = new Person();
+		$instance = new Person();
 
-		$person->setFirstName(
-			$data['firstName'] ?? ''
-		);
+		$instance->setFirstName($data['firstName'] ?? '');
+		$instance->setMiddleName($data['middleName'] ?? null);
+		$instance->setLastName($data['lastName'] ?? '');
+		$instance->setPreferredName($data['preferredName'] ?? null);
+		$instance->setSuffix($data['suffix'] ?? null);
+		$instance->setGender($data['gender'] ?? null);
+		$instance->setBiography($data['biography'] ?? null);
 
-		$person->setMiddleName(
-			$data['middleName'] ?? ''
-		);
+		if (isset($data['photoFileId'])) {
+			$instance->setPhotoFileId((int)$data['photoFileId']);
+		}
 
-		$person->setLastName(
-			$data['lastName'] ?? ''
-		);
+		$person = $this->service->create($instance);
 
-		$person->setPreferredName(
-			$data['preferredName'] ?? ''
-		);
-
-		$person->setBirthDate(
-			$data['birthDate'] ?? null
-		);
-
-		$person->setDeathDate(
-			$data['deathDate'] ?? null
-		);
-
-		$person->setGender(
-			$data['gender'] ?? null
-		);
-
-		$person->setAlive(
-			$data['alive'] ?? true
-		);
-
-		$person->setBiography(
-			$data['biography'] ?? null
-		);
+		if (isset($data['birthDate'])) {
+			$eventService->create([
+				'type' => 'birth',
+				'date' => $data['birthDate'],
+				'participants' => [
+					[
+						'personId' => $person->getId(),
+						'role' => 'subject'
+					]
+				]
+			]);
+		}
 
 		return new DataResponse(
-			$this->service->create($person),
+			$person,
 			Http::STATUS_CREATED
 		);
 	}
 
-	/**
-	 * Update person.
-	 */
 	public function update(
 		int $id,
 		array $data,
+        EventService $eventService,
 	): DataResponse {
-		return new DataResponse(
-			$this->service->updatePerson(
-				$id,
-				$data
-			)
-		);
+        try {
+            $person = $this->service->updatePerson($id, $data);
+
+            if (isset($data['birthDate'])) {
+                $eventService->updateEvent([
+                    'type' => 'birth',
+                    'date' => $data['birthDate'],
+                    'participants' => [
+                        [
+                            'personId' => $person->getId(),
+                            'role' => 'subject'
+                        ]
+                    ]
+                ]);
+            }
+
+            return new DataResponse(
+                $person
+            );
+        } catch (\Exception $exception) {
+            return new DataResponse(
+                [
+                    'error' => $exception->getMessage()
+                ]
+            );
+        }
 	}
 
-	/**
-	 * Delete person.
-	 */
 	public function delete(
 		int $id,
 	): DataResponse {
 		$this->service->deletePerson($id);
 
-		return new DataResponse(
-			[
-				'deleted' => true
-			]
-		);
+		return new DataResponse(['deleted' => true]);
 	}
 }

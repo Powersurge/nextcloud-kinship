@@ -12,7 +12,7 @@
 - Family trees
 
 Designed as an extensible genealogy platform.</description>
-	<version>1.0.0</version>
+	<version>0.1.0</version>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="hello@mahmudz.dev" homepage="https://mahmudz.dev">Mahmudul Hasan</author>
 	<namespace>Kinship</namespace>

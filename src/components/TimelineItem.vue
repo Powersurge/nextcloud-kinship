@@ -1,11 +1,11 @@
 <template>
 	<div class="timeline-item">
 		<strong>
-			{{ event.eventDate }}
+			{{ when }}
 		</strong>
 
 		<div>
-			{{ event.title }}
+			{{ heading }}
 		</div>
 
 		<small>
@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import { dateDisplay } from '../utils/date'
+
 export default {
 	name: 'TimelineItem',
 
@@ -22,6 +24,15 @@ export default {
 		event: {
 			type: Object,
 			required: true,
+		},
+	},
+
+	computed: {
+		when() {
+			return dateDisplay(this.event.date)
+		},
+		heading() {
+			return this.event.title || this.event.type
 		},
 	},
 }

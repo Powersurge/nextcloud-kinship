@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
+import { onMounted, ref, watch } from 'vue'
+import { NcEmptyContent, NcLoadingIcon, NcSelect } from '@nextcloud/vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import FamilyTreeIcon from 'vue-material-design-icons/FamilyTree.vue'
@@ -8,12 +8,29 @@ import FamilyTreeNode from '../components/FamilyTree.vue'
 
 const root = ref<Record<string, any> | null>(null)
 const loading = ref(true)
+const people = ref<Array<{ value: number, label: string }>>([])
+const rootId = ref<number | null>(null)
 
-async function loadTree() {
+async function loadPeople() {
+	try {
+		const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
+		people.value = (data.people ?? []).map((p: Record<string, any>) => ({
+			value: p.id,
+			label: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
+		}))
+		if (people.value.length > 0 && rootId.value === null) {
+			rootId.value = people.value[0].value
+		}
+	} catch (e) {
+		console.error('Failed to load people', e)
+	}
+}
+
+async function loadTree(personId: number) {
 	loading.value = true
 	try {
 		const response = await axios.get(
-			generateUrl('/apps/kinship/api/v1/tree/1'),
+			generateUrl(`/apps/kinship/api/v1/tree/${personId}`),
 		)
 		root.value = response.data && response.data.id ? response.data : null
 	} catch (e) {
@@ -24,7 +41,21 @@ async function loadTree() {
 	}
 }
 
-onMounted(loadTree)
+watch(rootId, (id) => {
+	if (id) {
+		loadTree(id)
+	} else {
+		root.value = null
+		loading.value = false
+	}
+})
+
+onMounted(async () => {
+	await loadPeople()
+	if (rootId.value === null) {
+		loading.value = false
+	}
+})
 </script>
 
 <template>
@@ -33,6 +64,16 @@ onMounted(loadTree)
 			<h2 class="tree-view__title">
 				Family tree
 			</h2>
+		</div>
+
+		<div class="tree-view__toolbar">
+			<NcSelect
+				v-model="rootId"
+				input-label="Root person"
+				placeholder="Select a person"
+				:options="people"
+				:reduce="(option) => option.value"
+				label="label" />
 		</div>
 
 		<NcLoadingIcon v-if="loading" :size="32" class="tree-view__loading" />
@@ -70,6 +111,11 @@ onMounted(loadTree)
 
 .tree-view__title {
 	margin: 0;
+}
+
+.tree-view__toolbar {
+	margin: 0 16px;
+	max-width: 320px;
 }
 
 .tree-view__loading {

@@ -9,11 +9,11 @@
 			:key="event.id"
 			class="event">
 			<strong>
-				{{ event.eventDate }}
+				{{ dateDisplay(event.date) }}
 			</strong>
 
 			<p>
-				{{ event.title }}
+				{{ event.title || event.type }}
 			</p>
 
 			<small>
@@ -25,7 +25,9 @@
 
 <script>
 
+import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { dateDisplay } from '../utils/date'
 
 export default {
 
@@ -58,15 +60,17 @@ export default {
 
 	methods: {
 
+		dateDisplay,
+
 		async loadEvents() {
 
-			const response = await fetch(
+			const response = await axios.get(
 				generateUrl(
 					`/apps/kinship/api/v1/timeline/person/${this.personId}`,
 				),
 			)
 
-			this.events = await response.json()
+			this.events = response.data
 		},
 
 	},

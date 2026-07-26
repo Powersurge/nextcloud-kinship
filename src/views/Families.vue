@@ -43,7 +43,7 @@ function onSaved() {
 }
 
 async function deleteFamily(family: Record<string, any>) {
-	if (!window.confirm(`Delete ${family.name}?`)) {
+	if (!window.confirm(`Delete ${family.name || 'this family'}?`)) {
 		return
 	}
 	try {

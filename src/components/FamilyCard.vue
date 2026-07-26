@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 
-defineProps<{
+const props = defineProps<{
 	family: Record<string, any>
 }>()
 
@@ -11,14 +12,29 @@ const emit = defineEmits<{
 	edit: []
 	delete: []
 }>()
+
+const typeLabels: Record<string, string> = {
+	partnership: 'Partnership',
+	single_parent: 'Single parent',
+}
+
+const name = computed(() => props.family.name || 'Unnamed family')
+const typeLabel = computed(() =>
+	props.family.type ? (typeLabels[props.family.type] ?? props.family.type) : '',
+)
 </script>
 
 <template>
 	<div class="family-card">
 		<div class="family-card__body">
 			<h3 class="family-card__name">
-				{{ family.name }}
+				{{ name }}
+				<span v-if="family.isDerived" class="family-card__badge">Auto</span>
 			</h3>
+
+			<p v-if="typeLabel" class="family-card__meta">
+				{{ typeLabel }}
+			</p>
 
 			<p v-if="family.description" class="family-card__meta">
 				{{ family.description }}
@@ -56,6 +72,19 @@ const emit = defineEmits<{
 
 .family-card__name {
 	margin: 0 0 4px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.family-card__badge {
+	font-size: 0.7em;
+	font-weight: 600;
+	text-transform: uppercase;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--color-background-hover);
+	color: var(--color-text-maxcontrast);
 }
 
 .family-card__meta {

@@ -11,8 +11,6 @@ import PersonModal from '../components/modals/PersonModal.vue'
 const people = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
 
-const selected = ref<Record<string, any>>([])
-
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
 
@@ -93,7 +91,6 @@ onMounted(loadPeople)
 				v-for="person in people"
 				:key="person.id"
 				:person="person"
-				@select="selected = people"
 				@edit="openEdit(person)"
 				@delete="deletePerson(person)" />
 		</div>

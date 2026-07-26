@@ -7,16 +7,48 @@ namespace OCA\Kinship\Db;
 use JsonSerializable;
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * A canonical relationship row (person_a is the parent/guardian/ordered-spouse
+ * side). See {@see \OCA\Kinship\Constants\RelationshipType}.
+ *
+ * @method int getPersonA()
+ * @method void setPersonA(int $personA)
+ * @method int getPersonB()
+ * @method void setPersonB(int $personB)
+ * @method string getType()
+ * @method void setType(string $type)
+ * @method ?string getNote()
+ * @method void setNote(?string $note)
+ * @method ?string getOwnerUid()
+ * @method void setOwnerUid(?string $ownerUid)
+ * @method ?string getCreatedBy()
+ * @method void setCreatedBy(?string $createdBy)
+ * @method ?int getCreatedAt()
+ * @method void setCreatedAt(?int $createdAt)
+ * @method ?int getUpdatedAt()
+ * @method void setUpdatedAt(?int $updatedAt)
+ * @method void setDateKind(?string $dateKind)
+ * @method void setDateStart(?string $dateStart)
+ * @method void setDateEnd(?string $dateEnd)
+ * @method void setDateDisplay(?string $dateDisplay)
+ */
 class Relationship extends Entity implements JsonSerializable {
+	use DateValueTrait;
+
 	protected int $personA = 0;
 	protected int $personB = 0;
 	protected string $type = '';
-	protected ?string $startDate = null;
-	protected ?string $endDate = null;
+	protected ?string $note = null;
+	protected ?string $ownerUid = null;
+	protected ?string $createdBy = null;
+	protected ?int $createdAt = null;
+	protected ?int $updatedAt = null;
 
 	public function __construct() {
 		$this->addType('personA', 'integer');
 		$this->addType('personB', 'integer');
+		$this->addType('createdAt', 'integer');
+		$this->addType('updatedAt', 'integer');
 	}
 
 	public function jsonSerialize(): array {
@@ -25,8 +57,12 @@ class Relationship extends Entity implements JsonSerializable {
 			'personA' => $this->personA,
 			'personB' => $this->personB,
 			'type' => $this->type,
-			'startDate' => $this->startDate,
-			'endDate' => $this->endDate,
+			'date' => $this->getDate(),
+			'note' => $this->note,
+			'ownerUid' => $this->ownerUid,
+			'createdBy' => $this->createdBy,
+			'createdAt' => $this->createdAt,
+			'updatedAt' => $this->updatedAt,
 		];
 	}
 }

@@ -43,7 +43,7 @@ function onSaved() {
 }
 
 async function deleteEvent(event: Record<string, any>) {
-	if (!window.confirm(`Delete ${event.title}?`)) {
+	if (!window.confirm(`Delete ${event.title || event.type || 'this event'}?`)) {
 		return
 	}
 	try {

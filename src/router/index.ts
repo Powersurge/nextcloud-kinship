@@ -1,4 +1,5 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
+import { generateUrl } from '@nextcloud/router'
 
 const routes = [
 	{
@@ -15,6 +16,11 @@ const routes = [
 		path: '/families',
 		name: 'families',
 		component: () => import('../views/Families.vue'),
+	},
+	{
+		path: '/relationships',
+		name: 'relationships',
+		component: () => import('../views/Relationships.vue'),
 	},
 	{
 		path: '/events',
@@ -34,6 +40,6 @@ const routes = [
 ]
 
 export default createRouter({
-	history: createWebHashHistory(),
+	history: createWebHistory(generateUrl('/apps/kinship')),
 	routes,
 })

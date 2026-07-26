@@ -9,7 +9,7 @@
         "lint": "eslint src",
         "lint:fix": "eslint src --fix",
         "stylelint": "stylelint src/**/*.vue src/**/*.scss src/**/*.css",
-        "watch": "vite --mode development build --watch"
+        "watch": "vite"
     },
     "browserslist": [
         "extends @nextcloud/browserslist-config"
@@ -19,6 +19,9 @@
         "@nextcloud/dialogs": "^7.4.1",
         "@nextcloud/router": "^3.1.0",
         "@nextcloud/vue": "^9.8.2",
+        "@tailwindcss/vite": "^4.3.3",
+        "pinia": "^4.0.2",
+        "tailwindcss": "^4.3.3",
         "vue": "^3.5.35",
         "vue-material-design-icons": "^5.3.1",
         "vue-router": "^5.2.0"

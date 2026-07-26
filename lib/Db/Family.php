@@ -7,21 +7,51 @@ namespace OCA\Kinship\Db;
 use JsonSerializable;
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method ?string getName()
+ * @method void setName(?string $name)
+ * @method ?string getType()
+ * @method void setType(?string $type)
+ * @method ?string getDescription()
+ * @method void setDescription(?string $description)
+ * @method bool getIsDerived()
+ * @method void setIsDerived(bool $isDerived)
+ * @method ?string getOwnerUid()
+ * @method void setOwnerUid(?string $ownerUid)
+ * @method ?string getCreatedBy()
+ * @method void setCreatedBy(?string $createdBy)
+ * @method ?int getCreatedAt()
+ * @method void setCreatedAt(?int $createdAt)
+ * @method ?int getUpdatedAt()
+ * @method void setUpdatedAt(?int $updatedAt)
+ */
 class Family extends Entity implements JsonSerializable {
-	protected string $name = '';
+	protected ?string $name = null;
+	protected ?string $type = null;
 	protected ?string $description = null;
-	protected ?int $createdBy = null;
+	protected bool $isDerived = true;
+	protected ?string $ownerUid = null;
+	protected ?string $createdBy = null;
+	protected ?int $createdAt = null;
+	protected ?int $updatedAt = null;
 
 	public function __construct() {
-		$this->addType('createdBy', 'integer');
+		$this->addType('isDerived', 'boolean');
+		$this->addType('createdAt', 'integer');
+		$this->addType('updatedAt', 'integer');
 	}
 
 	public function jsonSerialize(): array {
 		return [
 			'id' => $this->id,
 			'name' => $this->name,
+			'type' => $this->type,
 			'description' => $this->description,
+			'isDerived' => $this->isDerived,
+			'ownerUid' => $this->ownerUid,
 			'createdBy' => $this->createdBy,
+			'createdAt' => $this->createdAt,
+			'updatedAt' => $this->updatedAt,
 		];
 	}
 }

@@ -46,8 +46,22 @@ const fullName = computed(() =>
 	].filter(Boolean).join(' '),
 )
 
-const status = computed(() =>
-	props.person.alive ? 'Living' : 'Deceased',
+const status = computed(() => {
+	switch (props.person.livingStatus) {
+	case 'deceased':
+		return 'Deceased'
+	case 'living':
+		return 'Living'
+	default:
+		return 'Unknown'
+	}
+})
+
+const birthLabel = computed(() =>
+	props.person.birthDate?.display || props.person.birthDate?.start || '',
+)
+const deathLabel = computed(() =>
+	props.person.deathDate?.display || props.person.deathDate?.start || '',
 )
 </script>
 
@@ -96,33 +110,26 @@ const status = computed(() =>
 				</div>
 
 				<div
-					v-if="person.birthDate || person.birthPlace"
+					v-if="birthLabel"
 					class="row">
 					<CakeVariant :size="18" />
 
 					<div>
 						<label>Birth</label>
 
-						<div>{{ person.birthDate }}</div>
-						<div class="secondary">
-							{{ person.birthPlace }}
-						</div>
+						<div>{{ birthLabel }}</div>
 					</div>
 				</div>
 
 				<div
-					v-if="!person.alive && (person.deathDate || person.deathPlace)"
+					v-if="deathLabel"
 					class="row">
 					<Cross :size="18" />
 
 					<div>
 						<label>Death</label>
 
-						<div>{{ person.deathDate }}</div>
-
-						<div class="secondary">
-							{{ person.deathPlace }}
-						</div>
+						<div>{{ deathLabel }}</div>
 					</div>
 				</div>
 
@@ -170,31 +177,6 @@ const status = computed(() =>
 			<template #icon>
 				<AccountGroup :size="20" />
 			</template>
-
-			<div class="section">
-				<div
-					v-for="group in [
-						['Parents', person.parents],
-						['Spouses', person.spouses],
-						['Children', person.children],
-						['Siblings', person.siblings]
-					]"
-					:key="group[0]">
-					<div
-						v-if="group[1]?.length"
-						class="family-group">
-						<h3>{{ group[0] }}</h3>
-
-						<button
-							v-for="member in group[1]"
-							:key="member.id"
-							class="person-link"
-							@click="emit('select-person', member.id)">
-							{{ member.name }}
-						</button>
-					</div>
-				</div>
-			</div>
 		</NcAppSidebarTab>
 
 		<!-- ================================================= -->
@@ -207,48 +189,6 @@ const status = computed(() =>
 			<template #icon>
 				<TimelineClock :size="20" />
 			</template>
-
-			<div class="section">
-				<div
-					v-for="event in person.timeline"
-					:key="event.id"
-					class="timeline-item">
-					<div class="timeline-date">
-						{{ event.date }}
-					</div>
-
-					<div class="timeline-title">
-						{{ event.title }}
-					</div>
-				</div>
-			</div>
-		</NcAppSidebarTab>
-
-		<!-- ================================================= -->
-		<!-- Activity -->
-		<!-- ================================================= -->
-
-		<NcAppSidebarTab
-			id="activity"
-			name="Activity">
-			<template #icon>
-				<History :size="20" />
-			</template>
-
-			<div class="section">
-				<div
-					v-for="item in person.activity"
-					:key="item.id"
-					class="timeline-item">
-					<div class="timeline-title">
-						{{ item.title }}
-					</div>
-
-					<div class="secondary">
-						{{ item.date }}
-					</div>
-				</div>
-			</div>
 		</NcAppSidebarTab>
 	</NcAppSidebar>
 </template>

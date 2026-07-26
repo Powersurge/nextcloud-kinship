@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Db;
 
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/**
+ * @extends QBMapper<Event>
+ */
 class EventMapper extends QBMapper {
 	public function __construct(
 		IDBConnection $db,
@@ -56,29 +61,12 @@ class EventMapper extends QBMapper {
 		return $this->findEntity($qb);
 	}
 
-	/**
-	 * Find events for a person.
-	 *
-	 * @return Event[]
-	 */
-	public function findByPerson(
-		int $personId,
-	): array {
-		$qb = $this->db->getQueryBuilder();
-
-		$qb->select('*')
-			->from($this->getTableName())
-			->where(
-				$qb->expr()->eq(
-					'person_id',
-					$qb->createNamedParameter(
-						$personId,
-						IQueryBuilder::PARAM_INT
-					)
-				)
-			);
-
-		return $this->findEntities($qb);
+	public function findOrNull(int $id): ?Event {
+		try {
+			return $this->find($id);
+		} catch (DoesNotExistException) {
+			return null;
+		}
 	}
 
 	/**
@@ -107,10 +95,32 @@ class EventMapper extends QBMapper {
 	}
 
 	/**
+	 * Find events by core type.
+	 *
+	 * @return Event[]
+	 */
+	public function findByType(
+		string $type,
+	): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('*')
+			->from($this->getTableName())
+			->where(
+				$qb->expr()->eq(
+					'type',
+					$qb->createNamedParameter($type)
+				)
+			);
+
+		return $this->findEntities($qb);
+	}
+
+	/**
 	 * Create event.
 	 */
 	public function insert(
-		Event|\OCP\AppFramework\Db\Entity $event,
+		Event|Entity $event,
 	): Event {
 
 		return parent::insert(
@@ -123,7 +133,7 @@ class EventMapper extends QBMapper {
 	 * Update event.
 	 */
 	public function update(
-		Event|\OCP\AppFramework\Db\Entity $event,
+		Event|Entity $event,
 	): Event {
 
 		return parent::update(
@@ -136,8 +146,8 @@ class EventMapper extends QBMapper {
 	 * Delete an event.
 	 */
 	public function delete(
-		Event|\OCP\AppFramework\Db\Entity $event,
-	): \OCP\AppFramework\Db\Entity {
+		Event|Entity $event,
+	): Entity {
 		return parent::delete($event);
 	}
 }

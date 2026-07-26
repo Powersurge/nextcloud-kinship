@@ -5,6 +5,7 @@ import Account from 'vue-material-design-icons/Account.vue'
 import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
+import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 </script>
 
 <template>
@@ -23,6 +24,11 @@ import Calendar from 'vue-material-design-icons/Calendar.vue'
 			<NcAppNavigationItem name="Families" to="/families">
 				<template #icon>
 					<HumanMaleFemaleChild :size="20" />
+				</template>
+			</NcAppNavigationItem>
+			<NcAppNavigationItem name="Relationships" to="/relationships">
+				<template #icon>
+					<VectorLink :size="20" />
 				</template>
 			</NcAppNavigationItem>
 			<NcAppNavigationItem name="Events" to="/events">

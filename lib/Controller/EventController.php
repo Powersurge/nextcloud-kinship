@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
-use OCA\Kinship\Db\Event;
 use OCA\Kinship\Service\EventService;
 use OCP\AppFramework\ApiController;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 
@@ -22,18 +22,12 @@ class EventController extends ApiController {
 		);
 	}
 
-	/**
-	 * Return all events.
-	 */
 	public function index(): DataResponse {
 		return new DataResponse([
 			'events' => $this->service->getAll()
 		]);
 	}
 
-	/**
-	 * Return one event.
-	 */
 	public function show(
 		int $id,
 	): DataResponse {
@@ -42,76 +36,36 @@ class EventController extends ApiController {
 		);
 	}
 
-	/**
-	 * Return events for a person.
-	 */
 	public function personEvents(
 		int $personId,
 	): DataResponse {
 		return new DataResponse([
-			'events'
-				=> $this->service->getForPerson($personId)
+			'events' => $this->service->getForPerson($personId)
 		]);
 	}
 
-	/**
-	 * Return events for a family.
-	 */
 	public function familyEvents(
 		int $familyId,
 	): DataResponse {
 		return new DataResponse([
-			'events'
-				=> $this->service->getForFamily($familyId)
+			'events' => $this->service->getForFamily($familyId)
+		]);
+	}
+
+	public function participants(
+		int $id,
+	): DataResponse {
+		return new DataResponse([
+			'participants' => $this->service->getParticipants($id)
 		]);
 	}
 
 	public function create(
 		array $data,
 	): DataResponse {
-
-		$event
-			= new Event();
-
-		$event->setTitle(
-			$data['title'] ?? ''
-		);
-
-		$event->setType(
-			$data['type'] ?? 'custom'
-		);
-
-		$event->setEventDate(
-			$data['eventDate'] ?? null
-		);
-
-		$event->setLocation(
-			$data['location'] ?? null
-		);
-
-		if (
-			isset($data['personId'])
-		) {
-
-			$event->setPersonId(
-				$data['personId']
-			);
-
-		}
-
-		if (
-			isset($data['familyId'])
-		) {
-
-			$event->setFamilyId(
-				$data['familyId']
-			);
-		}
-
 		return new DataResponse(
-			$this->service->create(
-				$event
-			)
+			$this->service->create($data),
+			Http::STATUS_CREATED
 		);
 	}
 
@@ -119,27 +73,16 @@ class EventController extends ApiController {
 		int $id,
 		array $data,
 	): DataResponse {
-
 		return new DataResponse(
-			$this->service->updateEvent(
-				$id,
-				$data
-			)
+			$this->service->updateEvent($id, $data)
 		);
-
 	}
 
 	public function delete(
 		int $id,
 	): DataResponse {
+		$this->service->deleteEvent($id);
 
-		$this->service->deleteEvent(
-			$id
-		);
-
-		return new DataResponse([
-			'deleted' => true
-		]);
-
+		return new DataResponse(['deleted' => true]);
 	}
 }

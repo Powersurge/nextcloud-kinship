@@ -1,28 +1,36 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import {
 	NcButton,
 	NcDateTimePicker,
 	NcSelect,
+	NcTextArea,
 	NcTextField,
 } from '@nextcloud/vue'
+import axios from '@nextcloud/axios'
+import { generateUrl } from '@nextcloud/router'
+import { createEmptyGenologyDate, fromDate, toDateValue } from '../../utils/date'
+import type { GenologyDateType } from '../../types'
+import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
 
-interface EventFormData {
-	title: string
+interface EventFormState {
 	type: string
-	eventDate: string | null
-	location: string | null
+	title: string
+	description: string
+	date: GenologyDateType
+	placeId: number | null
+	subjectId: number | null
 }
 
 const props = defineProps<{
 	/** Existing event to edit. When null the form is in create mode. */
-	event?: Partial<EventFormData> | null
+	event?: Record<string, any> | null
 	/** Disables inputs while a save request is in flight. */
 	saving?: boolean
 }>()
 
 const emit = defineEmits<{
-	submit: [value: EventFormData]
+	submit: [value: Record<string, unknown>]
 	cancel: []
 }>()
 
@@ -35,54 +43,84 @@ const typeOptions = [
 	{ value: 'custom', label: 'Custom' },
 ]
 
-const form = reactive<EventFormData>(emptyForm())
+const people = ref<Array<{ value: number, label: string }>>([])
+const places = ref<Array<{ value: number, label: string }>>([])
 
-function emptyForm(): EventFormData {
+const isEdit = () => Boolean(props.event?.id)
+
+const form = reactive<EventFormState>(emptyForm())
+
+function emptyForm(): EventFormState {
 	return {
-		title: '',
 		type: 'birth',
-		eventDate: null,
-		location: '',
+		title: '',
+		description: '',
+		date: createEmptyGenologyDate(),
+		placeId: null,
+		subjectId: null,
 	}
 }
 
-/** Reset the form from the incoming event whenever it changes. */
 watch(
 	() => props.event,
 	(event) => {
-		Object.assign(form, emptyForm(), event ?? {})
+		Object.assign(form, emptyForm())
+		if (event) {
+			form.type = event.type ?? 'birth'
+			form.title = event.title ?? ''
+			form.description = event.description ?? ''
+			form.date = event.date ?? createEmptyGenologyDate()
+			form.placeId = event.placeId ?? null
+		}
 	},
 	{ immediate: true, deep: true },
 )
 
-// NcDateTimePicker works with Date objects; the API stores ISO date strings.
+async function loadOptions() {
+	try {
+		const [peopleRes, placesRes] = await Promise.all([
+			axios.get(generateUrl('/apps/kinship/api/v1/people')),
+			axios.get(generateUrl('/apps/kinship/api/v1/places')),
+		])
+		people.value = (peopleRes.data.people ?? []).map((p: Record<string, any>) => ({
+			value: p.id,
+			label: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
+		}))
+		places.value = (placesRes.data.places ?? []).map((pl: Record<string, any>) => ({
+			value: pl.id,
+			label: pl.fullName || pl.name || `#${pl.id}`,
+		}))
+	} catch (e) {
+		console.error('Failed to load event options', e)
+	}
+}
+
+onMounted(loadOptions)
+
 function toDate(value: string | null): Date | null {
 	return value ? new Date(value) : null
 }
 
-function fromDate(value: Date | null): string | null {
-	if (!value) {
-		return null
-	}
-	const year = value.getFullYear()
-	const month = String(value.getMonth() + 1).padStart(2, '0')
-	const day = String(value.getDate()).padStart(2, '0')
-	return `${year}-${month}-${day}`
-}
-
 function onSubmit() {
-	emit('submit', { ...form })
+	const payload: Record<string, unknown> = {
+		type: form.type,
+		title: form.title || null,
+		description: form.description || null,
+		date: form.date,
+		placeId: form.placeId,
+	}
+
+	// Participants are only assigned when creating the event.
+	if (!isEdit() && form.subjectId) {
+		payload.participants = [{ personId: form.subjectId, role: 'subject' }]
+	}
+
+	emit('submit', payload)
 }
 </script>
 
 <template>
 	<form class="event-form" @submit.prevent="onSubmit">
-		<NcTextField
-			v-model="form.title"
-			label="Title"
-			:required="true"
-			:disabled="saving" />
-
 		<NcSelect
 			v-model="form.type"
 			input-label="Type"
@@ -92,19 +130,39 @@ function onSubmit() {
 			:clearable="false"
 			:disabled="saving" />
 
+		<NcTextField
+			v-model="form.title"
+			label="Title (optional)"
+			:disabled="saving" />
+
 		<div class="event-form__field">
-			<label class="event-form__label">Date</label>
-			<NcDateTimePicker
-				:model-value="toDate(form.eventDate)"
-				type="date"
-				:append-to-body="true"
-				:disabled="saving"
-				@update:model-value="form.eventDate = fromDate($event)" />
+			<GenealogyDatePicker
+				v-model="form.date"
+				label="Date" />
 		</div>
 
-		<NcTextField
-			v-model="form.location"
-			label="Location"
+		<NcSelect
+			v-if="!isEdit()"
+			v-model="form.subjectId"
+			input-label="Subject person"
+			placeholder="Who is this event about?"
+			:options="people"
+			:reduce="(option) => option.value"
+			label="label"
+			:disabled="saving" />
+
+		<NcSelect
+			v-model="form.placeId"
+			input-label="Place"
+			placeholder="Select place"
+			:options="places"
+			:reduce="(option) => option.value"
+			label="label"
+			:disabled="saving" />
+
+		<NcTextArea
+			v-model="form.description"
+			label="Description"
 			:disabled="saving" />
 
 		<div class="event-form__actions">

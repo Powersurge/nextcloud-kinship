@@ -6,9 +6,7 @@ import { generateUrl } from '@nextcloud/router'
 import EventForm from '../forms/EventForm.vue'
 
 const props = defineProps<{
-	/** Controls visibility (use with v-model:open). */
 	open: boolean
-	/** Event being edited; null/undefined means create mode. */
 	event?: Record<string, unknown> | null
 }>()
 

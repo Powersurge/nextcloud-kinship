@@ -5,6 +5,7 @@ import Account from 'vue-material-design-icons/Account.vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
 import FamilyTree from 'vue-material-design-icons/FamilyTree.vue'
+import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 
 const router = useRouter()
 
@@ -20,6 +21,12 @@ const shortcuts = [
 		description: 'Group people into families.',
 		to: '/families',
 		icon: HumanMaleFemaleChild,
+	},
+	{
+		name: 'Relationships',
+		description: 'Record parents, spouses and partners; the rest is computed.',
+		to: '/relationships',
+		icon: VectorLink,
 	},
 	{
 		name: 'Events',

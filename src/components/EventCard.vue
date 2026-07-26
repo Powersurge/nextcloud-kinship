@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
+import { dateDisplay } from '../utils/date'
 
-defineProps<{
+const props = defineProps<{
 	event: Record<string, any>
 }>()
 
@@ -11,25 +13,34 @@ const emit = defineEmits<{
 	edit: []
 	delete: []
 }>()
+
+const typeLabels: Record<string, string> = {
+	birth: 'Birth',
+	death: 'Death',
+	marriage: 'Marriage',
+	education: 'Education',
+	military: 'Military',
+	custom: 'Custom',
+}
+
+const typeLabel = computed(() => typeLabels[props.event.type] ?? props.event.type)
+const heading = computed(() => props.event.title || typeLabel.value)
+const when = computed(() => dateDisplay(props.event.date))
 </script>
 
 <template>
 	<div class="event-card">
 		<div class="event-card__body">
 			<h3 class="event-card__name">
-				{{ event.title }}
+				{{ heading }}
 			</h3>
 
 			<p class="event-card__meta">
-				{{ event.type }}
+				{{ typeLabel }}
 			</p>
 
-			<p v-if="event.eventDate" class="event-card__meta">
-				{{ event.eventDate }}
-			</p>
-
-			<p v-if="event.location" class="event-card__meta">
-				{{ event.location }}
+			<p v-if="when" class="event-card__meta">
+				{{ when }}
 			</p>
 		</div>
 
