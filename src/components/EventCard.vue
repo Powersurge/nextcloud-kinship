@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
-import { dateDisplay } from '../utils/date'
+import { dateDisplay } from '@/utils/date.ts'
 
 const props = defineProps<{
 	event: Record<string, any>

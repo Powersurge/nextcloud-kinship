@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { dateDisplay } from '../utils/date'
+import { dateDisplay } from '@/utils/date.ts'
 
 export default {
 	name: 'TimelineItem',

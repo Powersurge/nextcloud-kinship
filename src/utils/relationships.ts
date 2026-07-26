@@ -25,10 +25,6 @@ const labelByValue: Record<string, string> = Object.fromEntries(
 	relationshipTypeOptions.map((o) => [o.value, o.label]),
 )
 
-/**
- * Human label for a stored/canonical relationship type.
- * @param type
- */
 export function relationshipTypeLabel(type: string): string {
 	return labelByValue[type] ?? type
 }

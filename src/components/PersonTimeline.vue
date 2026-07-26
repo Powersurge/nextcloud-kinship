@@ -27,7 +27,7 @@
 
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { dateDisplay } from '../utils/date'
+import { dateDisplay } from '@/utils/date.ts'
 
 export default {
 

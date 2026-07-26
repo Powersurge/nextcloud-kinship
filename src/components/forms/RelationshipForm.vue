@@ -9,8 +9,8 @@ import {
 } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { fromDate, toDateValue } from '../../utils/date'
-import { relationshipTypeOptions } from '../../utils/relationships'
+import { fromDate, toDateValue } from '@/utils/date.ts'
+import { relationshipTypeOptions } from '@/utils/relationships.ts'
 
 interface RelationshipFormState {
 	personA: number | null

@@ -4,8 +4,8 @@ import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import ArrowRight from 'vue-material-design-icons/ArrowRight.vue'
-import { relationshipTypeLabel } from '../utils/relationships'
-import { dateDisplay } from '../utils/date'
+import { relationshipTypeLabel } from '@/utils/relationships.ts'
+import { dateDisplay } from '@/utils/date.ts'
 
 const props = defineProps<{
 	relationship: Record<string, any>

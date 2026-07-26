@@ -2,15 +2,14 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import {
 	NcButton,
-	NcDateTimePicker,
 	NcSelect,
 	NcTextArea,
 	NcTextField,
 } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { createEmptyGenologyDate, fromDate, toDateValue } from '../../utils/date'
-import type { GenologyDateType } from '../../types'
+import { createEmptyGenologyDate } from '@/utils/date.ts'
+import type { GenologyDateType } from '@/types'
 import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
 
 interface EventFormState {
@@ -96,10 +95,6 @@ async function loadOptions() {
 }
 
 onMounted(loadOptions)
-
-function toDate(value: string | null): Date | null {
-	return value ? new Date(value) : null
-}
 
 function onSubmit() {
 	const payload: Record<string, unknown> = {
