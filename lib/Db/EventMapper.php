@@ -118,6 +118,38 @@ class EventMapper extends QBMapper {
 		return $this->findEntities($qb);
 	}
 
+	public function findByPerson(
+		int $personId,
+	): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('e.*')
+			->from($this->getTableName(), 'e')
+			->innerJoin(
+				'e',
+				'kinship_participants',
+				'p',
+				$qb->expr()->eq('p.event_id', 'e.id')
+			)
+			->where(
+				$qb->expr()->eq(
+					'p.person_id',
+					$qb->createNamedParameter(
+						$personId,
+						IQueryBuilder::PARAM_INT
+					)
+				)
+			)
+			->andWhere(
+				$qb->expr()->eq(
+					'p.role',
+					$qb->createNamedParameter(ParticipantRole::SUBJECT)
+				)
+			);
+
+		return $this->findEntities($qb);
+	}
+
 	/**
 	 * Birth/death events of the given people, keyed personId => type => Event.
 	 *
