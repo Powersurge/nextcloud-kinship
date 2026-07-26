@@ -10,7 +10,10 @@ const routes = [
 	{
 		path: '/people',
 		name: 'people',
-		component: () => import('../views/People.vue'),
+		components: {
+			default: () => import('../views/People.vue'),
+			sidebar: () => import('../components/people/PersonSidebar.vue'),
+		},
 	},
 	{
 		path: '/families',
