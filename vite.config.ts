@@ -1,5 +1,4 @@
 import { createAppConfig } from '@nextcloud/vite-config'
-import { visualizer } from 'rollup-plugin-visualizer'
 import { join, resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 
@@ -28,7 +27,7 @@ export default createAppConfig(
 			],
 			resolve: {
 				alias: {
-					'@': resolve(join('src')),
+					'@': resolve(__dirname, './src'),
 				},
 			},
 		},

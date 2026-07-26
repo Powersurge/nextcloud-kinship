@@ -5,6 +5,14 @@ module.exports = {
 	rules: {
 		'jsdoc/require-jsdoc': 'off',
 		'vue/first-attribute-linebreak': 'off',
+		'n/no-missing-import': 'off',
+	},
+	settings: {
+		'import/resolver': {
+			typescript: {
+				project: './tsconfig.json',
+			},
+		},
 	},
 	overrides: [
 		{

@@ -1,12 +1,20 @@
 {
     "extends": "@vue/tsconfig",
     "include": [
+        "./src/*.ts",
         "./src/**/*.ts",
         "./src/**/*.vue"
     ],
     "compilerOptions": {
-        "erasableSyntaxOnly": true,
-        "outDir": "js",
-        "rootDir": "src"
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["./src/*"]
+        },
+        "lib": ["DOM", "ESNext"],
+        "allowImportingTsExtensions": true,
+        "moduleResolution": "bundler",
+    },
+    "vueCompilerOptions": {
+        "target": 3.5
     }
 }
