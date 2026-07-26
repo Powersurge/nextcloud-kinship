@@ -1,129 +1,253 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import { type Node, type Edge, VueFlow } from '@vue-flow/core'
+import { Background } from '@vue-flow/background'
+import { Controls } from '@vue-flow/controls'
+import { MiniMap } from '@vue-flow/minimap'
+
+import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
+
+import dagre from '@dagrejs/dagre'
+
 import { NcEmptyContent, NcLoadingIcon, NcSelect } from '@nextcloud/vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import FamilyTreeIcon from 'vue-material-design-icons/FamilyTree.vue'
-import FamilyTreeNode from '../components/FamilyTree.vue'
+import LockOutline from 'vue-material-design-icons/LockOutline.vue'
+import LockOpenOutline from 'vue-material-design-icons/LockOpenOutline.vue'
+import Plus from 'vue-material-design-icons/Plus.vue'
+import Minus from 'vue-material-design-icons/Minus.vue'
+import ArrowExpand from 'vue-material-design-icons/ArrowExpand.vue'
+import MaleNode from '@/components/ui/flow-nodes/MaleNode.vue'
+import FemaleNode from '@/components/ui/flow-nodes/FemaleNode.vue'
 
-const root = ref<Record<string, any> | null>(null)
+const root = ref<any>(null)
 const loading = ref(true)
-const people = ref<Array<{ value: number, label: string }>>([])
+
+const people = ref([])
 const rootId = ref<number | null>(null)
 
-async function loadPeople() {
-	try {
-		const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
-		people.value = (data.people ?? []).map((p: Record<string, any>) => ({
-			value: p.id,
-			label: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
-		}))
-		if (people.value.length > 0 && rootId.value === null) {
-			rootId.value = people.value[0].value
-		}
-	} catch (e) {
-		console.error('Failed to load people', e)
+const nodes = ref<Node[]>([])
+const edges = ref<Edge[]>([])
+
+const graph = new dagre.graphlib.Graph()
+graph.setDefaultEdgeLabel(() => ({}))
+
+graph.setGraph({
+	rankdir: 'TB',
+	ranksep: 120,
+	nodesep: 60,
+})
+
+function traverse(person: any, parentId?: number) {
+	nodes.value.push({
+		id: person.id.toString(),
+		data: {
+			label:
+				`${person.firstName} ${person.lastName}`,
+			person,
+		},
+		type: person.gender,
+		position: { x: 0, y: 0 },
+	})
+
+	if (person.spouse) {
+		const spouseId = `spouse-${person.spouse.id}`
+
+		nodes.value.push({
+			position: {
+				x: 250,
+				y: 0,
+			},
+			id: spouseId,
+			type: person.spouse.gender,
+			data: {
+				label:
+					`${person.spouse.firstName} ${person.spouse.lastName}`,
+			},
+		})
+
+		edges.value.push({
+			id: `${person.id}-${spouseId}`,
+			source: String(person.id),
+			target: spouseId,
+			sourceHandle: `${person.id}-spouse`,
+			targetHandle: `${spouseId}-spouse`,
+			animated: true,
+			type: 'straight',
+			style: {
+				strokeDasharray: '5 5',
+			},
+			label: 'Spouse',
+		})
+	}
+
+	if (parentId) {
+		edges.value.push({
+			id: `${parentId}-${person.id}`,
+			source: String(parentId),
+			target: String(person.id),
+			sourceHandle: 'default',
+			targetHandle: 'default',
+			type: 'straight',
+		})
+	}
+
+	for (const child of person.children ?? []) {
+		traverse(child, person.id)
 	}
 }
 
-async function loadTree(personId: number) {
+function layout() {
+	nodes.value.forEach((n: any) => {
+		graph.setNode(n.id, {
+			width: 180,
+			height: 60,
+		})
+	})
+
+	edges.value.forEach((e: any) => {
+		graph.setEdge(e.source, e.target)
+	})
+
+	dagre.layout(graph)
+
+	nodes.value = nodes.value.map((node: any) => {
+		const p = graph.node(node.id)
+
+		return {
+			...node,
+			position: {
+				x: p.x,
+				y: p.y,
+			},
+		} satisfies Node
+	})
+}
+
+function buildGraph(tree: any) {
+
+	nodes.value = []
+	edges.value = []
+
+	traverse(tree)
+
+	layout()
+}
+
+async function loadPeople() {
+	const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
+
+	people.value = data.people.map((p: any) => ({
+		value: p.id,
+		label: `${p.firstName} ${p.lastName}`,
+	}))
+
+	if (!rootId.value && people.value.length) {
+		rootId.value = people.value[0].value
+	}
+}
+
+async function loadTree(id: number) {
+
 	loading.value = true
+
 	try {
-		const response = await axios.get(
-			generateUrl(`/apps/kinship/api/v1/tree/${personId}`),
+
+		const { data } = await axios.get(
+			generateUrl(`/apps/kinship/api/v1/tree/${id}`),
 		)
-		root.value = response.data && response.data.id ? response.data : null
-	} catch (e) {
-		console.error('Failed to load family tree', e)
-		root.value = null
+
+		root.value = data
+
+		buildGraph(data)
+
 	} finally {
 		loading.value = false
 	}
 }
 
-watch(rootId, (id) => {
+watch(rootId, id => {
 	if (id) {
 		loadTree(id)
-	} else {
-		root.value = null
-		loading.value = false
 	}
 })
 
-onMounted(async () => {
-	await loadPeople()
-	if (rootId.value === null) {
-		loading.value = false
-	}
-})
+onMounted(loadPeople)
 </script>
 
 <template>
 	<div class="tree-view">
-		<div class="tree-view__header">
-			<h2 class="tree-view__title">
-				Family tree
-			</h2>
-		</div>
-
-		<div class="tree-view__toolbar">
+		<div class="bg-blue-200 w-fit !p-4 absolute right-0 z-10">
 			<NcSelect
 				v-model="rootId"
-				input-label="Root person"
-				placeholder="Select a person"
 				:options="people"
-				:reduce="(option) => option.value"
-				label="label" />
+				label="label"
+				:reduce="o => o.value"
+				input-label="Root person" />
 		</div>
 
-		<NcLoadingIcon v-if="loading" :size="32" class="tree-view__loading" />
+		<NcLoadingIcon
+			v-if="loading"
+			:size="32" />
 
 		<NcEmptyContent
 			v-else-if="!root"
-			name="No tree to show"
-			description="Add people and parent relationships to build a tree.">
+			name="No tree">
 			<template #icon>
 				<FamilyTreeIcon />
 			</template>
 		</NcEmptyContent>
 
-		<div v-else class="tree-view__content">
-			<FamilyTreeNode :person="root" :children="root.children || []" />
-		</div>
+		<VueFlow
+			v-else
+			v-model:nodes="nodes"
+			v-model:edges="edges"
+			fit-view-on-init
+			class="flow">
+			<template #node-male="props">
+				<MaleNode :id="props.id" :data="props.data" />
+			</template>
+
+			<template #node-female="props">
+				<FemaleNode :id="props.id" :data="props.data" />
+			</template>
+
+			<Background />
+
+			<MiniMap />
+
+			<Controls>
+				<template #icon-lock>
+					<LockOutline size="20" fill-color="black" />
+				</template>
+				<template #icon-unlock>
+					<LockOpenOutline size="20" fill-color="black" />
+				</template>
+				<template #icon-zoom-in>
+					<Plus size="20" fill-color="black" />
+				</template>
+				<template #icon-zoom-out>
+					<Minus size="20" fill-color="black" />
+				</template>
+				<template #icon-fit-view>
+					<ArrowExpand size="20" fill-color="black" />
+				</template>
+			</Controls>
+		</VueFlow>
 	</div>
 </template>
 
 <style scoped>
 .tree-view {
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 }
 
-.tree-view__header {
-	display: flex;
-	gap: var(--default-grid-baseline);
-	align-items: center;
-	flex: 0 0;
-	max-width: 100%;
-	margin-block: var(--app-navigation-padding, 4px);
-	margin-inline: calc(var(--default-clickable-area) + 2 * var(--app-navigation-padding, 4px)) var(--app-navigation-padding, 4px);
-}
-
-.tree-view__title {
-	margin: 0;
-}
-
-.tree-view__toolbar {
-	margin: 0 16px;
-	max-width: 320px;
-}
-
-.tree-view__loading {
-	margin-top: 32px;
-}
-
-.tree-view__content {
-	margin: 16px;
-	overflow-x: auto;
+.flow {
+	flex: 1;
+	height: 700px;
 }
 </style>

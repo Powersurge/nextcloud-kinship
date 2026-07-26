@@ -27,10 +27,6 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(?int $createdAt)
  * @method ?int getUpdatedAt()
  * @method void setUpdatedAt(?int $updatedAt)
- * @method void setDateKind(?string $dateKind)
- * @method void setDateStart(?string $dateStart)
- * @method void setDateEnd(?string $dateEnd)
- * @method void setDateDisplay(?string $dateDisplay)
  */
 class Relationship extends Entity implements JsonSerializable {
 	use DateValueTrait;

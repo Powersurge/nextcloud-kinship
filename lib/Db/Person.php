@@ -29,6 +29,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setPhotoFileId(?int $photoFileId)
  * @method ?string getOwnerUid()
  * @method void setOwnerUid(?string $ownerUid)
+ * @method array getEvents()
+ * @method void setEvents(array $events)
  * @method ?string getCreatedBy()
  * @method void setCreatedBy(?string $createdBy)
  * @method ?int getCreatedAt()
@@ -59,6 +61,8 @@ class Person extends Entity implements JsonSerializable {
 	 */
 	private ?DateValue $birthDate = null;
 	private ?DateValue $deathDate = null;
+
+	protected array $events = [];
 
 	public function __construct() {
 		$this->addType('photoFileId', 'integer');
@@ -94,6 +98,7 @@ class Person extends Entity implements JsonSerializable {
 			'livingStatus' => $this->livingStatus,
 			'birthDate' => $this->birthDate,
 			'deathDate' => $this->deathDate,
+			'events' => $this->events,
 			'biography' => $this->biography,
 			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,

@@ -33,7 +33,7 @@ class Version0009Date20260718000000 extends SimpleMigrationStep {
 			]);
 			$table->addColumn('family_id', 'integer', ['notnull' => true, 'unsigned' => true]);
 			$table->addColumn('person_id', 'integer', ['notnull' => true, 'unsigned' => true]);
-			$table->addColumn('role', 'string', ['length' => 16, 'notnull' => true]);
+			$table->addColumn('role', 'string', ['length' => 16, 'notnull' => false]);
 			$table->addColumn('created_at', 'bigint', ['notnull' => false, 'unsigned' => true]);
 
 			$table->setPrimaryKey(['id']);

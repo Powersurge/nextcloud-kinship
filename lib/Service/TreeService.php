@@ -30,29 +30,55 @@ class TreeService {
 	}
 
 	/**
-	 * @param array<int, true> $visited guards against cycles in the graph
+	 * @param array<int, true> $visited Guards against cycles.
 	 * @return array<string, mixed>
 	 */
 	private function buildNode(Person $person, array $visited): array {
 		$visited[$person->getId()] = true;
+
 		$children = [];
+		$spouse = null;
 
 		foreach ($this->relationshipMapper->findByPerson($person->getId()) as $relationship) {
-			if (!RelationshipType::isParenthood($relationship->getType())) {
+			$type = $relationship->getType();
+
+			// Find spouse
+			if ($type === RelationshipType::SPOUSE) {
+				$spouseId = $relationship->getPersonA() === $person->getId()
+					? $relationship->getPersonB()
+					: $relationship->getPersonA();
+
+				$spousePerson = $this->personMapper->findOrNull($spouseId);
+
+				if ($spousePerson !== null) {
+					$spouse = [
+						'id' => $spousePerson->getId(),
+						'gender' => $spousePerson->getGender(),
+						'firstName' => $spousePerson->getFirstName(),
+						'lastName' => $spousePerson->getLastName(),
+					];
+				}
+
 				continue;
 			}
-			// Canonical: person_a is the parent. Only descend to this person's
-			// own children.
+
+			// Only descend parent -> child relationships.
+			if (!RelationshipType::isParenthood($type)) {
+				continue;
+			}
+
 			if ($relationship->getPersonA() !== $person->getId()) {
 				continue;
 			}
 
 			$childId = $relationship->getPersonB();
+
 			if (isset($visited[$childId])) {
 				continue;
 			}
 
 			$child = $this->personMapper->findOrNull($childId);
+
 			if ($child === null) {
 				continue;
 			}
@@ -64,6 +90,8 @@ class TreeService {
 			'id' => $person->getId(),
 			'firstName' => $person->getFirstName(),
 			'lastName' => $person->getLastName(),
+			'gender' => $person->getGender(),
+			'spouse' => $spouse,
 			'children' => $children,
 		];
 	}

@@ -26,7 +26,7 @@ class FamilyMember extends Entity implements JsonSerializable {
 
 	protected int $familyId = 0;
 	protected int $personId = 0;
-	protected string $role = self::ROLE_CHILD;
+	protected ?string $role = self::ROLE_CHILD;
 	protected ?int $createdAt = null;
 
 	public function __construct() {
