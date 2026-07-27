@@ -6,6 +6,7 @@ module.exports = {
 		'jsdoc/require-jsdoc': 'off',
 		'vue/first-attribute-linebreak': 'off',
 		'n/no-missing-import': 'off',
+		'@typescript-eslint/no-explicit-any': 'off',
 	},
 	settings: {
 		'import/resolver': {
