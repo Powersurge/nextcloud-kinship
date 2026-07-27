@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { NcButton, NcAppSidebar, NcAppSidebarTab } from '@nextcloud/vue'
 
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
-import { dateDisplay } from '@/utils/date.ts'
+import { createEmptyGenealogyDate, dateDisplay } from '@/utils/date.ts'
 import Account from 'vue-material-design-icons/Account.vue'
 import TimelineClock from 'vue-material-design-icons/TimelineClock.vue'
 import CakeVariant from 'vue-material-design-icons/CakeVariant.vue'
@@ -17,8 +17,10 @@ import Calendar from 'vue-material-design-icons/Calendar.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import { LIVING_STATUSES } from '@/constants.ts'
 import TimelineItem from '@/components/TimelineItem.vue'
+import { useEventStore } from '@/stores/use-event-store.ts'
 
 const { selectedPerson } = storeToRefs(usePeopleStore())
+const { openEventForm } = useEventStore()
 
 const fullName = computed(() =>
 	selectedPerson.value
@@ -34,6 +36,17 @@ const open = computed(() => selectedPerson.value !== null)
 const status = computed(() => LIVING_STATUSES[selectedPerson.value?.livingStatus])
 const birthLabel = computed(() => dateDisplay(selectedPerson.value?.birthDate))
 const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
+
+const openCreateEventModal = (type: string) => {
+	openEventForm({
+		type,
+		title: null,
+		description: null,
+		date: createEmptyGenealogyDate(),
+		placeId: null,
+		subjectId: selectedPerson.value?.id,
+	})
+}
 </script>
 
 <template>
@@ -68,7 +81,7 @@ const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
 					<div class="flex-1">
 						<div class="flex !justify-between items-center gap-2">
 							<label class="!font-bold">Birth</label>
-							<NcButton v-if="selectedPerson?.birthDate === null" size="small">
+							<NcButton v-if="selectedPerson?.birthDate === null" size="small" @click="openCreateEventModal('birth')">
 								<template #icon>
 									<Plus />
 								</template>
@@ -88,7 +101,7 @@ const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
 					<div class="flex-1">
 						<div class="flex !justify-between items-center gap-2">
 							<label class="!font-bold">Death</label>
-							<NcButton v-if="selectedPerson?.deathDate === null" size="small">
+							<NcButton v-if="selectedPerson?.deathDate === null" size="small" @click="openCreateEventModal('death')">
 								<template #icon>
 									<Plus />
 								</template>

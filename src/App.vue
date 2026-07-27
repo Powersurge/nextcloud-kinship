@@ -2,6 +2,11 @@
 import './styles/app.css'
 import { NcContent, NcAppContent } from '@nextcloud/vue'
 import Navigation from './components/ui/Navigation.vue'
+import EventModal from '@/components/modals/EventModal.vue'
+import { storeToRefs } from 'pinia'
+import { useEventStore } from '@/stores/use-event-store.ts'
+
+const { showFormModal, eventForm } = storeToRefs(useEventStore())
 </script>
 
 <template>
@@ -13,5 +18,11 @@ import Navigation from './components/ui/Navigation.vue'
 		</NcAppContent>
 
 		<RouterView name="sidebar" />
+
+		<EventModal
+			:event="eventForm"
+			:open="showFormModal"
+			@close="showFormModal = false"
+		/>
 	</NcContent>
 </template>
