@@ -41,7 +41,7 @@ use OCP\AppFramework\Db\Entity;
 class Person extends Entity implements JsonSerializable {
 	protected string $firstName = '';
 	protected ?string $middleName = null;
-	protected string $lastName = '';
+	protected ?string $lastName = null;
 	protected ?string $preferredName = null;
 	protected ?string $suffix = null;
 	protected ?string $gender = null;

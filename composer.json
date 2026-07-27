@@ -31,8 +31,9 @@
         "rector": "rector && composer cs:fix"
     },
     "require": {
+        "php": "^8.4",
         "bamarni/composer-bin-plugin": "^1.8",
-        "php": "^8.1"
+        "liberu-genealogy/php-gedcom": "v4.2.0"
     },
     "require-dev": {
         "nextcloud/ocp": "dev-stable31",
@@ -45,7 +46,7 @@
         "optimize-autoloader": true,
         "sort-packages": true,
         "platform": {
-            "php": "8.1"
+            "php": "8.4"
         }
     }
 }

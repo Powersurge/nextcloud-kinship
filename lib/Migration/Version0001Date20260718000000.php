@@ -34,7 +34,7 @@ class Version0001Date20260718000000 extends SimpleMigrationStep {
 			]);
 			$table->addColumn('first_name', 'string', ['length' => 100, 'notnull' => true]);
 			$table->addColumn('middle_name', 'string', ['length' => 100, 'notnull' => false]);
-			$table->addColumn('last_name', 'string', ['length' => 100, 'notnull' => true]);
+			$table->addColumn('last_name', 'string', ['length' => 100, 'notnull' => false]);
 			$table->addColumn('preferred_name', 'string', ['length' => 100, 'notnull' => false]);
 			$table->addColumn('suffix', 'string', ['length' => 32, 'notnull' => false]);
 			$table->addColumn('gender', 'string', ['length' => 32, 'notnull' => false]);
