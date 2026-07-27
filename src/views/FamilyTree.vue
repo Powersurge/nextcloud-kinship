@@ -63,8 +63,7 @@ function traverse(person: any, parentId?: number) {
 			id: spouseId,
 			type: person.spouse.gender,
 			data: {
-				label:
-					`${person.spouse.firstName} ${person.spouse.lastName}`,
+				label: `${person.spouse.firstName} ${person.spouse.lastName}`,
 			},
 		})
 
@@ -75,7 +74,7 @@ function traverse(person: any, parentId?: number) {
 			sourceHandle: `${person.id}-spouse`,
 			targetHandle: `${spouseId}-spouse`,
 			animated: true,
-			type: 'straight',
+			type: 'default',
 			style: {
 				strokeDasharray: '5 5',
 			},
@@ -90,7 +89,7 @@ function traverse(person: any, parentId?: number) {
 			target: String(person.id),
 			sourceHandle: 'default',
 			targetHandle: 'default',
-			type: 'straight',
+			type: 'default',
 		})
 	}
 

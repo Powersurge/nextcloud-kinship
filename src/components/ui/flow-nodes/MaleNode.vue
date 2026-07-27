@@ -26,6 +26,7 @@ defineProps<{
 			class="size-2 rounded-full" />
 
 		<Handle
+			id="default"
 			type="source"
 			:position="Position.Bottom"
 			class="size-2 rounded-full" />
