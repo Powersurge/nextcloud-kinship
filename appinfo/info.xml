@@ -34,4 +34,7 @@ Designed as an extensible genealogy platform.</description>
         <admin>OCA\Kinship\Settings\KinshipAdminSettings</admin>
         <admin-section>OCA\Kinship\Sections\KinshipAdminSection</admin-section>
     </settings>
+    <background-jobs>
+        <job>OCA\Kinship\Cron\PrivacyThresholdJob</job>
+    </background-jobs>
 </info>

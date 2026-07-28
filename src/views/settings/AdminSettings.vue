@@ -3,17 +3,19 @@ import { ref } from 'vue'
 import { loadState } from '@nextcloud/initial-state'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
-import { NcSettingsSection, NcCheckboxRadioSwitch, NcNoteCard } from '@nextcloud/vue'
+import { NcSettingsSection, NcNoteCard, NcTextField } from '@nextcloud/vue'
 
 interface AdminSettingsState {
 	gedcomImportEnabled: boolean
 	extensionsEnabled: boolean
+	privacyThreshold: number
 }
 
 const settings = ref<AdminSettingsState>(
 	loadState<AdminSettingsState>('kinship', 'admin-settings', {
 		gedcomImportEnabled: true,
 		extensionsEnabled: false,
+		privacyThreshold: 110,
 	}),
 )
 const error = ref('')
@@ -34,51 +36,26 @@ async function save(): Promise<void> {
 		console.error('Failed to save admin settings', e)
 	}
 }
-
-async function updateSetting<K extends keyof AdminSettingsState>(
-	key: K,
-	value: AdminSettingsState[K],
-): Promise<void> {
-	settings.value[key] = value
-	await save()
-}
 </script>
 
 <template>
-	<div class="kinship-admin-settings">
-		<NcNoteCard v-if="error" type="error">
-			{{ error }}
-		</NcNoteCard>
+	<div>
+		<div class="!px-8 pt-4">
+			<NcNoteCard v-if="error" type="error">
+				{{ error }}
+			</NcNoteCard>
+		</div>
 
 		<NcSettingsSection
-			name="Import"
-			description="Control whether users can import genealogy data into Kinship.">
-			<NcCheckboxRadioSwitch
-				v-model="settings.gedcomImportEnabled"
-				type="switch"
-				@update:model-value="updateSetting('gedcomImportEnabled', $event)">
-				Allow GEDCOM import
-			</NcCheckboxRadioSwitch>
-		</NcSettingsSection>
-
-		<NcSettingsSection
-			name="Extensions"
-			description="Enable third-party Kinship extensions registered on this server.">
-			<NcCheckboxRadioSwitch
-				v-model="settings.extensionsEnabled"
-				type="switch"
-				@update:model-value="updateSetting('extensionsEnabled', $event)">
-				Enable extensions
-			</NcCheckboxRadioSwitch>
+			name="Privacy"
+			description="Controls how long people with an unknown death date are treated as living for privacy purposes.">
+			<NcTextField
+				v-model="settings.privacyThreshold"
+				label="Privacy threshold (years)"
+				type="number"
+				min="1"
+				max="200"
+				@blur="save" />
 		</NcSettingsSection>
 	</div>
 </template>
-
-<style scoped>
-.kinship-admin-settings {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	padding: 24px;
-}
-</style>

@@ -5,29 +5,27 @@ declare(strict_types=1);
 namespace OCA\Kinship\Service;
 
 use OCA\Kinship\Constants\EventType;
-use OCA\Kinship\Constants\LivingStatus;
 use OCA\Kinship\Constants\ParticipantRole;
 use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Event;
 use OCA\Kinship\Db\EventMapper;
 use OCA\Kinship\Db\Participant;
 use OCA\Kinship\Db\ParticipantMapper;
-use OCA\Kinship\Db\PersonMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserSession;
 
 /**
  * Events CRUD. Persons are attached via participants. Birth and death dates
- * live only here: nothing is copied onto the person, only living_status is
- * derived when a death event exists.
+ * live only here: nothing is copied onto the person; living_status is derived
+ * from life events via LivingStatusService.
  */
 class EventService {
 	public function __construct(
 		private EventMapper $mapper,
 		private ParticipantMapper $participantMapper,
-		private PersonMapper $personMapper,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
+		private LivingStatusService $livingStatusService,
 	) {
 	}
 
@@ -163,9 +161,9 @@ class EventService {
 
 		$this->mapper->delete($event);
 
-		if ($event->getType() === EventType::DEATH) {
+		if ($event->getType() === EventType::DEATH || $event->getType() === EventType::BIRTH) {
 			foreach (array_keys($affected) as $personId) {
-				$this->syncPersonLivingStatus($personId);
+				$this->livingStatusService->syncPersonLivingStatus($personId);
 			}
 		}
 	}
@@ -182,13 +180,13 @@ class EventService {
 	}
 
 	private function syncAffectedPersons(Event $event): void {
-		if ($event->getType() !== EventType::DEATH) {
+		if (!in_array($event->getType(), [EventType::BIRTH, EventType::DEATH], true)) {
 			return;
 		}
 
 		foreach ($this->participantMapper->findByEvent($event->getId()) as $participant) {
 			if ($participant->getRole() === ParticipantRole::SUBJECT) {
-				$this->syncPersonLivingStatus($participant->getPersonId());
+				$this->livingStatusService->syncPersonLivingStatus($participant->getPersonId());
 			}
 		}
 	}
@@ -229,28 +227,5 @@ class EventService {
 				],
 			],
 		]);
-	}
-
-	/**
-	 * A death event means the person is deceased, regardless of whether its
-	 * date is known. Dates themselves stay on the events.
-	 */
-	public function syncPersonLivingStatus(int $personId): void {
-		$person = $this->personMapper->findOrNull($personId);
-		if ($person === null) {
-			return;
-		}
-
-		if ($this->mapper->findLifeEvent($personId, EventType::DEATH) === null) {
-			return;
-		}
-
-		if ($person->getLivingStatus() === LivingStatus::DECEASED) {
-			return;
-		}
-
-		$person->setLivingStatus(LivingStatus::DECEASED);
-		$person->setUpdatedAt($this->timeFactory->getTime());
-		$this->personMapper->update($person);
 	}
 }

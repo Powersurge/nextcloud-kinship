@@ -7,8 +7,8 @@ namespace OCA\Kinship\Constants;
 /**
  * Cached living status of a person (kinship_persons.living_status).
  *
- * v0.1 stores an explicit value; the privacy-threshold driven auto-detection
- * (living / deceased / unknown when age exceeds the threshold) arrives in v0.2.
+ * Derived automatically from death events and the admin privacy threshold
+ * (see LivingStatusService).
  */
 final class LivingStatus {
 	public const LIVING = 'living';
