@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
-import Delete from 'vue-material-design-icons/Delete.vue'
 
 const props = defineProps<{
 	family: Record<string, any>
@@ -10,7 +9,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	edit: []
-	delete: []
 }>()
 
 const typeLabels: Record<string, string> = {
@@ -47,12 +45,6 @@ const typeLabel = computed(() =>
 					<Pencil :size="20" />
 				</template>
 				Edit
-			</NcActionButton>
-			<NcActionButton @click="emit('delete')">
-				<template #icon>
-					<Delete :size="20" />
-				</template>
-				Delete
 			</NcActionButton>
 		</NcActions>
 	</div>

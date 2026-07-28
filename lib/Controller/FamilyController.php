@@ -6,7 +6,6 @@ namespace OCA\Kinship\Controller;
 
 use OCA\Kinship\Service\FamilyService;
 use OCP\AppFramework\ApiController;
-use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 

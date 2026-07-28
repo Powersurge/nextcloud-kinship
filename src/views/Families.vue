@@ -4,7 +4,6 @@ import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
-import Plus from 'vue-material-design-icons/Plus.vue'
 import FamilyCard from '../components/FamilyCard.vue'
 import FamilyModal from '../components/modals/FamilyModal.vue'
 
@@ -42,27 +41,15 @@ function onSaved() {
 	loadFamilies()
 }
 
-async function deleteFamily(family: Record<string, any>) {
-	if (!window.confirm(`Delete ${family.name || 'this family'}?`)) {
-		return
-	}
-	try {
-		await axios.delete(
-			generateUrl(`/apps/kinship/api/v1/families/${family.id}`),
-		)
-		families.value = families.value.filter((f) => f.id !== family.id)
-	} catch (e) {
-		console.error('Failed to delete family', e)
-	}
-}
-
 onMounted(loadFamilies)
 </script>
 
 <template>
 	<div class="families">
 		<div class="families__header">
-
+			<h2 class="families__title">
+				Families
+			</h2>
 		</div>
 
 		<NcLoadingIcon v-if="loading" :size="32" class="families__loading" />
@@ -86,8 +73,7 @@ onMounted(loadFamilies)
 				v-for="family in families"
 				:key="family.id"
 				:family="family"
-				@edit="openEdit(family)"
-				@delete="deleteFamily(family)" />
+				@edit="openEdit(family)" />
 		</div>
 
 		<FamilyModal
@@ -122,5 +108,9 @@ onMounted(loadFamilies)
 	flex-direction: column;
 	gap: 8px;
 	margin: 16px;
+}
+
+.families__title {
+	margin: 0;
 }
 </style>
