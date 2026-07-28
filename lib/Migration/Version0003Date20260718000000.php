@@ -37,6 +37,17 @@ class Version0003Date20260718000000 extends SimpleMigrationStep {
 			$table->addColumn('person_b', 'integer', ['notnull' => true, 'unsigned' => true]);
 			$table->addColumn('type', 'string', ['length' => 32, 'notnull' => true]);
 			$table->addColumn('note', 'text', ['notnull' => false]);
+
+			$table->addColumn('date_kind', 'string', ['length' => 16, 'notnull' => false]);
+			$table->addColumn('date_precision', 'string', ['length' => 16, 'notnull' => false]);
+			$table->addColumn('date_start_year', 'integer', ['length' => 4, 'notnull' => false]);
+			$table->addColumn('date_start_month', 'integer', ['length' => 2, 'notnull' => false]);
+			$table->addColumn('date_start_day', 'integer', ['length' => 2, 'notnull' => false]);
+
+			$table->addColumn('date_end_year', 'integer', ['length' => 4, 'notnull' => false]);
+			$table->addColumn('date_end_month', 'integer', ['length' => 2, 'notnull' => false]);
+			$table->addColumn('date_end_day', 'integer', ['length' => 2, 'notnull' => false]);
+
 			$table->addColumn('owner_uid', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_by', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_at', 'bigint', ['notnull' => false, 'unsigned' => true]);

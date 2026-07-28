@@ -62,12 +62,7 @@ onMounted(loadFamilies)
 <template>
 	<div class="families">
 		<div class="families__header">
-			<NcButton variant="primary" @click="openCreate">
-				<template #icon>
-					<Plus :size="20" />
-				</template>
-				New family
-			</NcButton>
+
 		</div>
 
 		<NcLoadingIcon v-if="loading" :size="32" class="families__loading" />

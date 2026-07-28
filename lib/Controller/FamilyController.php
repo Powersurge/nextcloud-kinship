@@ -44,15 +44,6 @@ class FamilyController extends ApiController {
 		]);
 	}
 
-	public function create(
-		array $data,
-	): DataResponse {
-		return new DataResponse(
-			$this->service->create($data),
-			Http::STATUS_CREATED
-		);
-	}
-
 	public function update(
 		int $id,
 		array $data,
