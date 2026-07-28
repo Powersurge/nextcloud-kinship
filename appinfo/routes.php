@@ -111,6 +111,10 @@ return [
 		['name' => 'permission#create', 'url' => '/api/v1/permissions', 'verb' => 'POST'],
 		['name' => 'permission#delete', 'url' => '/api/v1/permissions/{id}', 'verb' => 'DELETE'],
 
+		// Admin settings
+		['name' => 'settings#index', 'url' => '/api/v1/admin/settings', 'verb' => 'GET'],
+		['name' => 'settings#update', 'url' => '/api/v1/admin/settings', 'verb' => 'PUT'],
+
 		// Tree, import, timeline
 		['name' => 'tree#show', 'url' => '/api/v1/tree/{personId}', 'verb' => 'GET'],
 		['name' => 'import#gedcom', 'url' => '/api/v1/import/gedcom', 'verb' => 'POST'],

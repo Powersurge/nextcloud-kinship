@@ -30,4 +30,8 @@ Designed as an extensible genealogy platform.</description>
 			<type>link</type>
 		</navigation>
 	</navigations>
+    <settings>
+        <admin>OCA\Kinship\Settings\KinshipAdminSettings</admin>
+        <admin-section>OCA\Kinship\Sections\KinshipAdminSection</admin-section>
+    </settings>
 </info>

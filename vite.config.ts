@@ -4,7 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default createAppConfig(
 	{
-		main: resolve(join('src', 'main.js')),
+		main: resolve(join('src', 'main.ts')),
+		admin: resolve(join('src', 'admin.ts')),
 	},
 	{
 		createEmptyCSSEntryPoints: true,
