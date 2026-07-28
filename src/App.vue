@@ -5,8 +5,14 @@ import Navigation from './components/ui/Navigation.vue'
 import EventModal from '@/components/modals/EventModal.vue'
 import { storeToRefs } from 'pinia'
 import { useEventStore } from '@/stores/use-event-store.ts'
+import { usePeopleStore } from '@/stores/use-people-store.ts'
 
 const { showFormModal, eventForm } = storeToRefs(useEventStore())
+const { refreshSelectedPerson } = usePeopleStore()
+
+async function onEventSaved() {
+	await refreshSelectedPerson()
+}
 </script>
 
 <template>
@@ -20,8 +26,8 @@ const { showFormModal, eventForm } = storeToRefs(useEventStore())
 		<RouterView name="sidebar" />
 
 		<EventModal
+			v-model:open="showFormModal"
 			:event="eventForm"
-			:open="showFormModal"
-			@close="showFormModal = false" />
+			@saved="onEventSaved" />
 	</NcContent>
 </template>

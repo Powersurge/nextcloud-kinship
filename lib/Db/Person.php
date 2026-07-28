@@ -86,12 +86,21 @@ class Person extends Entity implements JsonSerializable {
 		$this->deathDate = $deathDate;
 	}
 
+	public function getFullName(): string {
+		return implode(' ', array_filter([
+			$this->firstName,
+			$this->middleName,
+			$this->lastName
+		], fn ($value) => !empty($value)));
+	}
+
 	public function jsonSerialize(): array {
 		return [
 			'id' => $this->id,
 			'firstName' => $this->firstName,
 			'middleName' => $this->middleName,
 			'lastName' => $this->lastName,
+			'fullName' => $this->getFullName(),
 			'preferredName' => $this->preferredName,
 			'suffix' => $this->suffix,
 			'gender' => $this->gender,

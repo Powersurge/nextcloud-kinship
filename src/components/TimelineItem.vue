@@ -1,16 +1,21 @@
 <template>
-	<div class="timeline-item">
+	<div class="timeline-item" :class="{ 'timeline-item--last': isLast }">
 		<div class="timeline-marker">
-			<div class="timeline-dot" />
-			<div class="timeline-line" />
+			<div class="timeline-dot" :class="`timeline-dot--${event.type}`" />
+			<div v-if="!isLast" class="timeline-line" />
 		</div>
 
 		<div class="timeline-content">
-			<div class="timeline-date">
-				{{ when }}
+			<div class="timeline-header">
+				<span class="timeline-badge" :class="`timeline-badge--${event.type}`">
+					{{ typeLabel }}
+				</span>
+				<span v-if="when" class="timeline-date">
+					{{ when }}
+				</span>
 			</div>
 
-			<h3 class="timeline-title capitalize">
+			<h3 v-if="heading !== typeLabel" class="timeline-title">
 				{{ heading }}
 			</h3>
 
@@ -28,25 +33,37 @@ import { computed } from 'vue'
 import { dateDisplay } from '@/utils/date.ts'
 
 interface Event {
-	title?: string
+	id?: number
+	title?: string | null
 	type: string
 	date: unknown
-	description?: string
+	description?: string | null
 }
 
 const props = defineProps<{
 	event: Event
+	isLast?: boolean
 }>()
 
-const when = computed(() => dateDisplay(props.event.date))
-const heading = computed(() => props.event.title || props.event.type)
+const TYPE_LABELS: Record<string, string> = {
+	birth: 'Birth',
+	death: 'Death',
+	marriage: 'Marriage',
+	education: 'Education',
+	military: 'Military',
+	custom: 'Custom',
+}
+
+const when = computed(() => dateDisplay(props.event.date as { display?: string | null }))
+const typeLabel = computed(() => TYPE_LABELS[props.event.type] ?? props.event.type)
+const heading = computed(() => props.event.title || typeLabel.value)
 </script>
 
 <style scoped>
 .timeline-item {
 	display: flex;
 	gap: 1rem;
-	align-items: flex-start;
+	align-items: stretch;
 }
 
 .timeline-marker {
@@ -55,11 +72,12 @@ const heading = computed(() => props.event.title || props.event.type)
 	align-items: center;
 	flex-shrink: 0;
 	width: 20px;
+	padding-top: 4px;
 }
 
 .timeline-dot {
-	width: 12px;
-	height: 12px;
+	width: 14px;
+	height: 14px;
 	border-radius: 50%;
 	background: var(--color-primary);
 	border: 3px solid var(--color-main-background);
@@ -67,45 +85,115 @@ const heading = computed(() => props.event.title || props.event.type)
 	z-index: 1;
 }
 
+.timeline-dot--birth {
+	background: #2ea043;
+}
+
+.timeline-dot--death {
+	background: #8c8c8c;
+}
+
+.timeline-dot--marriage {
+	background: #e85d75;
+}
+
+.timeline-dot--education {
+	background: #0077cc;
+}
+
+.timeline-dot--military {
+	background: #7c5c2e;
+}
+
 .timeline-line {
 	flex: 1;
 	width: 2px;
 	background: var(--color-border);
-	margin-top: 4px;
-	min-height: 32px;
+	margin-top: 6px;
+	min-height: 24px;
 }
 
 .timeline-content {
 	flex: 1;
-	background: var(--color-background-dark);
+	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large);
 	padding: .85rem 1rem;
-	transition: background-color .2s ease;
+	margin-bottom: .75rem;
+	transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .timeline-content:hover {
-	background: var(--color-background-hover);
+	border-color: var(--color-primary-element);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+.timeline-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .5rem;
+	margin-bottom: .35rem;
+}
+
+.timeline-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: .72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	background: var(--color-background-dark);
+	color: var(--color-text-maxcontrast);
+}
+
+.timeline-badge--birth {
+	background: rgba(46, 160, 67, .15);
+	color: #2ea043;
+}
+
+.timeline-badge--death {
+	background: rgba(140, 140, 140, .15);
+	color: var(--color-text-maxcontrast);
+}
+
+.timeline-badge--marriage {
+	background: rgba(232, 93, 117, .15);
+	color: #e85d75;
+}
+
+.timeline-badge--education {
+	background: rgba(0, 119, 204, .12);
+	color: #0077cc;
+}
+
+.timeline-badge--military {
+	background: rgba(124, 92, 46, .15);
+	color: #7c5c2e;
 }
 
 .timeline-date {
 	font-size: .8rem;
 	color: var(--color-text-maxcontrast);
-	margin-bottom: .35rem;
 	font-weight: 500;
 }
 
 .timeline-title {
-	margin: 0;
-	font-size: 1rem;
+	margin: 0 0 .25rem;
+	font-size: .95rem;
 	font-weight: 600;
 	color: var(--color-main-text);
 }
 
 .timeline-description {
-	margin: .5rem 0 0;
-	font-size: .9rem;
+	margin: .35rem 0 0;
+	font-size: .875rem;
 	line-height: 1.5;
 	color: var(--color-text-maxcontrast);
+}
+
+.timeline-item--last .timeline-content {
+	margin-bottom: 0;
 }
 </style>

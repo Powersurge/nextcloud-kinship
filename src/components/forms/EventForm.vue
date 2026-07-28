@@ -8,7 +8,7 @@ import {
 } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import { createEmptyGenealogyDate } from '@/utils/date.ts'
+import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
 import type { GenealogyDateType } from '@/types'
 import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
 
@@ -68,7 +68,7 @@ watch(
 			form.type = event.type ?? 'birth'
 			form.title = event.title ?? ''
 			form.description = event.description ?? ''
-			form.date = event.date ?? createEmptyGenealogyDate()
+			form.date = toGenealogyDate(event.date)
 			form.placeId = event.placeId ?? null
 		}
 	},
