@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { dateDisplay } from '@/utils/date'
+import { dateDisplay } from '@/utils/date.ts'
 
 interface Event {
 	title?: string

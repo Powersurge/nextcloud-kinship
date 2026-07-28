@@ -22,7 +22,6 @@ const { showFormModal, eventForm } = storeToRefs(useEventStore())
 		<EventModal
 			:event="eventForm"
 			:open="showFormModal"
-			@close="showFormModal = false"
-		/>
+			@close="showFormModal = false" />
 	</NcContent>
 </template>

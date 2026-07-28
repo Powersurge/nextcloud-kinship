@@ -2,7 +2,6 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import {
 	NcButton,
-	NcDateTimePicker,
 	NcNoteCard,
 	NcSelect,
 	NcTextArea,
@@ -78,10 +77,6 @@ async function loadPeople() {
 }
 
 onMounted(loadPeople)
-
-function toDate(value: string | null): Date | null {
-	return value ? new Date(value) : null
-}
 
 function onSubmit() {
 	if (isEdit()) {
