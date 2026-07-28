@@ -15,12 +15,18 @@ defineProps<{
 			:position="Position.Top"
 			class="size-2 rounded-full" />
 
-		<div :id="id" class="!border !border-gray-600 w-40 h-14 bg-blue-100 flex items-center justify-center">
+		<Handle
+			:id="`${id}-spouse-left`"
+			type="target"
+			:position="Position.Left"
+			class="size-2 rounded-full" />
+
+		<div :id="id" class="!border !border-gray-600 w-40 h-14 bg-blue-100 flex items-center justify-center text-center">
 			{{ data.label }}
 		</div>
 
 		<Handle
-			:id="`${id}-spouse`"
+			:id="`${id}-spouse-right`"
 			type="source"
 			:position="Position.Right"
 			class="size-2 rounded-full" />
