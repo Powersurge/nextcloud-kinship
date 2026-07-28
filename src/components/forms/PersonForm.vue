@@ -86,33 +86,37 @@ function onSubmit() {
 
 <template>
 	<form class="grid grid-cols-2 gap-4" @submit.prevent="onSubmit">
-		<NcTextField
-			v-model="form.firstName"
-			label="First name"
-			:required="true"
-			:disabled="saving" />
+		<div class="flex gap-4 justify-between col-span-full">
+			<NcTextField
+				v-model="form.firstName"
+				label="First name"
+				:required="true"
+				:disabled="saving" />
 
-		<NcTextField
-			v-model="form.middleName"
-			label="Middle name"
-			:disabled="saving" />
+			<NcTextField
+				v-model="form.middleName"
+				label="Middle name"
+				:disabled="saving" />
 
-		<NcTextField
-			v-model="form.lastName"
-			label="Last name"
-			:required="true"
-			:disabled="saving" />
+			<NcTextField
+				v-model="form.lastName"
+				label="Last name"
+				:required="true"
+				:disabled="saving" />
+		</div>
 
-		<NcTextField
-			v-model="form.preferredName"
-			label="Preferred name"
-			:disabled="saving" />
+		<div class="flex gap-4 justify-between col-span-full">
+			<NcTextField
+				v-model="form.preferredName"
+				label="Preferred name"
+				:disabled="saving" />
 
-		<NcTextField
-			v-model="form.suffix"
-			class="col-span-full"
-			label="Suffix"
-			:disabled="saving" />
+			<NcTextField
+				v-model="form.suffix"
+				class="col-span-full"
+				label="Suffix"
+				:disabled="saving" />
+		</div>
 
 		<SelectGender
 			v-model="form.gender"
