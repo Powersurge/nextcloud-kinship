@@ -24,20 +24,16 @@ export const useOptionsStore = defineStore('optionsStore', () => {
 	const people = ref<SelectOption[]>([])
 	const places = ref<SelectOption[]>([])
 
-	const loadPeople = async (searchQuery?: string) => {
+	const loadPeople = async (queryParams: {searchQuery?: string, selected?: number[]} = {}) => {
 		const response = await axios.get(generateUrl('/apps/kinship/api/v1/people'), {
-			params: {
-				searchQuery,
-			},
+			params: queryParams,
 		})
 		people.value = (response.data.people ?? []).map(toPersonOption)
 	}
 
-	const loadPlaces = async (searchQuery?: string) => {
+	const loadPlaces = async (queryParams: {searchQuery?: string, selected?: number[]} = {}) => {
 		const response = await axios.get(generateUrl('/apps/kinship/api/v1/places'), {
-			params: {
-				searchQuery,
-			},
+			params: queryParams,
 		})
 		places.value = (response.data.places ?? []).map(toPlaceOption)
 	}

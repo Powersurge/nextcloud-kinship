@@ -10,14 +10,19 @@ const model = defineModel<number | null>()
 const { places } = storeToRefs(useOptionsStore())
 
 onMounted(async () => {
-	await useOptionsStore().loadPlaces()
+	await useOptionsStore().loadPlaces({
+		selected: model.value ? [model.value] : [],
+	})
 })
 
-const onSearch = async (search: string, loading: (value: boolean) => void) => {
+const onSearch = async (searchQuery: string, loading: (value: boolean) => void) => {
 	loading(true)
-	await useOptionsStore().loadPlaces(search)
+	await useOptionsStore().loadPlaces({
+		searchQuery,
+	})
 	loading(false)
 }
+
 const reduceOption = (option: SelectOption) => option.value
 </script>
 

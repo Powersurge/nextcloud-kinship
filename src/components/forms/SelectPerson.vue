@@ -10,12 +10,16 @@ const model = defineModel<number | null>()
 const { people } = storeToRefs(useOptionsStore())
 
 onMounted(async () => {
-	await useOptionsStore().loadPeople()
+	await useOptionsStore().loadPeople({
+		selected: model.value ? [model.value] : [],
+	})
 })
 
-const onSearch = async (search: string, loading: (value: boolean) => void) => {
+const onSearch = async (searchQuery: string, loading: (value: boolean) => void) => {
 	loading(true)
-	await useOptionsStore().loadPeople(search)
+	await useOptionsStore().loadPeople({
+		searchQuery,
+	})
 	loading(false)
 }
 

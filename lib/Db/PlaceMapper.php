@@ -21,11 +21,22 @@ class PlaceMapper extends QBMapper {
 	/**
 	 * @return Place[]
 	 */
-	public function findAll(): array {
+	public function findAll(array $queryParams = []): array {
 		$qb = $this->db->getQueryBuilder();
+
 		$qb->select('*')
-			->from($this->getTableName())
-			->orderBy('name', 'ASC');
+			->from($this->getTableName());
+
+		if (!empty($queryParams['selected'])) {
+			$qb->where(
+				$qb->expr()->in(
+					'id',
+					$qb->createNamedParameter($queryParams['selected'], IQueryBuilder::PARAM_INT_ARRAY)
+				)
+			);
+		}
+
+		$qb->orderBy('name', 'ASC');
 
 		return $this->findEntities($qb);
 	}

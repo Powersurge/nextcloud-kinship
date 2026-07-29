@@ -62,6 +62,7 @@ watch(
 			form.description = event.description ?? ''
 			form.date = toGenealogyDate(event.date)
 			form.placeId = event.placeId ?? null
+			form.subjectId = event.subjectId ?? null
 		}
 	},
 	{ immediate: true, deep: true },

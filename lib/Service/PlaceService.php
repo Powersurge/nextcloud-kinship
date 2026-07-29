@@ -24,8 +24,8 @@ class PlaceService {
 	/**
 	 * @return Place[]
 	 */
-	public function getAll(): array {
-		return $this->mapper->findAll();
+	public function getAll(array $queryParams = []): array {
+		return $this->mapper->findAll($queryParams);
 	}
 
 	public function get(int $id): Place {

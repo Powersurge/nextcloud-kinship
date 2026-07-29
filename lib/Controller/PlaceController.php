@@ -19,8 +19,16 @@ class PlaceController extends ApiController {
 		parent::__construct($appName, $request);
 	}
 
-	public function index(): DataResponse {
-		return new DataResponse(['places' => $this->service->getAll()]);
+	public function index(
+		?string $searchQuery = null,
+		?array $selected = [],
+	): DataResponse {
+		return new DataResponse([
+			'places' => $this->service->getAll([
+				'searchQuery' => $searchQuery,
+				'selected' => $selected,
+			])
+		]);
 	}
 
 	public function show(int $id): DataResponse {

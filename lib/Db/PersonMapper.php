@@ -24,6 +24,15 @@ class PersonMapper extends QBMapper {
 		$qb->select('*')
 			->from($this->getTableName());
 
+		if (!empty($queryParams['selected'])) {
+			$qb->where(
+				$qb->expr()->in(
+					'id',
+					$qb->createNamedParameter($queryParams['selected'], IQueryBuilder::PARAM_INT_ARRAY)
+				)
+			);
+		}
+
 		if (!empty($queryParams['searchQuery'])) {
 			$fulltextQuery = $this->buildFulltextQuery($queryParams['searchQuery']);
 
@@ -41,6 +50,8 @@ class PersonMapper extends QBMapper {
 				);
 			}
 		}
+
+		$qb->orderBy('first_name', 'ASC');
 
 		return $this->findEntities($qb);
 	}
