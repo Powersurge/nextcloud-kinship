@@ -18,6 +18,8 @@ class Application extends App implements IBootstrap {
 	}
 
 	public function register(IRegistrationContext $context): void {
+		require_once __DIR__ . '/../../vendor/autoload.php';
+
 		// Controllers, services, mappers and importers are concrete classes
 		// with type-hinted constructors, so Nextcloud's DI container autowires
 		// them; no manual registration is needed. Register a service here only

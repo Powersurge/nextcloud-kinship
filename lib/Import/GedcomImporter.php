@@ -25,8 +25,6 @@ class GedcomImporter {
 	 * @return array{imported: int, relationships: int}
 	 */
 	public function import(string $content): array {
-		$this->ensureGedcomLibraryLoaded();
-
 		if (trim($content) === '') {
 			throw new \InvalidArgumentException('GEDCOM content is empty');
 		}
@@ -115,16 +113,5 @@ class GedcomImporter {
 		}
 
 		return $count;
-	}
-
-	private function ensureGedcomLibraryLoaded(): void {
-		if (class_exists(Parser::class, false)) {
-			return;
-		}
-
-		$autoload = __DIR__ . '/../../vendor/autoload.php';
-		if (is_file($autoload)) {
-			require_once $autoload;
-		}
 	}
 }
