@@ -53,6 +53,11 @@ class Version0001Date20260718000000 extends SimpleMigrationStep {
 			$table->setPrimaryKey(['id']);
 			$table->addIndex(['last_name'], 'kinship_person_last_name_idx');
 			$table->addIndex(['owner_uid'], 'kinship_person_owner_idx');
+			$table->addIndex(
+				['first_name', 'middle_name', 'last_name', 'suffix', 'preferred_name'],
+				'name_idx',
+				['fulltext']
+			);
 		}
 
 		return $schema;

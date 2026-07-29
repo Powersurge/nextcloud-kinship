@@ -18,13 +18,44 @@ class PersonMapper extends QBMapper {
 	 *
 	 * @return Person[]
 	 */
-	public function findAll(): array {
+	public function findAll(array $queryParams = []): array {
 		$qb = $this->db->getQueryBuilder();
 
 		$qb->select('*')
 			->from($this->getTableName());
 
+		if (!empty($queryParams['searchQuery'])) {
+			$fulltextQuery = $this->buildFulltextQuery($queryParams['searchQuery']);
+
+			if ($fulltextQuery !== '') {
+				$match = $qb->createFunction(
+					'MATCH(`first_name`,`middle_name`,`last_name`,`suffix`,`preferred_name`) AGAINST('
+					. $qb->createNamedParameter($fulltextQuery, IQueryBuilder::PARAM_STR)
+					. ' IN BOOLEAN MODE)'
+				);
+				$qb->where(
+					$qb->expr()->gt(
+						$match,
+						$qb->createNamedParameter(0, IQueryBuilder::PARAM_INT)
+					)
+				);
+			}
+		}
+
 		return $this->findEntities($qb);
+	}
+
+	private function buildFulltextQuery(string $searchQuery): string {
+		$terms = preg_split('/\s+/', trim($searchQuery), -1, PREG_SPLIT_NO_EMPTY);
+		$parts = [];
+		foreach ($terms as $term) {
+			$term = trim(preg_replace('/[+\-><()~*"@]+/', ' ', $term) ?? '');
+			if ($term !== '') {
+				$parts[] = '+' . $term . '*';
+			}
+		}
+
+		return implode(' ', $parts);
 	}
 
 	/**

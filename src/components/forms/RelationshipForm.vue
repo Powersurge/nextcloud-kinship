@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, watch } from 'vue'
 import {
 	NcButton,
 	NcNoteCard,
 	NcSelect,
 	NcTextArea,
 } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import { createEmptyGenealogyDate, toDateValue, toGenealogyDate } from '@/utils/date.ts'
 import { relationshipTypeOptions } from '@/utils/relationships.ts'
 import type { GenealogyDateType } from '@/types'
 import GenealogyDatePicker from '@/components/ui/GenealogyDatePicker.vue'
+import SelectPerson from '@/components/forms/SelectPerson.vue'
 
 interface RelationshipFormState {
 	personA: number | null
@@ -32,8 +31,6 @@ const emit = defineEmits<{
 	submit: [value: Record<string, unknown>]
 	cancel: []
 }>()
-
-const people = ref<Array<{ value: number, label: string }>>([])
 
 const isEdit = () => Boolean(props.relationship?.id)
 
@@ -64,20 +61,6 @@ watch(
 	{ immediate: true, deep: true },
 )
 
-async function loadPeople() {
-	try {
-		const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
-		people.value = (data.people ?? []).map((p: Record<string, any>) => ({
-			value: p.id,
-			label: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
-		}))
-	} catch (e) {
-		console.error('Failed to load people', e)
-	}
-}
-
-onMounted(loadPeople)
-
 function onSubmit() {
 	if (isEdit()) {
 		// The pair and type are fixed once stored; only date/note are editable.
@@ -102,13 +85,10 @@ function onSubmit() {
 			(siblings, grandparents, cousins, in-laws, ...) are computed automatically.
 		</NcNoteCard>
 
-		<NcSelect
+		<SelectPerson
 			v-model="form.personA"
 			input-label="Person A"
 			placeholder="Select person"
-			:options="people"
-			:reduce="(option) => option.value"
-			label="label"
 			:disabled="saving || isEdit()" />
 
 		<NcSelect
@@ -120,13 +100,10 @@ function onSubmit() {
 			:clearable="false"
 			:disabled="saving || isEdit()" />
 
-		<NcSelect
+		<SelectPerson
 			v-model="form.personB"
 			input-label="Person B"
 			placeholder="Select person"
-			:options="people"
-			:reduce="(option) => option.value"
-			label="label"
 			:disabled="saving || isEdit()" />
 
 		<div class="rel-form__field">

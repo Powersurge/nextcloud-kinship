@@ -26,9 +26,16 @@ class PersonController extends ApiController {
 		);
 	}
 
-	public function index(): DataResponse {
+	public function index(?string $searchQuery = null): DataResponse {
+		$people = $this->service->getAll([
+			'searchQuery' => $searchQuery
+		]);
+
 		return new DataResponse([
-			'people' => $this->service->getAll()
+			'people' => $people,
+			'query' => [
+				'searchQuery' => $searchQuery
+			]
 		]);
 	}
 

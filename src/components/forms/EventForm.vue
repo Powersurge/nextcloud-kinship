@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
-import {
-	NcButton,
-	NcSelect,
-	NcTextArea,
-	NcTextField,
-} from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { reactive, watch } from 'vue'
+import { NcButton, NcSelect, NcTextArea, NcTextField } from '@nextcloud/vue'
 import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
 import type { GenealogyDateType } from '@/types'
 import GenealogyDatePicker from '../ui/GenealogyDatePicker.vue'
+import SelectPerson from '@/components/forms/SelectPerson.vue'
+import SelectPlace from '@/components/forms/SelectPlace.vue'
 
 interface EventFormState {
 	type: string
@@ -42,9 +37,6 @@ const typeOptions = [
 	{ value: 'custom', label: 'Custom' },
 ]
 
-const people = ref<Array<{ value: number, label: string }>>([])
-const places = ref<Array<{ value: number, label: string }>>([])
-
 const isEdit = () => Boolean(props.event?.id)
 
 const form = reactive<EventFormState>(emptyForm())
@@ -74,27 +66,6 @@ watch(
 	},
 	{ immediate: true, deep: true },
 )
-
-async function loadOptions() {
-	try {
-		const [peopleRes, placesRes] = await Promise.all([
-			axios.get(generateUrl('/apps/kinship/api/v1/people')),
-			axios.get(generateUrl('/apps/kinship/api/v1/places')),
-		])
-		people.value = (peopleRes.data.people ?? []).map((p: Record<string, any>) => ({
-			value: p.id,
-			label: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
-		}))
-		places.value = (placesRes.data.places ?? []).map((pl: Record<string, any>) => ({
-			value: pl.id,
-			label: pl.fullName || pl.name || `#${pl.id}`,
-		}))
-	} catch (e) {
-		console.error('Failed to load event options', e)
-	}
-}
-
-onMounted(loadOptions)
 
 function onSubmit() {
 	const payload: Record<string, unknown> = {
@@ -136,23 +107,17 @@ function onSubmit() {
 				label="Date" />
 		</div>
 
-		<NcSelect
+		<SelectPerson
 			v-if="!isEdit()"
 			v-model="form.subjectId"
 			input-label="Subject person"
 			placeholder="Who is this event about?"
-			:options="people"
-			:reduce="(option) => option.value"
-			label="label"
 			:disabled="saving" />
 
-		<NcSelect
+		<SelectPlace
 			v-model="form.placeId"
 			input-label="Place"
 			placeholder="Select place"
-			:options="places"
-			:reduce="(option) => option.value"
-			label="label"
 			:disabled="saving" />
 
 		<NcTextArea

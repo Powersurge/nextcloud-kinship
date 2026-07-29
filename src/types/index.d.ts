@@ -20,7 +20,14 @@ export type GenealogyDateValue = {
 	display: string | null,
 }
 
+export type SelectOption = {
+	value: number,
+	label: string,
+}
+
 export interface Person {
+	id: number;
+	fullName?: string;
 	firstName: string;
 	middleName: string;
 	lastName: string;
@@ -29,6 +36,12 @@ export interface Person {
 	birthDate: GenealogyDateValue | null;
 	/** Read from the person's death event; null when they have none. */
 	deathDate: GenealogyDateValue | null;
+}
+
+export interface Place {
+	id: number;
+	name: string;
+	fullName: string | null;
 }
 
 export type GenealogyDateType = {

@@ -29,8 +29,8 @@ class PersonService {
 	/**
 	 * @return Person[]
 	 */
-	public function getAll(): array {
-		return $this->hydrateLifeDates($this->mapper->findAll());
+	public function getAll(array $queryParams = []): array {
+		return $this->hydrateLifeDates($this->mapper->findAll($queryParams));
 	}
 
 	public function get(int $id): Person {
