@@ -23,7 +23,7 @@ const status = computed(() =>
 <template>
 	<NcAppSidebar
 		:open="open"
-		:name="selectedPerson?.fullName"
+		:name="selectedPerson?.fullName || 'Selected Person Name'"
 		:subname="status"
 		:background="selectedPerson?.avatar || 'https://placehold.co/600x300/e5e7eb/6b7280?text=Person'"
 		no-toggle

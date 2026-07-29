@@ -9,7 +9,7 @@ import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 </script>
 
 <template>
-	<NcAppNavigation>
+	<NcAppNavigation aria-label="Navigation">
 		<template #list>
 			<NcAppNavigationItem name="Dashboard" to="/">
 				<template #icon>
