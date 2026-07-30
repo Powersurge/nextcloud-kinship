@@ -1,25 +1,22 @@
 <script setup lang="ts">
 import { NcSelect } from '@nextcloud/vue'
-import { useOptionsStore } from '@/stores/use-options-store.ts'
-import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { fetchPlacesOptions } from '@/stores/use-options-store.ts'
+import { onMounted, ref } from 'vue'
 import type { SelectOption } from '@/types'
 
 const model = defineModel<number | null>()
 
-const { places } = storeToRefs(useOptionsStore())
+const options = ref<SelectOption[]>([])
 
 onMounted(async () => {
-	await useOptionsStore().loadPlaces({
+	options.value = await fetchPlacesOptions({
 		selected: model.value ? [model.value] : [],
 	})
 })
 
 const onSearch = async (searchQuery: string, loading: (value: boolean) => void) => {
 	loading(true)
-	await useOptionsStore().loadPlaces({
-		searchQuery,
-	})
+	options.value = await fetchPlacesOptions({ searchQuery })
 	loading(false)
 }
 
@@ -32,7 +29,7 @@ const reduceOption = (option: SelectOption) => option.value
 		input-label="Place"
 		label="label"
 		placeholder="Select place"
-		:options="places"
+		:options="options"
 		:reduce="reduceOption"
 		v-bind="$attrs"
 		@search="onSearch" />

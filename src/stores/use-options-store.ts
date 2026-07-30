@@ -1,5 +1,3 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import type { Person, Place, SelectOption } from '@/types'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
@@ -20,28 +18,20 @@ function toPlaceOption(place: Place): SelectOption {
 	}
 }
 
-export const useOptionsStore = defineStore('optionsStore', () => {
-	const people = ref<SelectOption[]>([])
-	const places = ref<SelectOption[]>([])
+export async function fetchPeopleOptions(
+	queryParams: { searchQuery?: string, selected?: number[] } = {},
+): Promise<SelectOption[]> {
+	const response = await axios.get(generateUrl('/apps/kinship/api/v1/people'), {
+		params: queryParams,
+	})
+	return (response.data.people ?? []).map(toPersonOption)
+}
 
-	const loadPeople = async (queryParams: {searchQuery?: string, selected?: number[]} = {}) => {
-		const response = await axios.get(generateUrl('/apps/kinship/api/v1/people'), {
-			params: queryParams,
-		})
-		people.value = (response.data.people ?? []).map(toPersonOption)
-	}
-
-	const loadPlaces = async (queryParams: {searchQuery?: string, selected?: number[]} = {}) => {
-		const response = await axios.get(generateUrl('/apps/kinship/api/v1/places'), {
-			params: queryParams,
-		})
-		places.value = (response.data.places ?? []).map(toPlaceOption)
-	}
-
-	return {
-		people,
-		loadPeople,
-		places,
-		loadPlaces,
-	}
-})
+export async function fetchPlacesOptions(
+	queryParams: { searchQuery?: string, selected?: number[] } = {},
+): Promise<SelectOption[]> {
+	const response = await axios.get(generateUrl('/apps/kinship/api/v1/places'), {
+		params: queryParams,
+	})
+	return (response.data.places ?? []).map(toPlaceOption)
+}
