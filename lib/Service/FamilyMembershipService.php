@@ -16,9 +16,9 @@ use OCP\AppFramework\Utility\ITimeFactory;
 /**
  * Derives family membership from the relationship graph.
  *
- * Relationships are the source of truth. A partnership (spouse / former_spouse
- * / partner) forms a family unit; its children are everyone parented by either
- * partner. A parent with children but no partner forms a single_parent family.
+ * Relationships are the source of truth. A partnership forms a family unit;
+ * its children are those linked as children of both partners. A parent with
+ * children but no partner forms a single_parent family.
  *
  * On every change the whole set is rebuilt and reconciled against existing
  * families by their parent signature, so user-entered family-level data (name,
@@ -89,7 +89,11 @@ class FamilyMembershipService {
 			$partneredParents[$p1] = true;
 			$partneredParents[$p2] = true;
 
-			$children = ($childrenOfParent[$p1] ?? []) + ($childrenOfParent[$p2] ?? []);
+			// Child belongs to a partnership family only when both partners are parents.
+			$children = array_intersect_key(
+				$childrenOfParent[$p1] ?? [],
+				$childrenOfParent[$p2] ?? [],
+			);
 			$childIds = array_map('intval', array_keys($children));
 			sort($childIds);
 

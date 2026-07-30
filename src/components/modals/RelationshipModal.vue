@@ -10,6 +10,10 @@ const props = defineProps<{
 	open: boolean
 	/** Relationship being edited; null/undefined means create mode. */
 	relationship?: Record<string, any> | null
+	/** Pre-fill Person A when creating from a person context. */
+	defaultPersonA?: number | null
+	/** Pre-fill relationship type when creating from a person context. */
+	defaultType?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -70,6 +74,8 @@ async function onSubmit(data: Record<string, unknown>) {
 		<div class="rel-dialog-content">
 			<RelationshipForm
 				:relationship="relationship"
+				:default-person-a="defaultPersonA"
+				:default-type="defaultType"
 				:saving="saving"
 				@submit="onSubmit"
 				@cancel="close" />

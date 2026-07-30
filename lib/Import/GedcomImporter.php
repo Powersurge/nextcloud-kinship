@@ -79,8 +79,8 @@ class GedcomImporter {
 
 			if ($husbandId !== null && $wifeId !== null) {
 				$type = !empty($family['divorced'])
-					? RelationshipType::FORMER_SPOUSE
-					: RelationshipType::SPOUSE;
+					? RelationshipType::DIVORCED
+					: RelationshipType::MARRIED;
 
 				if ($this->relationshipImporter->create($husbandId, $wifeId, $type, $marriageDate) !== null) {
 					$count++;

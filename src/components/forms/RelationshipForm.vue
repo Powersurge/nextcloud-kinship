@@ -1,21 +1,30 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import {
 	NcButton,
 	NcNoteCard,
-	NcSelect,
 	NcTextArea,
 } from '@nextcloud/vue'
+import { generateUrl } from '@nextcloud/router'
+import axios from '@nextcloud/axios'
 import { createEmptyGenealogyDate, toDateValue, toGenealogyDate } from '@/utils/date.ts'
-import { relationshipTypeOptions } from '@/utils/relationships.ts'
+import {
+	isPartnershipType,
+	isParenthoodInputType,
+	isParenthoodStoredType,
+	parentChildIdsFromInput,
+} from '@/utils/relationships.ts'
 import type { GenealogyDateType } from '@/types'
 import GenealogyDatePicker from '@/components/ui/GenealogyDatePicker.vue'
 import SelectPerson from '@/components/forms/SelectPerson.vue'
+import SelectRelationshipType from '@/components/forms/SelectRelationshipType.vue'
+import SelectCoParent from '@/components/forms/SelectCoParent.vue'
 
 interface RelationshipFormState {
 	personA: number | null
 	personB: number | null
 	type: string
+	coParentId: number | null
 	date: GenealogyDateType
 	note: string
 }
@@ -25,6 +34,10 @@ const props = defineProps<{
 	relationship?: Record<string, any> | null
 	/** Disables inputs while a save request is in flight. */
 	saving?: boolean
+	/** Pre-fill Person A when creating from a person context. */
+	defaultPersonA?: number | null
+	/** Pre-fill relationship type when creating from a person context. */
+	defaultType?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -36,80 +49,181 @@ const isEdit = () => Boolean(props.relationship?.id)
 
 const form = reactive<RelationshipFormState>(emptyForm())
 
+const isPartnership = computed(() => isPartnershipType(form.type))
+
+const partnershipOnly = computed(() =>
+	isEdit() && isPartnershipType(props.relationship?.type ?? ''),
+)
+
+const parentPersonId = computed(() => {
+	if (isEdit() && isParenthoodStoredType(props.relationship?.type ?? '')) {
+		return props.relationship?.personA ?? null
+	}
+
+	return parentChildIdsFromInput(form.personA, form.personB, form.type).parentId
+})
+
+async function loadCoParentForEdit(relationship: Record<string, any>) {
+	if (!isParenthoodStoredType(relationship.type ?? '')) {
+		return
+	}
+
+	const parentId = relationship.personA as number
+	const childId = relationship.personB as number
+
+	try {
+		const [parentRes, childRes] = await Promise.all([
+			axios.get(generateUrl(`/apps/kinship/api/v1/people/${parentId}/relationships`)),
+			axios.get(generateUrl(`/apps/kinship/api/v1/people/${childId}/relationships`)),
+		])
+
+		const partnerIds = new Set<number>()
+		for (const rel of parentRes.data.relationships ?? []) {
+			if (!isPartnershipType(rel.type)) {
+				continue
+			}
+			partnerIds.add(rel.personA === parentId ? rel.personB : rel.personA)
+		}
+
+		const coParent = (childRes.data.relationships ?? []).find((rel: Record<string, any>) =>
+			isParenthoodStoredType(rel.type)
+			&& rel.personB === childId
+			&& rel.personA !== parentId
+			&& partnerIds.has(rel.personA),
+		)
+
+		form.coParentId = coParent?.personA ?? null
+	} catch (e) {
+		console.error('Failed to load co-parent for edit', e)
+		form.coParentId = null
+	}
+}
+
 function emptyForm(): RelationshipFormState {
 	return {
 		personA: null,
 		personB: null,
 		type: 'parent',
+		coParentId: null,
 		date: createEmptyGenealogyDate(),
 		note: '',
 	}
 }
 
 watch(
-	() => props.relationship,
-	(relationship) => {
+	() => [props.relationship, props.defaultPersonA, props.defaultType] as const,
+	([relationship, defaultPersonA, defaultType]) => {
 		Object.assign(form, emptyForm())
 		if (relationship) {
 			form.personA = relationship.personA ?? null
 			form.personB = relationship.personB ?? null
-			form.type = relationship.type ?? 'parent'
+			form.type = relationship.type || 'parent'
 			form.date = toGenealogyDate(relationship.date)
 			form.note = relationship.note ?? ''
+			loadCoParentForEdit(relationship)
+			return
+		}
+
+		if (defaultPersonA != null) {
+			form.personA = defaultPersonA
+		}
+		if (defaultType) {
+			form.type = defaultType
 		}
 	},
 	{ immediate: true, deep: true },
 )
 
+watch(
+	() => [form.type, form.personA, form.personB] as const,
+	() => {
+		if (!isEdit()) {
+			form.coParentId = null
+		}
+	},
+)
+
 function onSubmit() {
 	if (isEdit()) {
-		// The pair and type are fixed once stored; only date/note are editable.
-		emit('submit', { date: toDateValue(form.date), note: form.note || null })
+		const payload: Record<string, unknown> = {
+			date: toDateValue(form.date),
+			note: form.note || null,
+		}
+
+		if (isPartnershipType(props.relationship?.type ?? '')) {
+			payload.type = form.type
+		}
+
+		if (isParenthoodStoredType(props.relationship?.type ?? '')) {
+			payload.coParentId = form.coParentId
+		}
+
+		emit('submit', payload)
 		return
 	}
 
-	emit('submit', {
+	const payload: Record<string, unknown> = {
 		personA: form.personA,
 		personB: form.personB,
 		type: form.type,
 		date: toDateValue(form.date),
 		note: form.note || null,
-	})
+	}
+
+	if (isParenthoodInputType(form.type)) {
+		payload.coParentId = form.coParentId
+	}
+
+	emit('submit', payload)
 }
 </script>
 
 <template>
 	<form class="rel-form" @submit.prevent="onSubmit">
 		<NcNoteCard type="info">
-			Reads as "Person A is the {{ '{type}' }} of Person B". Other relationships
-			(siblings, grandparents, cousins, in-laws, ...) are computed automatically.
+			<template v-if="isPartnership">
+				Partnership links are symmetric: Person A and Person B are partners
+				with the selected status.
+			</template>
+			<template v-else>
+				Reads as "Person A is the {{ '{type}' }} of Person B". Other relationships
+				(siblings, grandparents, cousins, in-laws, ...) are computed automatically.
+			</template>
 		</NcNoteCard>
 
-		<SelectPerson
-			v-model="form.personA"
-			input-label="Person A"
-			placeholder="Select person"
-			:disabled="saving || isEdit()" />
+		<div class="flex gap-2">
+			<SelectPerson
+				v-model="form.personA"
+				class="w-full"
+				input-label="Person A"
+				placeholder="Select person"
+				:disabled="saving || isEdit()" />
 
-		<NcSelect
+			<SelectPerson
+				v-model="form.personB"
+				class="w-full"
+				input-label="Person B"
+				placeholder="Select person"
+				:disabled="saving || isEdit()" />
+		</div>
+
+		<SelectRelationshipType
 			v-model="form.type"
-			input-label="Relationship (A is …)"
-			:options="relationshipTypeOptions"
-			:reduce="(option) => option.value"
-			label="label"
-			:clearable="false"
-			:disabled="saving || isEdit()" />
+			class="col-span-2 min-w-auto"
+			:partnership-only="partnershipOnly"
+			:disabled="saving || (isEdit() && !isPartnershipType(props.relationship?.type ?? ''))" />
 
-		<SelectPerson
-			v-model="form.personB"
-			input-label="Person B"
-			placeholder="Select person"
-			:disabled="saving || isEdit()" />
+		<SelectCoParent
+			v-if="isParenthoodInputType(form.type)"
+			v-model="form.coParentId"
+			class="w-full"
+			:parent-id="parentPersonId"
+			:disabled="saving" />
 
 		<div class="rel-form__field">
 			<GenealogyDatePicker
 				v-model="form.date"
-				label="Date (optional)" />
+				:label="isPartnership ? 'Partnership date (optional)' : 'Date (optional)'" />
 		</div>
 
 		<NcTextArea
@@ -146,11 +260,6 @@ function onSubmit() {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-}
-
-.rel-form__label {
-	font-size: 0.9em;
-	color: var(--color-text-maxcontrast);
 }
 
 .rel-form__actions {

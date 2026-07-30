@@ -4,7 +4,10 @@ import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import ArrowRight from 'vue-material-design-icons/ArrowRight.vue'
-import { relationshipTypeLabel } from '@/utils/relationships.ts'
+import {
+	isPartnershipType,
+	relationshipTypeLabel,
+} from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
 
 const props = defineProps<{
@@ -20,12 +23,19 @@ const emit = defineEmits<{
 
 const typeLabel = computed(() => relationshipTypeLabel(props.relationship.type))
 const when = computed(() => dateDisplay(props.relationship.date))
+const isPartnership = computed(() => isPartnershipType(props.relationship.type))
 </script>
 
 <template>
 	<div class="rel-card">
 		<div class="rel-card__body">
-			<div class="rel-card__line">
+			<div v-if="isPartnership" class="rel-card__line">
+				<strong>{{ aName }}</strong>
+				<span class="rel-card__type">and</span>
+				<strong>{{ bName }}</strong>
+				<span class="rel-card__status">{{ typeLabel }}</span>
+			</div>
+			<div v-else class="rel-card__line">
 				<strong>{{ aName }}</strong>
 				<span class="rel-card__type">{{ typeLabel }} of</span>
 				<ArrowRight :size="16" />
@@ -79,6 +89,14 @@ const when = computed(() => dateDisplay(props.relationship.date))
 .rel-card__type {
 	color: var(--color-text-maxcontrast);
 	font-size: 0.9em;
+}
+
+.rel-card__status {
+	font-size: 0.85em;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: var(--border-radius-pill);
+	background: var(--color-primary-element-light);
 }
 
 .rel-card__meta {

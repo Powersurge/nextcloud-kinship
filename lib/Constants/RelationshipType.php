@@ -16,7 +16,7 @@ namespace OCA\Kinship\Constants;
  *
  * Directed (parent-side) canonical rows mean: person_a is the <type> of
  * person_b (person_a is the parent/guardian, person_b is the child/ward).
- * Symmetric rows are stored with the lower person id as person_a.
+ * Symmetric partnership rows are stored with the lower person id as person_a.
  */
 final class RelationshipType {
 	// Canonical parent-side types (person_a = senior, person_b = junior).
@@ -26,10 +26,20 @@ final class RelationshipType {
 	public const FOSTER_PARENT = 'foster_parent';
 	public const GUARDIAN = 'guardian';
 
-	// Canonical symmetric types (order-independent).
-	public const SPOUSE = 'spouse';
-	public const FORMER_SPOUSE = 'former_spouse';
+	// Canonical partnership statuses (order-independent).
+	public const MARRIED = 'married';
+	public const SEPARATED = 'separated';
+	public const ENGAGED = 'engaged';
+	public const DOMESTIC_PARTNERSHIP = 'domestic_partnership';
 	public const PARTNER = 'partner';
+	public const DIVORCED = 'divorced';
+	public const ANNULLED = 'annulled';
+	public const WIDOWED = 'widowed';
+
+	/** @deprecated Use MARRIED; accepted on input for backward compatibility. */
+	public const SPOUSE = 'spouse';
+	/** @deprecated Use DIVORCED; accepted on input for backward compatibility. */
+	public const FORMER_SPOUSE = 'former_spouse';
 
 	// Inverse (child-side) input labels, normalized to their parent-side type.
 	public const CHILD = 'child';
@@ -38,6 +48,34 @@ final class RelationshipType {
 	public const FOSTER_CHILD = 'foster_child';
 	public const WARD = 'ward';
 
+	/** Active partnership statuses shown in the tree couple row. */
+	public const ACTIVE_PARTNERSHIP = [
+		self::MARRIED,
+		self::SEPARATED,
+		self::ENGAGED,
+		self::DOMESTIC_PARTNERSHIP,
+		self::PARTNER,
+	];
+
+	/** Ended partnership statuses (sidebar / history only). */
+	public const ENDED_PARTNERSHIP = [
+		self::DIVORCED,
+		self::ANNULLED,
+		self::WIDOWED,
+	];
+
+	/** All symmetric partnership statuses stored in the database. */
+	public const PARTNERSHIP = [
+		self::MARRIED,
+		self::SEPARATED,
+		self::ENGAGED,
+		self::DOMESTIC_PARTNERSHIP,
+		self::PARTNER,
+		self::DIVORCED,
+		self::ANNULLED,
+		self::WIDOWED,
+	];
+
 	/** Canonical types actually stored in the database. */
 	public const CANONICAL = [
 		self::PARENT,
@@ -45,17 +83,11 @@ final class RelationshipType {
 		self::ADOPTIVE_PARENT,
 		self::FOSTER_PARENT,
 		self::GUARDIAN,
-		self::SPOUSE,
-		self::FORMER_SPOUSE,
-		self::PARTNER,
+		...self::PARTNERSHIP,
 	];
 
 	/** Symmetric canonical types (person_a / person_b interchangeable). */
-	public const SYMMETRIC = [
-		self::SPOUSE,
-		self::FORMER_SPOUSE,
-		self::PARTNER,
-	];
+	public const SYMMETRIC = self::PARTNERSHIP;
 
 	/**
 	 * Parenthood types that form household families (person_a is the parent,
@@ -78,16 +110,22 @@ final class RelationshipType {
 		self::WARD => self::GUARDIAN,
 	];
 
-	/** Every accepted input label (canonical + inverse). */
+	/** Legacy input labels => canonical partnership status. */
+	public const LEGACY_PARTNERSHIP = [
+		self::SPOUSE => self::MARRIED,
+		self::FORMER_SPOUSE => self::DIVORCED,
+	];
+
+	/** Every accepted input label (canonical + inverse + legacy). */
 	public const ACCEPTED_INPUT = [
 		self::PARENT,
 		self::BIOLOGICAL_PARENT,
 		self::ADOPTIVE_PARENT,
 		self::FOSTER_PARENT,
 		self::GUARDIAN,
+		...self::PARTNERSHIP,
 		self::SPOUSE,
 		self::FORMER_SPOUSE,
-		self::PARTNER,
 		self::CHILD,
 		self::BIOLOGICAL_CHILD,
 		self::ADOPTED_CHILD,
@@ -101,6 +139,18 @@ final class RelationshipType {
 
 	public static function isSymmetric(string $type): bool {
 		return in_array($type, self::SYMMETRIC, true);
+	}
+
+	public static function isPartnership(string $type): bool {
+		return in_array($type, self::PARTNERSHIP, true);
+	}
+
+	public static function isActivePartnership(string $type): bool {
+		return in_array($type, self::ACTIVE_PARTNERSHIP, true);
+	}
+
+	public static function isEndedPartnership(string $type): bool {
+		return in_array($type, self::ENDED_PARTNERSHIP, true);
 	}
 
 	public static function isParenthood(string $type): bool {
@@ -118,16 +168,26 @@ final class RelationshipType {
 	}
 
 	/**
+	 * Map legacy partnership input to the canonical status.
+	 */
+	public static function normalizePartnershipInput(string $type): string {
+		return self::LEGACY_PARTNERSHIP[$type] ?? $type;
+	}
+
+	/**
 	 * Normalize an input (person_a, person_b, type) triple into its canonical
 	 * stored form.
 	 *
 	 * - child-side labels are swapped and mapped to their parent-side type
 	 *   (input "A is child of B" => stored "B parent A").
 	 * - symmetric relations are ordered so person_a is the lower id.
+	 * - legacy spouse / former_spouse map to married / divorced.
 	 *
 	 * @return array{personA: int, personB: int, type: string}
 	 */
 	public static function canonicalize(int $personA, int $personB, string $type): array {
+		$type = self::normalizePartnershipInput($type);
+
 		if (isset(self::CHILD_TO_PARENT[$type])) {
 			// A is <child> of B  =>  B is <parent> of A.
 			return [

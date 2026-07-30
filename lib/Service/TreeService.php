@@ -37,13 +37,12 @@ class TreeService {
 		$visited[$person->getId()] = true;
 
 		$children = [];
-		$spouse = null;
+		$spouses = [];
 
 		foreach ($this->relationshipMapper->findByPerson($person->getId()) as $relationship) {
 			$type = $relationship->getType();
 
-			// Find spouse
-			if ($type === RelationshipType::SPOUSE) {
+			if (RelationshipType::isActivePartnership($type)) {
 				$spouseId = $relationship->getPersonA() === $person->getId()
 					? $relationship->getPersonB()
 					: $relationship->getPersonA();
@@ -51,11 +50,12 @@ class TreeService {
 				$spousePerson = $this->personMapper->findOrNull($spouseId);
 
 				if ($spousePerson !== null) {
-					$spouse = [
+					$spouses[] = [
 						'id' => $spousePerson->getId(),
 						'gender' => $spousePerson->getGender(),
 						'firstName' => $spousePerson->getFirstName(),
 						'lastName' => $spousePerson->getLastName(),
+						'status' => $type,
 					];
 				}
 
@@ -91,7 +91,7 @@ class TreeService {
 			'firstName' => $person->getFirstName(),
 			'lastName' => $person->getLastName(),
 			'gender' => $person->getGender(),
-			'spouse' => $spouse,
+			'spouses' => $spouses,
 			'children' => $children,
 		];
 	}

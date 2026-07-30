@@ -24,10 +24,8 @@ class RelationshipGraphService {
 	private array $children = [];
 	/** @var array<int, list<int>> current spouses */
 	private array $spouses = [];
-	/** @var array<int, list<int>> former spouses */
+	/** @var array<int, list<int>> ended partnerships */
 	private array $formerSpouses = [];
-	/** @var array<int, list<int>> partners */
-	private array $partners = [];
 	/** @var array<int, list<int>> wardId => guardian ids */
 	private array $guardians = [];
 	/** @var array<int, list<int>> guardianId => ward ids */
@@ -54,7 +52,6 @@ class RelationshipGraphService {
 			'children' => $this->at($this->children, $personId),
 			'spouses' => $this->at($this->spouses, $personId),
 			'formerSpouses' => $this->at($this->formerSpouses, $personId),
-			'partners' => $this->at($this->partners, $personId),
 			'guardians' => $this->at($this->guardians, $personId),
 			'wards' => $this->at($this->wards, $personId),
 			'siblings' => $this->siblingsOf($personId),
@@ -86,15 +83,12 @@ class RelationshipGraphService {
 			if (RelationshipType::isParenthood($type)) {
 				$this->parents[$b][] = $a;
 				$this->children[$a][] = $b;
-			} elseif ($type === RelationshipType::SPOUSE) {
+			} elseif (RelationshipType::isActivePartnership($type)) {
 				$this->spouses[$a][] = $b;
 				$this->spouses[$b][] = $a;
-			} elseif ($type === RelationshipType::FORMER_SPOUSE) {
+			} elseif (RelationshipType::isEndedPartnership($type)) {
 				$this->formerSpouses[$a][] = $b;
 				$this->formerSpouses[$b][] = $a;
-			} elseif ($type === RelationshipType::PARTNER) {
-				$this->partners[$a][] = $b;
-				$this->partners[$b][] = $a;
 			} elseif ($type === RelationshipType::GUARDIAN) {
 				$this->wards[$a][] = $b;
 				$this->guardians[$b][] = $a;
@@ -137,7 +131,6 @@ class RelationshipGraphService {
 		return array_values(array_unique(array_merge(
 			$this->at($this->spouses, $id),
 			$this->at($this->formerSpouses, $id),
-			$this->at($this->partners, $id),
 		)));
 	}
 

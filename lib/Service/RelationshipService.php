@@ -46,17 +46,49 @@ class RelationshipService {
 
 	/**
 	 * Create (or reuse) the canonical relationship for the given triple.
+	 * Optional coParentId creates a matching parent link for the other partner.
 	 */
 	public function create(array $data): Relationship {
-		$personA = (int)($data['personA'] ?? 0);
-		$personB = (int)($data['personB'] ?? 0);
-		$type = (string)($data['type'] ?? '');
+		$saved = $this->persistCreate($data);
 
+		if (array_key_exists('coParentId', $data)) {
+			$this->syncCoParent(
+				$saved,
+				$this->normalizeCoParentId($data['coParentId']),
+				$data['date'] ?? null,
+			);
+		}
+
+		$this->familyMembership->rebuildAll();
+
+		return $saved;
+	}
+
+	/**
+	 * @return array{personA: int, personB: int, type: string}
+	 */
+	private function canonicalTriple(int $personA, int $personB, string $type): array {
 		if (!RelationshipType::isAcceptedInput($type)) {
 			throw new \InvalidArgumentException('Unknown relationship type: ' . $type);
 		}
 
-		$canonical = RelationshipType::canonicalize($personA, $personB, $type);
+		return RelationshipType::canonicalize($personA, $personB, $type);
+	}
+
+	private function normalizeCoParentId(mixed $coParentId): int {
+		if ($coParentId === null || $coParentId === '') {
+			return 0;
+		}
+
+		return (int)$coParentId;
+	}
+
+	private function persistCreate(array $data, bool $rebuild = true): Relationship {
+		$personA = (int)($data['personA'] ?? 0);
+		$personB = (int)($data['personB'] ?? 0);
+		$type = (string)($data['type'] ?? '');
+
+		$canonical = $this->canonicalTriple($personA, $personB, $type);
 		$date = DateValue::fromArray($data['date'] ?? null);
 
 		$existing = $this->mapper->findCanonical(
@@ -66,7 +98,6 @@ class RelationshipService {
 		);
 
 		if ($existing !== null) {
-			// Dedupe: enrich the existing row rather than create a duplicate.
 			if (!$date->isEmpty()) {
 				$existing->setDate($date);
 			}
@@ -75,7 +106,9 @@ class RelationshipService {
 			}
 			$existing->setUpdatedAt($this->timeFactory->getTime());
 			$saved = $this->mapper->update($existing);
-			$this->familyMembership->rebuildAll();
+			if ($rebuild) {
+				$this->familyMembership->rebuildAll();
+			}
 
 			return $saved;
 		}
@@ -87,7 +120,7 @@ class RelationshipService {
 		$relationship->setPersonA($canonical['personA']);
 		$relationship->setPersonB($canonical['personB']);
 		$relationship->setType($canonical['type']);
-		//		$relationship->setDate($date);
+		$relationship->setDate($date);
 		$relationship->setNote($data['note'] ?? null);
 		$relationship->setOwnerUid($uid);
 		$relationship->setCreatedBy($uid);
@@ -95,13 +128,120 @@ class RelationshipService {
 		$relationship->setUpdatedAt($now);
 
 		$saved = $this->mapper->insert($relationship);
-		$this->familyMembership->rebuildAll();
+		if ($rebuild) {
+			$this->familyMembership->rebuildAll();
+		}
 
 		return $saved;
 	}
 
+	/**
+	 * Ensure or remove the co-parent link for a canonical parenthood row.
+	 */
+	private function syncCoParent(Relationship $primary, int $coParentId, mixed $date): void {
+		if (!RelationshipType::isParenthood($primary->getType())) {
+			return;
+		}
+
+		$parentId = $primary->getPersonA();
+		$childId = $primary->getPersonB();
+
+		if ($coParentId > 0 && $coParentId !== $parentId && $coParentId !== $childId) {
+			$this->removePartnerCoParentLinks($parentId, $childId, $primary->getType(), $coParentId);
+			$this->persistCreate([
+				'personA' => $coParentId,
+				'personB' => $childId,
+				'type' => $primary->getType(),
+				'date' => $date,
+				'note' => null,
+			], rebuild: false);
+
+			return;
+		}
+
+		$this->removePartnerCoParentLinks($parentId, $childId, $primary->getType());
+	}
+
+	/**
+	 * Remove parenthood rows from the primary parent's partners to the child.
+	 *
+	 * @param int $exceptPartnerId partner to keep; 0 removes all partner co-parent links
+	 */
+	private function removePartnerCoParentLinks(
+		int $parentId,
+		int $childId,
+		string $type,
+		int $exceptPartnerId = 0,
+	): void {
+		$partnerIds = array_flip($this->partnerIdsOf($parentId));
+
+		foreach ($this->mapper->findByPerson($childId) as $relationship) {
+			if ($relationship->getPersonB() !== $childId) {
+				continue;
+			}
+
+			if ($relationship->getType() !== $type) {
+				continue;
+			}
+
+			$otherParentId = $relationship->getPersonA();
+			if ($otherParentId === $parentId) {
+				continue;
+			}
+
+			if ($exceptPartnerId > 0 && $otherParentId === $exceptPartnerId) {
+				continue;
+			}
+
+			if (!isset($partnerIds[$otherParentId])) {
+				continue;
+			}
+
+			$this->mapper->delete($relationship);
+		}
+	}
+
+	/**
+	 * @return list<int>
+	 */
+	private function partnerIdsOf(int $personId): array {
+		$partners = [];
+
+		foreach ($this->mapper->findByPerson($personId) as $relationship) {
+			if (!RelationshipType::isPartnership($relationship->getType())) {
+				continue;
+			}
+
+			$partners[] = $relationship->getPersonA() === $personId
+				? $relationship->getPersonB()
+				: $relationship->getPersonA();
+		}
+
+		return array_values(array_unique($partners));
+	}
+
 	public function update(int $id, array $data): Relationship {
 		$relationship = $this->mapper->find($id);
+
+		if (array_key_exists('type', $data)) {
+			$type = (string)$data['type'];
+			if (!RelationshipType::isAcceptedInput($type)) {
+				throw new \InvalidArgumentException('Unknown relationship type: ' . $type);
+			}
+
+			$canonical = RelationshipType::canonicalize(
+				$relationship->getPersonA(),
+				$relationship->getPersonB(),
+				$type,
+			);
+
+			if (RelationshipType::isPartnership($relationship->getType())) {
+				if (!RelationshipType::isPartnership($canonical['type'])) {
+					throw new \InvalidArgumentException('Cannot change partnership to a non-partnership type');
+				}
+				$relationship->setType($canonical['type']);
+			}
+		}
 
 		if (array_key_exists('date', $data)) {
 			$relationship->setDate(DateValue::fromArray($data['date']));
@@ -112,6 +252,14 @@ class RelationshipService {
 
 		$relationship->setUpdatedAt($this->timeFactory->getTime());
 		$saved = $this->mapper->update($relationship);
+
+		if (RelationshipType::isParenthood($saved->getType()) && array_key_exists('coParentId', $data)) {
+			$this->syncCoParent(
+				$saved,
+				$this->normalizeCoParentId($data['coParentId']),
+				$data['date'] ?? $saved->getDate(),
+			);
+		}
 
 		$this->familyMembership->rebuildAll();
 

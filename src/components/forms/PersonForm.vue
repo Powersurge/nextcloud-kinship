@@ -124,6 +124,7 @@ function onSubmit() {
 
 		<SelectLivingStatus
 			v-model="form.livingStatus"
+			required
 			:disabled="saving" />
 
 		<div
