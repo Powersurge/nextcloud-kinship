@@ -10,6 +10,7 @@ use OCA\Kinship\Constants\LivingStatus;
 use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Event;
 use OCA\Kinship\Db\EventMapper;
+use OCA\Kinship\Db\ParticipantMapper;
 use OCA\Kinship\Db\PersonMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 
@@ -20,6 +21,7 @@ class LivingStatusService {
 	public function __construct(
 		private PersonMapper $personMapper,
 		private EventMapper $eventMapper,
+		private ParticipantMapper $participantMapper,
 		private AdminSettingsService $adminSettingsService,
 		private ITimeFactory $timeFactory,
 	) {
@@ -33,8 +35,15 @@ class LivingStatusService {
 	public function applyPrivacyThresholdToAll(): int {
 		$updated = 0;
 
-		foreach ($this->personMapper->findAll() as $person) {
-			if ($this->syncPersonLivingStatus($person->getId())) {
+		$events = $this->eventMapper
+			->findBirthEventsThatExceededAgeLimit(
+				$this->adminSettingsService->getPrivacyThreshold()
+			);
+
+		foreach ($events as $event) {
+			$subjectParticipant = $this->participantMapper->findSubjectByEvent($event->getId());
+
+			if ($this->syncPersonLivingStatus($subjectParticipant->getPersonId())) {
 				$updated++;
 			}
 		}

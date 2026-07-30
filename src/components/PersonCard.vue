@@ -77,7 +77,7 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 
 		<div
 			class="person-card__status"
-			:class="{ deceased: person.livingStatus !== 'living' }">
+			:class="person.livingStatus">
 			{{ statusLabel }}
 		</div>
 
@@ -189,6 +189,11 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 .person-card__status.deceased {
 	background: rgba(140, 140, 140, .15);
 	color: var(--color-text-maxcontrast);
+}
+
+.person-card__status.unknown {
+	background: rgb(255, 238, 197);
+	color: rgb(102, 71, 0);
 }
 
 .person-card__details {

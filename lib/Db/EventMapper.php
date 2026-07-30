@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Db;
 
+use DateTimeImmutable;
 use OCA\Kinship\Constants\EventType;
+use OCA\Kinship\Constants\LivingStatus;
 use OCA\Kinship\Constants\ParticipantRole;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
@@ -90,6 +92,49 @@ class EventMapper extends QBMapper {
 						$familyId,
 						IQueryBuilder::PARAM_INT
 					)
+				)
+			);
+
+		return $this->findEntities($qb);
+	}
+
+	public function findBirthEventsThatExceededAgeLimit(int $ageThreshold = 110): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$cutoffYear = (int)new DateTimeImmutable('today')
+			->modify("-{$ageThreshold} years")
+			->format('Y');
+
+		$qb->select('e.*')
+			->from($this->getTableName(), 'e')
+			->innerJoin(
+				'e',
+				'kinship_participants',
+				'pr',
+				$qb->expr()->eq('pr.event_id', 'e.id')
+			)
+			->innerJoin(
+				'pr',
+				'kinship_persons',
+				'p',
+				$qb->expr()->eq('p.id', 'pr.person_id')
+			)
+			->where(
+				$qb->expr()->eq(
+					'p.living_status',
+					$qb->createNamedParameter(LivingStatus::LIVING)
+				)
+			)
+			->andWhere(
+				$qb->expr()->eq(
+					'type',
+					$qb->createNamedParameter(EventType::BIRTH)
+				)
+			)
+			->andWhere(
+				$qb->expr()->lte(
+					'date_start_year',
+					$qb->createNamedParameter($cutoffYear, IQueryBuilder::PARAM_INT)
 				)
 			);
 

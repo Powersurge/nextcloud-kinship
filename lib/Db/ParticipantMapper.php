@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Db;
 
+use OCA\Kinship\Constants\ParticipantRole;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\QBMapper;
@@ -45,6 +46,18 @@ class ParticipantMapper extends QBMapper {
 			->where($qb->expr()->eq('event_id', $qb->createNamedParameter($eventId, IQueryBuilder::PARAM_INT)));
 
 		return $this->findEntities($qb);
+	}
+
+	public function findSubjectByEvent(int $eventId): Participant|Entity {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from($this->getTableName())
+			->where($qb->expr()->eq('event_id', $qb->createNamedParameter($eventId, IQueryBuilder::PARAM_INT)))
+			->andWhere(
+				$qb->expr()->eq('role', $qb->createNamedParameter(ParticipantRole::SUBJECT, IQueryBuilder::PARAM_STR))
+			);
+
+		return $this->findEntity($qb);
 	}
 
 	/**
