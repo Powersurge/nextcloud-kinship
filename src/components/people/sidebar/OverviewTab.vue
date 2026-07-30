@@ -85,21 +85,22 @@ async function saveBiography() {
 		</template>
 
 		<div class="sidebar-sections">
-			<div class="sidebar-field">
-				<Account :size="20" class="sidebar-field__icon" />
-				<div class="sidebar-field__body">
-					<label class="sidebar-field__label">Gender</label>
-					<div class="capitalize">
+			<div class="sidebar-section">
+				<Account :size="20" class="sidebar-section__icon" />
+
+				<div class="sidebar-section__body">
+					<label class="sidebar-section__label">Gender</label>
+					<div class="sidebar-section__value capitalize">
 						{{ selectedPerson?.gender || 'Unknown' }}
 					</div>
 				</div>
 			</div>
 
-			<div class="sidebar-field">
-				<CakeVariant :size="20" class="sidebar-field__icon" />
-				<div class="sidebar-field__body">
-					<div class="sidebar-field__header">
-						<label class="sidebar-field__label">Birth</label>
+			<div class="sidebar-section">
+				<CakeVariant :size="20" class="sidebar-section__icon" />
+				<div class="sidebar-section__body">
+					<div class="sidebar-section__header">
+						<label class="sidebar-section__label">Birth</label>
 						<NcButton
 							size="small"
 							@click="openBirthForm">
@@ -110,20 +111,20 @@ async function saveBiography() {
 							{{ birthLabel ? 'Edit' : 'Add' }}
 						</NcButton>
 					</div>
-					<div v-if="birthLabel" class="sidebar-field__value">
+					<div v-if="birthLabel" class="sidebar-section__value">
 						{{ birthLabel }}
 					</div>
-					<div v-else class="sidebar-field__empty">
+					<div v-else class="sidebar-section__empty">
 						No birth date recorded
 					</div>
 				</div>
 			</div>
 
-			<div class="sidebar-field">
-				<GraveStone :size="20" class="sidebar-field__icon" />
-				<div class="sidebar-field__body">
-					<div class="sidebar-field__header">
-						<label class="sidebar-field__label">Death</label>
+			<div class="sidebar-section">
+				<GraveStone :size="20" class="sidebar-section__icon" />
+				<div class="sidebar-section__body">
+					<div class="sidebar-section__header">
+						<label class="sidebar-section__label">Death</label>
 						<NcButton
 							size="small"
 							@click="openDeathForm">
@@ -134,10 +135,10 @@ async function saveBiography() {
 							{{ deathLabel ? 'Edit' : 'Add' }}
 						</NcButton>
 					</div>
-					<div v-if="deathLabel" class="sidebar-field__value">
+					<div v-if="deathLabel" class="sidebar-section__value">
 						{{ deathLabel }}
 					</div>
-					<div v-else class="sidebar-field__empty">
+					<div v-else class="sidebar-section__empty">
 						No death date recorded
 					</div>
 				</div>
@@ -148,6 +149,11 @@ async function saveBiography() {
 				<div class="sidebar-field__body">
 					<div class="sidebar-field__header">
 						<label class="sidebar-field__label">Biography</label>
+			<div class="sidebar-section">
+				<TextAccount :size="20" class="sidebar-section__icon" />
+				<div class="sidebar-section__body">
+					<div class="sidebar-section__header">
+						<label class="sidebar-section__label">Biography</label>
 						<NcButton
 							v-if="!editingBiography"
 							size="small"
@@ -159,12 +165,12 @@ async function saveBiography() {
 						</NcButton>
 					</div>
 
-					<div v-if="editingBiography" class="sidebar-field__editor">
+					<div v-if="editingBiography" class="sidebar-section__editor">
 						<NcTextArea
 							v-model="biographyDraft"
 							label="Biography"
 							:disabled="savingBiography" />
-						<div class="sidebar-field__editor-actions">
+						<div class="sidebar-section__editor-actions">
 							<NcButton
 								size="small"
 								:disabled="savingBiography"
@@ -186,10 +192,10 @@ async function saveBiography() {
 							</NcButton>
 						</div>
 					</div>
-					<div v-else-if="selectedPerson?.biography" class="sidebar-field__value sidebar-field__value--bio">
+					<div v-else-if="selectedPerson?.biography" class="sidebar-section__value sidebar-section__value--bio">
 						{{ selectedPerson.biography }}
 					</div>
-					<div v-else class="sidebar-field__empty">
+					<div v-else class="sidebar-section__empty">
 						No biography yet
 					</div>
 				</div>
@@ -205,57 +211,57 @@ async function saveBiography() {
 	gap: 1.5rem;
 }
 
-.sidebar-field {
+.sidebar-section {
 	display: flex;
-	gap: 1rem;
-	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 0.5rem;
 }
 
-.sidebar-field__icon {
+.sidebar-section__icon {
 	flex-shrink: 0;
-	margin-top: 2px;
+	margin-bottom: auto;
 	color: var(--color-text-maxcontrast);
 }
 
-.sidebar-field__body {
+.sidebar-section__body {
 	flex: 1;
 	min-width: 0;
 }
 
-.sidebar-field__header {
+.sidebar-section__header {
 	display: flex;
-	align-items: center;
+	align-items: start;
 	justify-content: space-between;
 	gap: .5rem;
 	margin-bottom: .25rem;
 }
 
-.sidebar-field__label {
+.sidebar-section__label {
 	font-weight: 700;
 }
 
-.sidebar-field__value {
+.sidebar-section__value {
 	color: var(--color-main-text);
 	line-height: 1.5;
 }
 
-.sidebar-field__value--bio {
+.sidebar-section__value--bio {
 	white-space: pre-wrap;
 }
 
-.sidebar-field__empty {
+.sidebar-section__empty {
 	color: var(--color-text-maxcontrast);
 	font-size: .9rem;
 	font-style: italic;
 }
 
-.sidebar-field__editor {
+.sidebar-section__editor {
 	display: flex;
 	flex-direction: column;
 	gap: .75rem;
 }
 
-.sidebar-field__editor-actions {
+.sidebar-section__editor-actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: .5rem;
