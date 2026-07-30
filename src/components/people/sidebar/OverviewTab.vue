@@ -8,18 +8,24 @@ import CakeVariant from 'vue-material-design-icons/CakeVariant.vue'
 import GraveStone from 'vue-material-design-icons/GraveStone.vue'
 import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
 import Account from 'vue-material-design-icons/Account.vue'
+import TagMultiple from 'vue-material-design-icons/TagMultiple.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { useEventStore } from '@/stores/use-event-store.ts'
+import { useFactStore } from '@/stores/use-fact-store.ts'
 import { computed, ref, watch } from 'vue'
 import { dateDisplay } from '@/utils/date.ts'
+import { FACT_TYPE_OPTIONS } from '@/constants.ts'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 
 const { selectedPerson } = storeToRefs(usePeopleStore())
 const { refreshSelectedPerson } = usePeopleStore()
 const { openLifeDateForm } = useEventStore()
+const factStore = useFactStore()
+const { facts, loading: loadingFacts } = storeToRefs(factStore)
+const { openCreateFactForm, openEditFactForm, loadFacts } = factStore
 
 const birthLabel = computed(() => dateDisplay(selectedPerson.value?.birthDate))
 const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
@@ -28,10 +34,22 @@ const editingBiography = ref(false)
 const biographyDraft = ref('')
 const savingBiography = ref(false)
 
-watch(selectedPerson, () => {
+const factTypeLabel = (type: string) =>
+	FACT_TYPE_OPTIONS.find((option) => option.value === type)?.label
+	?? type.replace(/_/g, ' ')
+
+watch(selectedPerson, (person) => {
 	editingBiography.value = false
 	biographyDraft.value = ''
-})
+
+	if (person?.id) {
+		loadFacts('person', person.id)
+	}
+}, { immediate: true })
+
+function openCreateFact() {
+	openCreateFactForm(selectedPerson.value.id)
+}
 
 function openBirthForm() {
 	if (selectedPerson.value) {
@@ -144,11 +162,56 @@ async function saveBiography() {
 				</div>
 			</div>
 
-			<div class="sidebar-field">
-				<TextAccount :size="20" class="sidebar-field__icon" />
-				<div class="sidebar-field__body">
-					<div class="sidebar-field__header">
-						<label class="sidebar-field__label">Biography</label>
+			<div class="sidebar-section">
+				<TagMultiple :size="20" class="sidebar-section__icon" />
+				<div class="sidebar-section__body">
+					<div class="sidebar-section__header">
+						<label class="sidebar-section__label">Facts</label>
+						<NcButton
+							size="small"
+							@click="openCreateFact">
+							<template #icon>
+								<Plus :size="16" />
+							</template>
+							Add
+						</NcButton>
+					</div>
+
+					<div v-if="loadingFacts" class="sidebar-section__empty">
+						Loading facts...
+					</div>
+					<div v-else-if="facts.length === 0" class="sidebar-section__empty">
+						No facts recorded
+					</div>
+					<ul v-else class="facts-list">
+						<li
+							v-for="fact in facts"
+							:key="fact.id"
+							class="facts-list__item">
+							<div class="facts-list__header">
+								<span class="facts-list__type">{{ factTypeLabel(fact.type) }}</span>
+								<span v-if="dateDisplay(fact.date)" class="facts-list__date">
+									{{ dateDisplay(fact.date) }}
+								</span>
+								<NcButton
+									size="small"
+									@click="openEditFactForm(fact)">
+									<template #icon>
+										<PencilOutline :size="16" />
+									</template>
+								</NcButton>
+							</div>
+							<div v-if="fact.value" class="facts-list__value">
+								{{ fact.value }}
+							</div>
+							<div v-if="fact.note" class="facts-list__note">
+								{{ fact.note }}
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+
 			<div class="sidebar-section">
 				<TextAccount :size="20" class="sidebar-section__icon" />
 				<div class="sidebar-section__body">
@@ -265,5 +328,53 @@ async function saveBiography() {
 	display: flex;
 	justify-content: flex-end;
 	gap: .5rem;
+}
+
+.facts-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: .75rem;
+}
+
+.facts-list__item {
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	padding: .65rem .75rem;
+}
+
+.facts-list__header {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	margin-bottom: .25rem;
+}
+
+.facts-list__type {
+	font-size: .75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	color: var(--color-text-maxcontrast);
+}
+
+.facts-list__date {
+	flex: 1;
+	font-size: .8rem;
+	color: var(--color-text-maxcontrast);
+}
+
+.facts-list__value {
+	color: var(--color-main-text);
+	line-height: 1.5;
+}
+
+.facts-list__note {
+	margin-top: .25rem;
+	font-size: .85rem;
+	color: var(--color-text-maxcontrast);
+	line-height: 1.4;
 }
 </style>

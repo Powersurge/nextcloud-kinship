@@ -44,6 +44,17 @@ export interface Place {
 	fullName: string | null;
 }
 
+export interface Fact {
+	id: number;
+	subjectType: string;
+	subjectId: number;
+	type: string;
+	value: string | null;
+	placeId: number | null;
+	date: GenealogyDateValue | null;
+	note: string | null;
+}
+
 export type GenealogyDateType = {
 	start: {
 		year: string | number,

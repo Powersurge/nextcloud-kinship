@@ -28,3 +28,12 @@ export const DATE_PRECISION_OPTIONS = [
 	{ value: 'yearMonth', label: 'Year, Month' },
 	{ value: 'yearMonthDay', label: 'Year, Month, Day' },
 ]
+
+export const FACT_TYPE_OPTIONS = [
+	{ value: 'occupation', label: 'Occupation' },
+	{ value: 'religion', label: 'Religion' },
+	{ value: 'nationality', label: 'Nationality' },
+	{ value: 'residence', label: 'Residence' },
+	{ value: 'physical_description', label: 'Physical description' },
+	{ value: 'name_variant', label: 'Name variant' },
+]
