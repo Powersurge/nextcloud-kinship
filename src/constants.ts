@@ -5,6 +5,7 @@ export const LIVING_STATUSES = {
 	deceased: 'Deceased',
 	unknown: 'Unknown',
 }
+export type LivingStatus = keyof typeof LIVING_STATUSES;
 
 export const DATE_KINDS = {
 	Unknown: 'unknown',

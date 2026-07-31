@@ -8,9 +8,7 @@ import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import Cake from 'vue-material-design-icons/CakeVariant.vue'
 import Cross from 'vue-material-design-icons/Cross.vue'
-import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
-
-const sidebarStore = usePersonSidebarStore()
+import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
 const props = defineProps<{
 	person: Record<string, any>
@@ -22,23 +20,13 @@ const emit = defineEmits<{
 	delete: []
 }>()
 
-const statusLabel = computed(() => {
-	switch (props.person.livingStatus) {
-	case 'deceased':
-		return 'Deceased'
-	case 'living':
-		return 'Living'
-	default:
-		return 'Unknown'
-	}
-})
-
+const statusLabel = computed(() => getLivingStatusLabel(props.person.livingStatus))
 const birthLabel = computed(() => dateDisplay(props.person.birthDate))
 const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 </script>
 
 <template>
-	<div class="person-card" @click="sidebarStore.openPerson(person)">
+	<div class="person-card">
 		<div class="person-card__actions">
 			<NcActions>
 				<NcActionButton @click="emit('edit')">

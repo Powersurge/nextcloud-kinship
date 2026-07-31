@@ -6,19 +6,16 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
-import { LIVING_STATUSES } from '@/constants.ts'
 import TimelineTab from '@/components/people/sidebar/TimelineTab.vue'
 import OverviewTab from '@/components/people/sidebar/OverviewTab.vue'
 import FamilyTab from '@/components/people/sidebar/FamilyTab.vue'
+import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
 const sidebarStore = usePersonSidebarStore()
 const { isOpen } = storeToRefs(sidebarStore)
 const { selectedPerson } = storeToRefs(usePeopleStore())
 
-const status = computed(() =>
-	LIVING_STATUSES[selectedPerson.value?.livingStatus as keyof typeof LIVING_STATUSES]
-	?? LIVING_STATUSES.unknown,
-)
+const status = computed(() => getLivingStatusLabel(selectedPerson.value?.livingStatus))
 </script>
 
 <template>
