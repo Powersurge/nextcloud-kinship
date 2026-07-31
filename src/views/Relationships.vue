@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import RelationshipCard from '../components/RelationshipCard.vue'
 import RelationshipModal from '../components/modals/RelationshipModal.vue'
+import { fetchPeople } from '@/api/people'
+import {
+	deleteRelationship as deleteRelationshipApi,
+	fetchRelationships,
+} from '@/api/relationships'
 
 const relationships = ref<Array<Record<string, any>>>([])
 const peopleById = ref<Record<number, string>>({})
@@ -22,13 +25,13 @@ function nameOf(id: number): string {
 async function loadAll() {
 	loading.value = true
 	try {
-		const [relRes, peopleRes] = await Promise.all([
-			axios.get(generateUrl('/apps/kinship/api/v1/relationships')),
-			axios.get(generateUrl('/apps/kinship/api/v1/people')),
+		const [rels, people] = await Promise.all([
+			fetchRelationships(),
+			fetchPeople(),
 		])
-		relationships.value = relRes.data.relationships ?? []
+		relationships.value = rels
 		const map: Record<number, string> = {}
-		for (const p of peopleRes.data.people ?? []) {
+		for (const p of people) {
 			map[p.id] = `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`
 		}
 		peopleById.value = map
@@ -60,9 +63,7 @@ async function deleteRelationship(relationship: Record<string, any>) {
 		return
 	}
 	try {
-		await axios.delete(
-			generateUrl(`/apps/kinship/api/v1/relationships/${relationship.id}`),
-		)
+		await deleteRelationshipApi(relationship.id)
 		relationships.value = relationships.value.filter((r) => r.id !== relationship.id)
 	} catch (e) {
 		console.error('Failed to delete relationship', e)

@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { Fact, GenealogyDateType } from '@/types'
 import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
+import { fetchFacts } from '@/api/facts'
 
 export interface FactFormData {
 	id?: number
@@ -27,10 +26,7 @@ export const useFactStore = defineStore('factStore', () => {
 		subjectId.value = id
 		loading.value = true
 		try {
-			const response = await axios.get(generateUrl('/apps/kinship/api/v1/facts'), {
-				params: { subjectType, subjectId: id },
-			})
-			facts.value = response.data.facts ?? []
+			facts.value = await fetchFacts({ subjectType, subjectId: id })
 		} catch (e) {
 			console.error('Failed to load facts', e)
 			facts.value = []

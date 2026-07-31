@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import FamilyForm from '../forms/FamilyForm.vue'
+import { createFamily, updateFamily } from '@/api/families'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */
@@ -33,20 +32,11 @@ async function onSubmit(data: Record<string, unknown>) {
 	error.value = ''
 
 	try {
-		let response
-		if (isEdit.value) {
-			response = await axios.put(
-				generateUrl(`/apps/kinship/api/v1/families/${props.family!.id}`),
-				{ data },
-			)
-		} else {
-			response = await axios.post(
-				generateUrl('/apps/kinship/api/v1/families'),
-				{ data },
-			)
-		}
+		const family = isEdit.value
+			? await updateFamily(props.family!.id as number, data)
+			: await createFamily(data)
 
-		emit('saved', response.data)
+		emit('saved', family)
 		close()
 	} catch (e) {
 		error.value = 'Could not save the family. Please try again.'

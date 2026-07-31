@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import EventForm from '../forms/EventForm.vue'
+import { createEvent, updateEvent } from '@/api/events'
 
 const props = defineProps<{
 	open: boolean
@@ -31,20 +30,11 @@ async function onSubmit(data: Record<string, unknown>) {
 	error.value = ''
 
 	try {
-		let response
-		if (isEdit.value) {
-			response = await axios.put(
-				generateUrl(`/apps/kinship/api/v1/events/${props.event!.id}`),
-				{ data },
-			)
-		} else {
-			response = await axios.post(
-				generateUrl('/apps/kinship/api/v1/events'),
-				{ data },
-			)
-		}
+		const event = isEdit.value
+			? await updateEvent(props.event!.id as number, data)
+			: await createEvent(data)
 
-		emit('saved', response.data)
+		emit('saved', event)
 		close()
 	} catch (e) {
 		error.value = 'Could not save the event. Please try again.'

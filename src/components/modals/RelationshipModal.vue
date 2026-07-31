@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import RelationshipForm from '../forms/RelationshipForm.vue'
+import { createRelationship, updateRelationship } from '@/api/relationships'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */
@@ -36,20 +35,11 @@ async function onSubmit(data: Record<string, unknown>) {
 	error.value = ''
 
 	try {
-		let response
-		if (isEdit.value) {
-			response = await axios.put(
-				generateUrl(`/apps/kinship/api/v1/relationships/${props.relationship!.id}`),
-				{ data },
-			)
-		} else {
-			response = await axios.post(
-				generateUrl('/apps/kinship/api/v1/relationships'),
-				{ data },
-			)
-		}
+		const relationship = isEdit.value
+			? await updateRelationship(props.relationship!.id as number, data)
+			: await createRelationship(data)
 
-		emit('saved', response.data)
+		emit('saved', relationship)
 		close()
 	} catch (e) {
 		error.value = 'Could not save the relationship. Please try again.'

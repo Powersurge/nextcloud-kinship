@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
-import type { Event, PaginatedResult } from '@/types'
+import type { Event } from '@/types'
+import { fetchPersonEvents } from '@/api/events'
 
 const PAGE_SIZE = 10
 
@@ -25,18 +24,13 @@ export const usePersonTimelineStore = defineStore('personTimelineStore', () => {
 	async function fetchPage(id: number, offset: number, append: boolean) {
 		loading.value = true
 		try {
-			const response = await axios.get<PaginatedResult<Event>>(
-				generateUrl(`/apps/kinship/api/v1/people/${id}/events`),
-				{
-					params: {
-						limit: pageSize.value,
-						offset,
-					},
-				},
-			)
+			const result = await fetchPersonEvents(id, {
+				limit: pageSize.value,
+				offset,
+			})
 
-			const pageEvents = response.data.events ?? []
-			total.value = response.data.total ?? pageEvents.length
+			const pageEvents = result.events ?? []
+			total.value = result.total ?? pageEvents.length
 
 			if (append) {
 				events.value = [...events.value, ...pageEvents]

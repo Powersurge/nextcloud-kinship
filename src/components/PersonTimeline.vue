@@ -25,9 +25,8 @@
 
 <script>
 
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import { dateDisplay } from '@/utils/date.ts'
+import { fetchPersonTimeline } from '@/api/timeline'
 
 export default {
 
@@ -63,14 +62,7 @@ export default {
 		dateDisplay,
 
 		async loadEvents() {
-
-			const response = await axios.get(
-				generateUrl(
-					`/apps/kinship/api/v1/timeline/person/${this.personId}`,
-				),
-			)
-
-			this.events = response.data
+			this.events = await fetchPersonTimeline(this.personId)
 		},
 
 	},

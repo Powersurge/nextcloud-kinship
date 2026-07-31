@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import EventCard from '../components/EventCard.vue'
 import EventModal from '../components/modals/EventModal.vue'
+import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events'
 
 const events = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
@@ -17,10 +16,7 @@ const editing = ref<Record<string, any> | null>(null)
 async function loadEvents() {
 	loading.value = true
 	try {
-		const response = await axios.get(
-			generateUrl('/apps/kinship/api/v1/events'),
-		)
-		events.value = response.data.events ?? []
+		events.value = await fetchEvents()
 	} catch (e) {
 		console.error('Failed to load events', e)
 	} finally {
@@ -47,9 +43,7 @@ async function deleteEvent(event: Record<string, any>) {
 		return
 	}
 	try {
-		await axios.delete(
-			generateUrl(`/apps/kinship/api/v1/events/${event.id}`),
-		)
+		await deleteEventApi(event.id)
 		events.value = events.value.filter((e) => e.id !== event.id)
 	} catch (e) {
 		console.error('Failed to delete event', e)

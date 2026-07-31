@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { loadState } from '@nextcloud/initial-state'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import { NcSettingsSection, NcNoteCard, NcTextField } from '@nextcloud/vue'
+import {
+	type AdminSettings,
+	updateAdminSettings,
+} from '@/api/settings'
 
-interface AdminSettingsState {
-	gedcomImportEnabled: boolean
-	extensionsEnabled: boolean
-	privacyThreshold: number
-}
-
-const settings = ref<AdminSettingsState>(
-	loadState<AdminSettingsState>('kinship', 'admin-settings', {
+const settings = ref<AdminSettings>(
+	loadState<AdminSettings>('kinship', 'admin-settings', {
 		gedcomImportEnabled: true,
 		extensionsEnabled: false,
 		privacyThreshold: 110,
@@ -24,13 +20,7 @@ async function save(): Promise<void> {
 	error.value = ''
 
 	try {
-		const response = await axios.put<AdminSettingsState>(
-			generateUrl('/apps/kinship/api/v1/admin/settings'),
-			{
-				settings: settings.value,
-			},
-		)
-		settings.value = response.data
+		settings.value = await updateAdminSettings(settings.value)
 	} catch (e) {
 		error.value = 'Could not save settings. Please try again.'
 		console.error('Failed to save admin settings', e)

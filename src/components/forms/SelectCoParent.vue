@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { NcSelect } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
+import { fetchPersonFamily } from '@/api/people'
 
 interface PartnerOption {
 	value: number
@@ -29,9 +28,7 @@ const options = computed(() => [
 async function loadPartners(parentId: number) {
 	loading.value = true
 	try {
-		const { data } = await axios.get(
-			generateUrl(`/apps/kinship/api/v1/people/${parentId}/family`),
-		)
+		const data = await fetchPersonFamily(parentId)
 
 		const allPartners = [
 			...(data.activePartnerships ?? []),

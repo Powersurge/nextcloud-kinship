@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import PersonForm from '../forms/PersonForm.vue'
+import { createPerson, updatePerson } from '@/api/people'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */
@@ -33,20 +32,11 @@ async function onSubmit(formData: Record<string, any>) {
 	error.value = ''
 
 	try {
-		let response
-		if (isEdit.value) {
-			response = await axios.put(
-				generateUrl(`/apps/kinship/api/v1/people/${props.person!.id}`),
-				{ data: formData },
-			)
-		} else {
-			response = await axios.post(
-				generateUrl('/apps/kinship/api/v1/people'),
-				{ data: formData },
-			)
-		}
+		const person = isEdit.value
+			? await updatePerson(props.person!.id as number, formData)
+			: await createPerson(formData)
 
-		emit('saved', response.data)
+		emit('saved', person)
 		close()
 	} catch (e) {
 		error.value = 'Could not save the person. Please try again.'

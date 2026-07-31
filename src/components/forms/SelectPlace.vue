@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NcSelect } from '@nextcloud/vue'
-import { fetchPlacesOptions } from '@/stores/use-options-store.ts'
+import { fetchPlacesOptions } from '@/api/places'
 import { onMounted, ref } from 'vue'
 import type { SelectOption } from '@/types'
 

@@ -1,9 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
-import type { Event, GenealogyDateType, PaginatedResult } from '@/types'
+import type { Event, GenealogyDateType } from '@/types'
 import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
+import { fetchPersonEvents } from '@/api/events'
 
 export interface EventFormData {
 	id?: number
@@ -31,17 +30,12 @@ export const useEventStore = defineStore('eventStore', () => {
 		let existing: Event | null = null
 
 		try {
-			const response = await axios.get<PaginatedResult<Event>>(
-				generateUrl(`/apps/kinship/api/v1/people/${person.id}/events`),
-				{
-					params: {
-						type,
-						limit: 1,
-						offset: 0,
-					},
-				},
-			)
-			existing = response.data.events?.[0] ?? null
+			const result = await fetchPersonEvents(person.id, {
+				type,
+				limit: 1,
+				offset: 0,
+			})
+			existing = result.events?.[0] ?? null
 		} catch (e) {
 			console.error('Failed to load life event', e)
 		}

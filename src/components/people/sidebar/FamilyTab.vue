@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NcAppSidebarTab, NcButton, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import { storeToRefs } from 'pinia'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
@@ -10,6 +8,7 @@ import { useRelationshipStore } from '@/stores/use-relationship-store.ts'
 import RelationshipModal from '@/components/modals/RelationshipModal.vue'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
+import { deleteRelationship as deleteRelationshipApi } from '@/api/relationships'
 
 const relationshipStore = useRelationshipStore()
 const { personId, family, loading } = storeToRefs(relationshipStore)
@@ -46,9 +45,7 @@ async function deleteRelationship(relationship: Record<string, any>) {
 		return
 	}
 	try {
-		await axios.delete(
-			generateUrl(`/apps/kinship/api/v1/relationships/${relationship.id}`),
-		)
+		await deleteRelationshipApi(relationship.id)
 		removeRelationship(relationship.id)
 	} catch (e) {
 		console.error('Failed to delete relationship', e)

@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import type { FamilyRelationship, PersonFamily } from '@/types'
+import { fetchPersonFamily } from '@/api/people'
 
 const emptyFamily = (): PersonFamily => ({
 	personId: null,
@@ -28,16 +27,7 @@ export const useRelationshipStore = defineStore('relationshipStore', () => {
 		loading.value = true
 
 		try {
-			const { data } = await axios.get(
-				generateUrl(`/apps/kinship/api/v1/people/${id}/family`),
-			)
-			family.value = {
-				personId: data.personId ?? id,
-				activePartnerships: data.activePartnerships ?? [],
-				endedPartnerships: data.endedPartnerships ?? [],
-				children: data.children ?? [],
-				parents: data.parents ?? [],
-			}
+			family.value = await fetchPersonFamily(id)
 		} catch (e) {
 			console.error('Failed to load person family', e)
 			family.value = { ...emptyFamily(), personId: id }

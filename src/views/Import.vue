@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NcButton, NcLoadingIcon, NcNoteCard } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import Upload from 'vue-material-design-icons/Upload.vue'
+import { importGedcom } from '@/api/import'
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const importing = ref(false)
@@ -27,11 +26,8 @@ async function onFileChange(event: Event) {
 
 	try {
 		const content = await file.text()
-		const response = await axios.post(
-			generateUrl('/apps/kinship/api/v1/import/gedcom'),
-			{ content },
-		)
-		message.value = `Imported ${response.data.imported} people.`
+		const result = await importGedcom(content)
+		message.value = `Imported ${result.imported} people.`
 	} catch (e) {
 		error.value = 'Could not import the file. Please try again.'
 		console.error('Failed to import GEDCOM', e)

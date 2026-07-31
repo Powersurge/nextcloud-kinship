@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import Account from 'vue-material-design-icons/Account.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import PersonCard from '../components/PersonCard.vue'
 import PersonModal from '../components/modals/PersonModal.vue'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
+import { deletePerson as deletePersonApi, fetchPeople } from '@/api/people'
 
 const people = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
@@ -20,10 +19,7 @@ const sidebarStore = usePersonSidebarStore()
 async function loadPeople() {
 	loading.value = true
 	try {
-		const response = await axios.get(
-			generateUrl('/apps/kinship/api/v1/people'),
-		)
-		people.value = response.data.people ?? []
+		people.value = await fetchPeople()
 	} catch (e) {
 		console.error('Failed to load people', e)
 	} finally {
@@ -50,9 +46,7 @@ async function deletePerson(person: Record<string, any>) {
 		return
 	}
 	try {
-		await axios.delete(
-			generateUrl(`/apps/kinship/api/v1/people/${person.id}`),
-		)
+		await deletePersonApi(person.id)
 		people.value = people.value.filter((p) => p.id !== person.id)
 	} catch (e) {
 		console.error('Failed to delete person', e)

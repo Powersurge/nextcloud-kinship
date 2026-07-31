@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import FamilyCard from '../components/FamilyCard.vue'
 import FamilyModal from '../components/modals/FamilyModal.vue'
+import { fetchFamilies } from '@/api/families'
 
 const families = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
@@ -16,10 +15,7 @@ const editing = ref<Record<string, any> | null>(null)
 async function loadFamilies() {
 	loading.value = true
 	try {
-		const response = await axios.get(
-			generateUrl('/apps/kinship/api/v1/families'),
-		)
-		families.value = response.data.families ?? []
+		families.value = await fetchFamilies()
 	} catch (e) {
 		console.error('Failed to load families', e)
 	} finally {

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
+import { fetchPerson, updatePerson } from '@/api/people'
 
 export const usePeopleStore = defineStore('peopleStore', () => {
 	const selectedPerson = ref<Record<string, any> | null>(null)
@@ -10,10 +9,7 @@ export const usePeopleStore = defineStore('peopleStore', () => {
 	async function loadPersonSummary(id: number) {
 		loading.value = true
 		try {
-			const response = await axios.get(
-				generateUrl(`/apps/kinship/api/v1/people/${id}`),
-			)
-			selectedPerson.value = response.data
+			selectedPerson.value = await fetchPerson(id)
 		} catch (e) {
 			console.error('Failed to load person summary', e)
 			selectedPerson.value = null
@@ -37,10 +33,7 @@ export const usePeopleStore = defineStore('peopleStore', () => {
 			return
 		}
 
-		await axios.put(
-			generateUrl(`/apps/kinship/api/v1/people/${id}`),
-			{ data: { biography } },
-		)
+		await updatePerson(id, { biography })
 		await refreshSelectedPerson()
 	}
 

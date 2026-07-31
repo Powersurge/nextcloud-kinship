@@ -11,9 +11,9 @@ import '@vue-flow/core/dist/theme-default.css'
 import dagre from '@dagrejs/dagre'
 
 import { NcEmptyContent, NcLoadingIcon, NcSelect } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 import FamilyTreeIcon from 'vue-material-design-icons/FamilyTree.vue'
+import { fetchPeople } from '@/api/people'
+import { fetchTree } from '@/api/tree'
 import LockOutline from 'vue-material-design-icons/LockOutline.vue'
 import LockOpenOutline from 'vue-material-design-icons/LockOpenOutline.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
@@ -240,9 +240,9 @@ function buildGraph(tree: TreeNode) {
 }
 
 async function loadPeople() {
-	const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
+	const list = await fetchPeople()
 
-	people.value = data.people.map((p: { id: number, firstName: string, lastName: string }) => ({
+	people.value = list.map((p) => ({
 		value: p.id,
 		label: `${p.firstName} ${p.lastName}`,
 	}))
@@ -256,12 +256,10 @@ async function loadTree(id: number) {
 	loading.value = true
 
 	try {
-		const { data } = await axios.get(
-			generateUrl(`/apps/kinship/api/v1/tree/${id}`),
-		)
+		const data = await fetchTree(id)
 
-		root.value = data
-		buildGraph(data)
+		root.value = data as TreeNode
+		buildGraph(data as TreeNode)
 	} finally {
 		loading.value = false
 	}

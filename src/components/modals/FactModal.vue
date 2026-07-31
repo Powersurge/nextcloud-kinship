@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
-import axios from '@nextcloud/axios'
-import { generateUrl } from '@nextcloud/router'
 import FactForm from '../forms/FactForm.vue'
+import { createFact, updateFact } from '@/api/facts'
 
 const props = defineProps<{
 	open: boolean
@@ -36,20 +35,11 @@ async function onSubmit(data: Record<string, unknown>) {
 	}
 
 	try {
-		let response
-		if (isEdit.value) {
-			response = await axios.put(
-				generateUrl(`/apps/kinship/api/v1/facts/${props.fact!.id}`),
-				{ data: payload },
-			)
-		} else {
-			response = await axios.post(
-				generateUrl('/apps/kinship/api/v1/facts'),
-				{ data: payload },
-			)
-		}
+		const fact = isEdit.value
+			? await updateFact(props.fact!.id as number, payload)
+			: await createFact(payload)
 
-		emit('saved', response.data)
+		emit('saved', fact)
 		close()
 	} catch (e) {
 		error.value = 'Could not save the fact. Please try again.'
