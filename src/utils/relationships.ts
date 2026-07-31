@@ -85,7 +85,7 @@ const PARENTHOOD_INPUT = new Set([
 
 /**
  * Input types where an optional co-parent link may be recorded.
- * @param type
+ * @param type Relationship type
  */
 export function isParenthoodInputType(type: string): boolean {
 	return PARENTHOOD_INPUT.has(type)
@@ -100,7 +100,7 @@ const PARENTHOOD_STORED = new Set([
 
 /**
  * Canonical stored parenthood types (person_a is the parent).
- * @param type
+ * @param type Relationship type
  */
 export function isParenthoodStoredType(type: string): boolean {
 	return PARENTHOOD_STORED.has(type)
@@ -108,9 +108,9 @@ export function isParenthoodStoredType(type: string): boolean {
 
 /**
  * Resolve parent and child person ids from form input before canonicalization.
- * @param personA
- * @param personB
- * @param type
+ * @param personA ID of person A
+ * @param personB ID of person B
+ * @param type Relationship type
  */
 export function parentChildIdsFromInput(
 	personA: number | null,

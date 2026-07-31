@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { NcAppSidebarTab, NcButton, NcLoadingIcon } from '@nextcloud/vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
@@ -8,64 +8,17 @@ import Plus from 'vue-material-design-icons/Plus.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import { useRelationshipStore } from '@/stores/use-relationship-store.ts'
 import RelationshipModal from '@/components/modals/RelationshipModal.vue'
-import {
-	isActivePartnershipType,
-	isEndedPartnershipType,
-	relationshipTypeLabel,
-} from '@/utils/relationships.ts'
+import { relationshipTypeLabel } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
 
-const PARENTHOOD_TYPES = new Set([
-	'parent',
-	'biological_parent',
-	'adoptive_parent',
-	'foster_parent',
-])
-
 const relationshipStore = useRelationshipStore()
-const { personId, relationships, loading } = storeToRefs(relationshipStore)
-const { nameOf, removeRelationship, refresh } = relationshipStore
+const { personId, family, loading } = storeToRefs(relationshipStore)
+const { removeRelationship, refresh } = relationshipStore
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
 const defaultPersonA = ref<number | null>(null)
 const defaultType = ref<string | null>(null)
-
-const partnerId = (relationship: Record<string, any>, id: number): number => {
-	return relationship.personA === id ? relationship.personB : relationship.personA
-}
-
-const activePartnerships = computed(() =>
-	relationships.value.filter((r) =>
-		personId.value != null
-		&& (r.personA === personId.value || r.personB === personId.value)
-		&& isActivePartnershipType(r.type),
-	),
-)
-
-const endedPartnerships = computed(() =>
-	relationships.value.filter((r) =>
-		personId.value != null
-		&& (r.personA === personId.value || r.personB === personId.value)
-		&& isEndedPartnershipType(r.type),
-	),
-)
-
-const children = computed(() =>
-	relationships.value.filter((r) =>
-		personId.value != null
-		&& r.personA === personId.value
-		&& PARENTHOOD_TYPES.has(r.type),
-	),
-)
-
-const parents = computed(() =>
-	relationships.value.filter((r) =>
-		personId.value != null
-		&& r.personB === personId.value
-		&& PARENTHOOD_TYPES.has(r.type),
-	),
-)
 
 function openCreatePartnership() {
 	editing.value = null
@@ -133,14 +86,14 @@ function onSaved() {
 						</NcButton>
 					</div>
 
-					<ul v-if="activePartnerships.length" class="family-list">
+					<ul v-if="family.activePartnerships.length" class="family-list">
 						<li
-							v-for="relationship in activePartnerships"
+							v-for="relationship in family.activePartnerships"
 							:key="relationship.id"
 							class="family-list__item">
 							<div class="family-list__main">
 								<span class="family-list__name">
-									{{ nameOf(partnerId(relationship, personId!)) }}
+									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge">
 									{{ relationshipTypeLabel(relationship.type) }}
@@ -164,18 +117,18 @@ function onSaved() {
 					</p>
 				</section>
 
-				<section v-if="endedPartnerships.length" class="family-section">
+				<section v-if="family.endedPartnerships.length" class="family-section">
 					<h3 class="family-section__title">
 						Former partnerships
 					</h3>
 					<ul class="family-list">
 						<li
-							v-for="relationship in endedPartnerships"
+							v-for="relationship in family.endedPartnerships"
 							:key="relationship.id"
 							class="family-list__item family-list__item--ended">
 							<div class="family-list__main">
 								<span class="family-list__name">
-									{{ nameOf(partnerId(relationship, personId!)) }}
+									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge family-list__badge--ended">
 									{{ relationshipTypeLabel(relationship.type) }}
@@ -209,14 +162,14 @@ function onSaved() {
 						</NcButton>
 					</div>
 
-					<ul v-if="children.length" class="family-list">
+					<ul v-if="family.children.length" class="family-list">
 						<li
-							v-for="relationship in children"
+							v-for="relationship in family.children"
 							:key="relationship.id"
 							class="family-list__item">
 							<div class="family-list__main">
 								<span class="family-list__name">
-									{{ nameOf(relationship.personB) }}
+									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge family-list__badge--muted">
 									{{ relationshipTypeLabel(relationship.type) }}
@@ -242,14 +195,14 @@ function onSaved() {
 						Parents
 					</h3>
 
-					<ul v-if="parents.length" class="family-list">
+					<ul v-if="family.parents.length" class="family-list">
 						<li
-							v-for="relationship in parents"
+							v-for="relationship in family.parents"
 							:key="relationship.id"
 							class="family-list__item">
 							<div class="family-list__main">
 								<span class="family-list__name">
-									{{ nameOf(relationship.personA) }}
+									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge family-list__badge--muted">
 									{{ relationshipTypeLabel(relationship.type) }}

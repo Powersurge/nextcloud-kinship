@@ -40,6 +40,20 @@ export interface Person {
 	deathDate: GenealogyDateValue | null;
 }
 
+export type FamilyRelationship = Record<string, any> & {
+	id: number
+	relatedPersonId: number
+	relatedPersonName: string
+}
+
+export type PersonFamily = {
+	personId: number | null
+	activePartnerships: FamilyRelationship[]
+	endedPartnerships: FamilyRelationship[]
+	children: FamilyRelationship[]
+	parents: FamilyRelationship[]
+}
+
 export interface Event {
 	id?: number | null;
 	type: string;

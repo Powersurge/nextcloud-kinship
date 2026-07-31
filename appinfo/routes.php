@@ -21,6 +21,7 @@ return [
 		['name' => 'person#show', 'url' => '/api/v1/people/{id}', 'verb' => 'GET'],
 		['name' => 'person#update', 'url' => '/api/v1/people/{id}', 'verb' => 'PUT'],
 		['name' => 'person#delete', 'url' => '/api/v1/people/{id}', 'verb' => 'DELETE'],
+		['name' => 'person_family#show', 'url' => '/api/v1/people/{id}/family', 'verb' => 'GET'],
 
 		// Families (membership is derived from relationships)
 		['name' => 'family#index', 'url' => '/api/v1/families', 'verb' => 'GET'],
