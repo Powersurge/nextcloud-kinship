@@ -7,7 +7,7 @@ import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import Cake from 'vue-material-design-icons/CakeVariant.vue'
-import Cross from 'vue-material-design-icons/Cross.vue'
+import GraveStone from 'vue-material-design-icons/GraveStone.vue'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
 const props = defineProps<{
@@ -78,7 +78,7 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 			<div
 				v-if="deathLabel"
 				class="detail">
-				<Cross :size="18" />
+				<GraveStone :size="18" />
 				<span>{{ deathLabel }}</span>
 			</div>
 		</div>
