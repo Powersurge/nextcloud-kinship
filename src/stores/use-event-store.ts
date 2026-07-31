@@ -26,9 +26,7 @@ export const useEventStore = defineStore('eventStore', () => {
 		type: 'birth' | 'death',
 		person: Record<string, any>,
 	) => {
-		const existing = (person.events ?? []).find(
-			(event: Record<string, any>) => event.type === type,
-		)
+		const existing = person.lifeEvents?.[type] ?? null
 
 		if (existing) {
 			openEventForm({

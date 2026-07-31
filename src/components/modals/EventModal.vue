@@ -60,7 +60,7 @@ async function onSubmit(data: Record<string, unknown>) {
 		:open="open"
 		:name="title"
 		size="normal"
-		:close-on-click-outside="!saving"
+		:close-on-click-outside="false"
 		@update:open="emit('update:open', $event)">
 		<NcNoteCard v-if="error" type="error">
 			{{ error }}

@@ -31,14 +31,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { dateDisplay } from '@/utils/date.ts'
-
-interface Event {
-	id?: number
-	title?: string | null
-	type: string
-	date: unknown
-	description?: string | null
-}
+import type { Event } from '@/types'
 
 const props = defineProps<{
 	event: Event

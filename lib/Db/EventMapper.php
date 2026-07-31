@@ -166,10 +166,41 @@ class EventMapper extends QBMapper {
 	public function findByPerson(
 		int $personId,
 	): array {
+		$qb = $this->createFindByPersonQueryBuilder($personId);
+		$qb->select('e.*');
+
+		return $this->findEntities($qb);
+	}
+
+	/**
+	 * @return Event[]
+	 */
+	public function findByPersonPaginated(
+		int $personId,
+		int $limit,
+		int $offset,
+	): array {
+		$qb = $this->createFindByPersonQueryBuilder($personId);
+		$qb->select('e.*')
+			->setMaxResults($limit)
+			->setFirstResult($offset);
+
+		$this->applyPersonEventOrdering($qb);
+
+		return $this->findEntities($qb);
+	}
+
+	public function countByPerson(int $personId): int {
+		$qb = $this->createFindByPersonQueryBuilder($personId);
+		$qb->select($qb->createFunction('COUNT(*)'));
+
+		return (int)$qb->executeQuery()->fetchOne();
+	}
+
+	private function createFindByPersonQueryBuilder(int $personId): IQueryBuilder {
 		$qb = $this->db->getQueryBuilder();
 
-		$qb->select('e.*')
-			->from($this->getTableName(), 'e')
+		$qb->from($this->getTableName(), 'e')
 			->innerJoin(
 				'e',
 				'kinship_participants',
@@ -192,7 +223,14 @@ class EventMapper extends QBMapper {
 				)
 			);
 
-		return $this->findEntities($qb);
+		return $qb;
+	}
+
+	private function applyPersonEventOrdering(IQueryBuilder $qb): void {
+		$qb->addOrderBy('e.date_start_year', 'ASC')
+			->addOrderBy('e.date_start_month', 'ASC')
+			->addOrderBy('e.date_start_day', 'ASC')
+			->addOrderBy('e.id', 'ASC');
 	}
 
 	/**

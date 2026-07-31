@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { NcAppSidebarTab, NcButton, NcLoadingIcon } from '@nextcloud/vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { storeToRefs } from 'pinia'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
-import { usePeopleStore } from '@/stores/use-people-store.ts'
+import { useRelationshipStore } from '@/stores/use-relationship-store.ts'
 import RelationshipModal from '@/components/modals/RelationshipModal.vue'
 import {
 	isActivePartnershipType,
@@ -22,67 +22,18 @@ const PARENTHOOD_TYPES = new Set([
 	'foster_parent',
 ])
 
-const { selectedPerson } = storeToRefs(usePeopleStore())
-
-const relationships = ref<Array<Record<string, any>>>([])
-const peopleById = ref<Record<number, string>>({})
-const loading = ref(false)
+const relationshipStore = useRelationshipStore()
+const { personId, relationships, loading } = storeToRefs(relationshipStore)
+const { nameOf, removeRelationship, refresh } = relationshipStore
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
 const defaultPersonA = ref<number | null>(null)
 const defaultType = ref<string | null>(null)
 
-function nameOf(id: number): string {
-	return peopleById.value[id] ?? `#${id}`
+const partnerId = (relationship: Record<string, any>, id: number): number => {
+	return relationship.personA === id ? relationship.personB : relationship.personA
 }
-
-function partnerId(relationship: Record<string, any>, personId: number): number {
-	return relationship.personA === personId ? relationship.personB : relationship.personA
-}
-
-async function loadPeopleMap() {
-	const { data } = await axios.get(generateUrl('/apps/kinship/api/v1/people'))
-	const map: Record<number, string> = {}
-	for (const p of data.people ?? []) {
-		map[p.id] = `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`
-	}
-	peopleById.value = map
-}
-
-async function loadRelationships() {
-	const personId = selectedPerson.value?.id
-	if (!personId) {
-		relationships.value = []
-		return
-	}
-
-	loading.value = true
-	try {
-		const { data } = await axios.get(
-			generateUrl(`/apps/kinship/api/v1/people/${personId}/relationships`),
-		)
-		relationships.value = data.relationships ?? []
-	} catch (e) {
-		console.error('Failed to load person relationships', e)
-		relationships.value = []
-	} finally {
-		loading.value = false
-	}
-}
-
-watch(selectedPerson, async (person) => {
-	if (person?.id) {
-		if (Object.keys(peopleById.value).length === 0) {
-			await loadPeopleMap()
-		}
-		await loadRelationships()
-	} else {
-		relationships.value = []
-	}
-}, { immediate: true })
-
-const personId = computed(() => selectedPerson.value?.id ?? null)
 
 const activePartnerships = computed(() =>
 	relationships.value.filter((r) =>
@@ -145,14 +96,14 @@ async function deleteRelationship(relationship: Record<string, any>) {
 		await axios.delete(
 			generateUrl(`/apps/kinship/api/v1/relationships/${relationship.id}`),
 		)
-		relationships.value = relationships.value.filter((r) => r.id !== relationship.id)
+		removeRelationship(relationship.id)
 	} catch (e) {
 		console.error('Failed to delete relationship', e)
 	}
 }
 
 function onSaved() {
-	loadRelationships()
+	refresh()
 }
 </script>
 

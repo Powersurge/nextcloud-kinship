@@ -32,10 +32,30 @@ export interface Person {
 	middleName: string;
 	lastName: string;
 	preferredName: string;
-	/** Read from the person's birth event; null when they have none. */
+	gender?: string | null;
+	livingStatus?: string;
+	biography?: string | null;
+	avatar?: string | null;
 	birthDate: GenealogyDateValue | null;
-	/** Read from the person's death event; null when they have none. */
 	deathDate: GenealogyDateValue | null;
+}
+
+export interface Event {
+	id?: number | null;
+	type: string;
+	title: string | null;
+	description: string | null;
+	date: GenealogyDateValue | null;
+	placeId: number | null;
+	customEventId?: number | null;
+	familyId?: number | null;
+}
+
+export interface PaginatedResult<T> {
+	events: T[];
+	total: number;
+	limit: number;
+	offset: number;
 }
 
 export interface Place {

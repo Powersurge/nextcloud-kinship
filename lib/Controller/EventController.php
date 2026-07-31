@@ -38,10 +38,12 @@ class EventController extends ApiController {
 
 	public function personEvents(
 		int $personId,
+		int $limit = 10,
+		int $offset = 0,
 	): DataResponse {
-		return new DataResponse([
-			'events' => $this->service->getForPerson($personId)
-		]);
+		return new DataResponse(
+			$this->service->getForPersonPaginated($personId, $limit, $offset)
+		);
 	}
 
 	public function familyEvents(

@@ -36,8 +36,6 @@ class PersonService {
 	public function get(int $id): Person {
 		$person = $this->mapper->find($id);
 
-		//		$person->setEvents($this->eventMapper->findByPerson($id));
-
 		return $this->hydrateLifeDates([$person])[0];
 	}
 
@@ -60,8 +58,6 @@ class PersonService {
 			$events = $lifeEvents[$person->getId()] ?? [];
 			$birth = $events[EventType::BIRTH] ?? null;
 			$death = $events[EventType::DEATH] ?? null;
-
-			$person->setEvents($this->eventMapper->findByPerson($person->getId()));
 
 			$person->setBirthDate($birth?->getDate());
 			$person->setDeathDate($death?->getDate());

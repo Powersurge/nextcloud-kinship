@@ -17,15 +17,14 @@ import { useFactStore } from '@/stores/use-fact-store.ts'
 import { computed, ref, watch } from 'vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { FACT_TYPE_OPTIONS } from '@/constants.ts'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
 
-const { selectedPerson } = storeToRefs(usePeopleStore())
-const { refreshSelectedPerson } = usePeopleStore()
+const peopleStore = usePeopleStore()
+const { selectedPerson } = storeToRefs(peopleStore)
+const { updateBiography } = peopleStore
 const { openLifeDateForm } = useEventStore()
 const factStore = useFactStore()
 const { facts, loading: loadingFacts } = storeToRefs(factStore)
-const { openCreateFactForm, openEditFactForm, loadFacts } = factStore
+const { openCreateFactForm, openEditFactForm } = factStore
 
 const birthLabel = computed(() => dateDisplay(selectedPerson.value?.birthDate))
 const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
@@ -38,14 +37,10 @@ const factTypeLabel = (type: string) =>
 	FACT_TYPE_OPTIONS.find((option) => option.value === type)?.label
 	?? type.replace(/_/g, ' ')
 
-watch(selectedPerson, (person) => {
+watch(selectedPerson, () => {
 	editingBiography.value = false
 	biographyDraft.value = ''
-
-	if (person?.id) {
-		loadFacts('person', person.id)
-	}
-}, { immediate: true })
+})
 
 function openCreateFact() {
 	openCreateFactForm(selectedPerson.value.id)
@@ -80,11 +75,7 @@ async function saveBiography() {
 
 	savingBiography.value = true
 	try {
-		await axios.put(
-			generateUrl(`/apps/kinship/api/v1/people/${selectedPerson.value.id}`),
-			{ data: { biography: biographyDraft.value || null } },
-		)
-		await refreshSelectedPerson()
+		await updateBiography(biographyDraft.value || null)
 		editingBiography.value = false
 	} catch (e) {
 		console.error('Failed to save biography', e)

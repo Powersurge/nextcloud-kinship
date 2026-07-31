@@ -19,14 +19,16 @@ export interface FactFormData {
 export const useFactStore = defineStore('factStore', () => {
 	const facts = ref<Fact[]>([])
 	const loading = ref(false)
+	const subjectId = ref<number | null>(null)
 	const showFormModal = ref(false)
 	const factForm = ref<FactFormData | Record<string, unknown>>({})
 
-	async function loadFacts(subjectType: string, subjectId: number) {
+	async function loadFacts(subjectType: string, id: number) {
+		subjectId.value = id
 		loading.value = true
 		try {
 			const response = await axios.get(generateUrl('/apps/kinship/api/v1/facts'), {
-				params: { subjectType, subjectId },
+				params: { subjectType, subjectId: id },
 			})
 			facts.value = response.data.facts ?? []
 		} catch (e) {
@@ -35,6 +37,12 @@ export const useFactStore = defineStore('factStore', () => {
 		} finally {
 			loading.value = false
 		}
+	}
+
+	function reset() {
+		facts.value = []
+		subjectId.value = null
+		loading.value = false
 	}
 
 	function openFactForm(formData: FactFormData | Record<string, unknown>) {
@@ -64,9 +72,11 @@ export const useFactStore = defineStore('factStore', () => {
 	return {
 		facts,
 		loading,
+		subjectId,
 		showFormModal,
 		factForm,
 		loadFacts,
+		reset,
 		openFactForm,
 		openCreateFactForm,
 		openEditFactForm,

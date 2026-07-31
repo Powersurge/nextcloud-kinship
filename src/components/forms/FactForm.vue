@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
-import { NcButton, NcSelect, NcTextArea, NcTextField } from '@nextcloud/vue'
+import { NcButton, NcSelect, NcTextArea } from '@nextcloud/vue'
 import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
 import type { GenealogyDateType } from '@/types'
 import { FACT_TYPE_OPTIONS } from '@/constants.ts'

@@ -54,7 +54,6 @@ class PersonController extends ApiController {
 	 */
 	public function create(
 		array $data,
-		EventService $eventService,
 	): DataResponse {
 		$instance = new Person();
 

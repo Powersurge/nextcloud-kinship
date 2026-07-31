@@ -41,6 +41,21 @@ class EventService {
 	}
 
 	/**
+	 * @return array{events: Event[], total: int, limit: int, offset: int}
+	 */
+	public function getForPersonPaginated(int $personId, int $limit, int $offset): array {
+		$limit = max(1, min(50, $limit));
+		$offset = max(0, $offset);
+
+		return [
+			'events' => $this->mapper->findByPersonPaginated($personId, $limit, $offset),
+			'total' => $this->mapper->countByPerson($personId),
+			'limit' => $limit,
+			'offset' => $offset,
+		];
+	}
+
+	/**
 	 * Events a person takes part in (via participants).
 	 *
 	 * @return Event[]
