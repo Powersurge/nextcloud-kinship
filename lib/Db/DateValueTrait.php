@@ -35,8 +35,10 @@ trait DateValueTrait {
 		);
 	}
 
-	public function setDate(?DateValue $date): void {
-		$date ??= new DateValue();
+	public function setDate(DateValue|array $date): void {
+		if ($date instanceof DateValue === false) {
+			$date ??= new DateValue();
+		}
 
 		// Route through the Entity magic setters for dirty tracking.
 		$this->setDateKind($date->kind);

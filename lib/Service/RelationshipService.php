@@ -89,7 +89,11 @@ class RelationshipService {
 		$type = (string)($data['type'] ?? '');
 
 		$canonical = $this->canonicalTriple($personA, $personB, $type);
-		$date = DateValue::fromArray($data['date'] ?? null);
+		$date = $data['date'] ?? null;
+
+		if (is_array($date)) {
+			$date = DateValue::fromArray($date);
+		}
 
 		$existing = $this->mapper->findCanonical(
 			$canonical['personA'],
