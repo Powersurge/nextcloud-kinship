@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
+use OCA\Kinship\Constants\EventType;
 use OCA\Kinship\Service\EventService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -40,9 +41,22 @@ class EventController extends ApiController {
 		int $personId,
 		int $limit = 10,
 		int $offset = 0,
+		?string $type = null,
 	): DataResponse {
+		if ($type !== null && !EventType::isValid($type)) {
+			$limit = max(1, min(50, $limit));
+			$offset = max(0, $offset);
+
+			return new DataResponse([
+				'events' => [],
+				'total' => 0,
+				'limit' => $limit,
+				'offset' => $offset,
+			]);
+		}
+
 		return new DataResponse(
-			$this->service->getForPersonPaginated($personId, $limit, $offset)
+			$this->service->getForPersonPaginated($personId, $limit, $offset, $type)
 		);
 	}
 

@@ -43,7 +43,7 @@ watch(selectedPerson, () => {
 })
 
 function openCreateFact() {
-	openCreateFactForm(selectedPerson.value.id)
+	openCreateFactForm(selectedPerson.value?.id)
 }
 
 function openBirthForm() {

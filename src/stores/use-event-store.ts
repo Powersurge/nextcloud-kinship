@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { GenealogyDateType } from '@/types'
+import axios from '@nextcloud/axios'
+import { generateUrl } from '@nextcloud/router'
+import type { Event, GenealogyDateType, PaginatedResult } from '@/types'
 import { createEmptyGenealogyDate, toGenealogyDate } from '@/utils/date.ts'
 
 export interface EventFormData {
@@ -22,15 +24,31 @@ export const useEventStore = defineStore('eventStore', () => {
 		showFormModal.value = true
 	}
 
-	const openLifeDateForm = (
+	const openLifeDateForm = async (
 		type: 'birth' | 'death',
-		person: Record<string, any>,
+		person: { id: number },
 	) => {
-		const existing = person.lifeEvents?.[type] ?? null
+		let existing: Event | null = null
+
+		try {
+			const response = await axios.get<PaginatedResult<Event>>(
+				generateUrl(`/apps/kinship/api/v1/people/${person.id}/events`),
+				{
+					params: {
+						type,
+						limit: 1,
+						offset: 0,
+					},
+				},
+			)
+			existing = response.data.events?.[0] ?? null
+		} catch (e) {
+			console.error('Failed to load life event', e)
+		}
 
 		if (existing) {
 			openEventForm({
-				id: existing.id,
+				id: existing.id ?? undefined,
 				type: existing.type,
 				title: existing.title ?? null,
 				description: existing.description ?? null,

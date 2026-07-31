@@ -165,8 +165,9 @@ class EventMapper extends QBMapper {
 
 	public function findByPerson(
 		int $personId,
+		?string $type = null,
 	): array {
-		$qb = $this->createFindByPersonQueryBuilder($personId);
+		$qb = $this->createFindByPersonQueryBuilder($personId, $type);
 		$qb->select('e.*');
 
 		return $this->findEntities($qb);
@@ -179,8 +180,9 @@ class EventMapper extends QBMapper {
 		int $personId,
 		int $limit,
 		int $offset,
+		?string $type = null,
 	): array {
-		$qb = $this->createFindByPersonQueryBuilder($personId);
+		$qb = $this->createFindByPersonQueryBuilder($personId, $type);
 		$qb->select('e.*')
 			->setMaxResults($limit)
 			->setFirstResult($offset);
@@ -190,14 +192,17 @@ class EventMapper extends QBMapper {
 		return $this->findEntities($qb);
 	}
 
-	public function countByPerson(int $personId): int {
-		$qb = $this->createFindByPersonQueryBuilder($personId);
+	public function countByPerson(int $personId, ?string $type = null): int {
+		$qb = $this->createFindByPersonQueryBuilder($personId, $type);
 		$qb->select($qb->createFunction('COUNT(*)'));
 
 		return (int)$qb->executeQuery()->fetchOne();
 	}
 
-	private function createFindByPersonQueryBuilder(int $personId): IQueryBuilder {
+	private function createFindByPersonQueryBuilder(
+		int $personId,
+		?string $type = null,
+	): IQueryBuilder {
 		$qb = $this->db->getQueryBuilder();
 
 		$qb->from($this->getTableName(), 'e')
@@ -222,6 +227,15 @@ class EventMapper extends QBMapper {
 					$qb->createNamedParameter(ParticipantRole::SUBJECT)
 				)
 			);
+
+		if ($type !== null) {
+			$qb->andWhere(
+				$qb->expr()->eq(
+					'e.type',
+					$qb->createNamedParameter($type)
+				)
+			);
+		}
 
 		return $qb;
 	}
