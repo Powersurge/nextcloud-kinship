@@ -3,10 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { NcSelect } from '@nextcloud/vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import {
-	isPartnershipType,
-	relationshipTypeLabel,
-} from '@/utils/relationships.ts'
+import { relationshipTypeLabel } from '@/utils/relationships.ts'
 
 interface PartnerOption {
 	value: number
@@ -32,34 +29,22 @@ const options = computed(() => [
 async function loadPartners(parentId: number) {
 	loading.value = true
 	try {
-		const [relRes, peopleRes] = await Promise.all([
-			axios.get(generateUrl(`/apps/kinship/api/v1/people/${parentId}/relationships`)),
-			axios.get(generateUrl('/apps/kinship/api/v1/people')),
-		])
+		const { data } = await axios.get(
+			generateUrl(`/apps/kinship/api/v1/people/${parentId}/family`),
+		)
 
-		const names: Record<number, string> = {}
-		for (const person of peopleRes.data.people ?? []) {
-			names[person.id] = `${person.firstName ?? ''} ${person.lastName ?? ''}`.trim()
-				|| `#${person.id}`
-		}
+		const allPartners = [
+			...(data.activePartnerships ?? []),
+			...(data.endedPartnerships ?? []),
+		]
 
 		const partners = new Map<number, string>()
-		for (const relationship of relRes.data.relationships ?? []) {
-			if (!isPartnershipType(relationship.type)) {
-				continue
-			}
 
-			const partnerId = relationship.personA === parentId
-				? relationship.personB
-				: relationship.personA
-
-			if (partnerId === parentId) {
-				continue
-			}
-
-			const status = relationshipTypeLabel(relationship.type)
-			const name = names[partnerId] ?? `#${partnerId}`
-			partners.set(partnerId, `${name} (${status})`)
+		for (const relationship of allPartners) {
+			partners.set(
+				relationship.relatedPersonId,
+				`${relationship.relatedPersonName} (${relationshipTypeLabel(relationship.type)})`,
+			)
 		}
 
 		partnerOptions.value = [...partners.entries()]

@@ -42,13 +42,6 @@ export function toGenealogyDate(value?: GenealogyDateValue | null): GenealogyDat
 	}
 }
 
-export function toDateValue(iso: string | null): DateValue {
-	if (!iso) {
-		return { kind: 'unknown', start: null, end: null, display: null }
-	}
-	return { kind: 'exact', start: iso, end: null, display: iso }
-}
-
 export function startToDate(value?: DateValue | { start?: string | null } | null): Date | null {
 	const start = value?.start
 	return start ? new Date(start) : null

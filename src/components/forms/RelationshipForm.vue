@@ -5,17 +5,12 @@ import {
 	NcNoteCard,
 	NcTextArea,
 } from '@nextcloud/vue'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
-import { createEmptyGenealogyDate, toDateValue, toGenealogyDate } from '@/utils/date.ts'
 import {
 	isPartnershipType,
 	isParenthoodInputType,
 	isParenthoodStoredType,
 	parentChildIdsFromInput,
 } from '@/utils/relationships.ts'
-import type { GenealogyDateType } from '@/types'
-import GenealogyDatePicker from '@/components/ui/GenealogyDatePicker.vue'
 import SelectPerson from '@/components/forms/SelectPerson.vue'
 import SelectRelationshipType from '@/components/forms/SelectRelationshipType.vue'
 import SelectCoParent from '@/components/forms/SelectCoParent.vue'
@@ -25,7 +20,6 @@ interface RelationshipFormState {
 	personB: number | null
 	type: string
 	coParentId: number | null
-	date: GenealogyDateType
 	note: string
 }
 
@@ -63,49 +57,12 @@ const parentPersonId = computed(() => {
 	return parentChildIdsFromInput(form.personA, form.personB, form.type).parentId
 })
 
-async function loadCoParentForEdit(relationship: Record<string, any>) {
-	if (!isParenthoodStoredType(relationship.type ?? '')) {
-		return
-	}
-
-	const parentId = relationship.personA as number
-	const childId = relationship.personB as number
-
-	try {
-		const [parentRes, childRes] = await Promise.all([
-			axios.get(generateUrl(`/apps/kinship/api/v1/people/${parentId}/relationships`)),
-			axios.get(generateUrl(`/apps/kinship/api/v1/people/${childId}/relationships`)),
-		])
-
-		const partnerIds = new Set<number>()
-		for (const rel of parentRes.data.relationships ?? []) {
-			if (!isPartnershipType(rel.type)) {
-				continue
-			}
-			partnerIds.add(rel.personA === parentId ? rel.personB : rel.personA)
-		}
-
-		const coParent = (childRes.data.relationships ?? []).find((rel: Record<string, any>) =>
-			isParenthoodStoredType(rel.type)
-			&& rel.personB === childId
-			&& rel.personA !== parentId
-			&& partnerIds.has(rel.personA),
-		)
-
-		form.coParentId = coParent?.personA ?? null
-	} catch (e) {
-		console.error('Failed to load co-parent for edit', e)
-		form.coParentId = null
-	}
-}
-
 function emptyForm(): RelationshipFormState {
 	return {
 		personA: null,
 		personB: null,
 		type: 'parent',
 		coParentId: null,
-		date: createEmptyGenealogyDate(),
 		note: '',
 	}
 }
@@ -118,9 +75,7 @@ watch(
 			form.personA = relationship.personA ?? null
 			form.personB = relationship.personB ?? null
 			form.type = relationship.type || 'parent'
-			form.date = toGenealogyDate(relationship.date)
 			form.note = relationship.note ?? ''
-			loadCoParentForEdit(relationship)
 			return
 		}
 
@@ -144,37 +99,7 @@ watch(
 )
 
 function onSubmit() {
-	if (isEdit()) {
-		const payload: Record<string, unknown> = {
-			date: toDateValue(form.date),
-			note: form.note || null,
-		}
-
-		if (isPartnershipType(props.relationship?.type ?? '')) {
-			payload.type = form.type
-		}
-
-		if (isParenthoodStoredType(props.relationship?.type ?? '')) {
-			payload.coParentId = form.coParentId
-		}
-
-		emit('submit', payload)
-		return
-	}
-
-	const payload: Record<string, unknown> = {
-		personA: form.personA,
-		personB: form.personB,
-		type: form.type,
-		date: toDateValue(form.date),
-		note: form.note || null,
-	}
-
-	if (isParenthoodInputType(form.type)) {
-		payload.coParentId = form.coParentId
-	}
-
-	emit('submit', payload)
+	emit('submit', form)
 }
 </script>
 
@@ -219,12 +144,6 @@ function onSubmit() {
 			class="w-full"
 			:parent-id="parentPersonId"
 			:disabled="saving" />
-
-		<div class="rel-form__field">
-			<GenealogyDatePicker
-				v-model="form.date"
-				:label="isPartnership ? 'Partnership date (optional)' : 'Date (optional)'" />
-		</div>
 
 		<NcTextArea
 			v-model="form.note"
