@@ -7,12 +7,15 @@ import Account from 'vue-material-design-icons/Account.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import PersonCard from '../components/PersonCard.vue'
 import PersonModal from '../components/modals/PersonModal.vue'
+import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 
 const people = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
+
+const sidebarStore = usePersonSidebarStore()
 
 async function loadPeople() {
 	loading.value = true
@@ -92,7 +95,8 @@ onMounted(loadPeople)
 				:key="person.id"
 				:person="person"
 				@edit="openEdit(person)"
-				@delete="deletePerson(person)" />
+				@delete="deletePerson(person)"
+				@click="sidebarStore.openPerson(person)" />
 		</div>
 
 		<PersonModal
