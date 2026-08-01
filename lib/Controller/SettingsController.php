@@ -24,7 +24,7 @@ class SettingsController extends ApiController {
 		);
 	}
 
-	#[AdminRequired]
+	#[AuthorizedAdminSetting(settings: 'OCA\Kinship\Settings\KinshipAdminSettings')]
 	public function index(): DataResponse {
 		return new DataResponse($this->adminSettingsService->getAll());
 	}
