@@ -21,7 +21,7 @@ export type GenealogyDateValue = {
 }
 
 export type SelectOption = {
-	value: number,
+	value: number | string,
 	label: string,
 }
 
@@ -76,6 +76,21 @@ export interface Place {
 	id: number;
 	name: string;
 	fullName: string | null;
+	latitude?: string | null;
+	longitude?: string | null;
+	provider?: string | null;
+	providerPlaceId?: string | null;
+}
+
+export type PlaceLookupResult = {
+	id: number | null
+	name: string
+	fullName: string | null
+	latitude: string | null
+	longitude: string | null
+	provider: string | null
+	providerPlaceId: string | null
+	source: 'local' | 'external' | 'manual'
 }
 
 export interface Fact {

@@ -28,7 +28,7 @@ class PlaceMapper extends QBMapper {
 			->from($this->getTableName());
 
 		if (!empty($queryParams['selected'])) {
-			$qb->where(
+			$qb->andWhere(
 				$qb->expr()->in(
 					'id',
 					$qb->createNamedParameter($queryParams['selected'], IQueryBuilder::PARAM_INT_ARRAY)
@@ -36,7 +36,21 @@ class PlaceMapper extends QBMapper {
 			);
 		}
 
+		if (!empty($queryParams['searchQuery'])) {
+			$term = '%' . $this->db->escapeLikeParameter(trim($queryParams['searchQuery'])) . '%';
+			$qb->andWhere(
+				$qb->expr()->orX(
+					$qb->expr()->iLike('name', $qb->createNamedParameter($term)),
+					$qb->expr()->iLike('full_name', $qb->createNamedParameter($term)),
+				)
+			);
+		}
+
 		$qb->orderBy('name', 'ASC');
+
+		if (isset($queryParams['limit']) && is_int($queryParams['limit'])) {
+			$qb->setMaxResults($queryParams['limit']);
+		}
 
 		return $this->findEntities($qb);
 	}
@@ -53,6 +67,24 @@ class PlaceMapper extends QBMapper {
 	public function findOrNull(int $id): ?Place {
 		try {
 			return $this->find($id);
+		} catch (DoesNotExistException) {
+			return null;
+		}
+	}
+
+	public function findByProvider(string $provider, string $providerPlaceId): ?Place {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from($this->getTableName())
+			->where($qb->expr()->eq('provider', $qb->createNamedParameter($provider)))
+			->andWhere($qb->expr()->eq(
+				'provider_place_id',
+				$qb->createNamedParameter($providerPlaceId),
+			))
+			->setMaxResults(1);
+
+		try {
+			return $this->findEntity($qb);
 		} catch (DoesNotExistException) {
 			return null;
 		}

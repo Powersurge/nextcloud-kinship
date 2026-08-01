@@ -44,6 +44,8 @@ class PlaceService {
 		$place->setLongitude($data['longitude'] ?? null);
 		$place->setType($data['type'] ?? null);
 		$place->setNotes($data['notes'] ?? null);
+		$place->setProvider($data['provider'] ?? null);
+		$place->setProviderPlaceId($data['providerPlaceId'] ?? null);
 		$place->setOwnerUid($uid);
 		$place->setCreatedBy($uid);
 		$place->setCreatedAt($now);
@@ -76,10 +78,38 @@ class PlaceService {
 		if (array_key_exists('notes', $data)) {
 			$place->setNotes($data['notes']);
 		}
+		if (array_key_exists('provider', $data)) {
+			$place->setProvider($data['provider']);
+		}
+		if (array_key_exists('providerPlaceId', $data)) {
+			$place->setProviderPlaceId($data['providerPlaceId']);
+		}
 
 		$place->setUpdatedAt($this->timeFactory->getTime());
 
 		return $this->mapper->update($place);
+	}
+
+	/**
+	 * Find an existing place by provider provenance, or create one from lookup data.
+	 */
+	public function resolve(array $data): Place {
+		if (isset($data['id']) && is_numeric($data['id'])) {
+			return $this->mapper->find((int)$data['id']);
+		}
+
+		$provider = $data['provider'] ?? null;
+		$providerPlaceId = $data['providerPlaceId'] ?? null;
+
+		if (!empty($provider) && !empty($providerPlaceId)) {
+			$existing = $this->mapper->findByProvider($provider, $providerPlaceId);
+
+			if ($existing !== null) {
+				return $existing;
+			}
+		}
+
+		return $this->create($data);
 	}
 
 	public function delete(int $id): void {

@@ -22,6 +22,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setType(?string $type)
  * @method ?string getNotes()
  * @method void setNotes(?string $notes)
+ * @method ?string getProvider()
+ * @method void setProvider(?string $provider)
+ * @method ?string getProviderPlaceId()
+ * @method void setProviderPlaceId(?string $providerPlaceId)
  * @method ?string getOwnerUid()
  * @method void setOwnerUid(?string $ownerUid)
  * @method ?string getCreatedBy()
@@ -39,6 +43,8 @@ class Place extends Entity implements JsonSerializable {
 	protected ?string $longitude = null;
 	protected ?string $type = null;
 	protected ?string $notes = null;
+	protected ?string $provider = null;
+	protected ?string $providerPlaceId = null;
 	protected ?string $ownerUid = null;
 	protected ?string $createdBy = null;
 	protected ?int $createdAt = null;
@@ -60,6 +66,8 @@ class Place extends Entity implements JsonSerializable {
 			'longitude' => $this->longitude,
 			'type' => $this->type,
 			'notes' => $this->notes,
+			'provider' => $this->provider,
+			'providerPlaceId' => $this->providerPlaceId,
 			'ownerUid' => $this->ownerUid,
 			'createdBy' => $this->createdBy,
 			'createdAt' => $this->createdAt,

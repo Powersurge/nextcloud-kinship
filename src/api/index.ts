@@ -42,8 +42,15 @@ export {
 } from './facts'
 export type { FactsQueryParams } from './facts'
 
-export { fetchPlaces, fetchPlacesOptions } from './places'
-export type { PlacesQueryParams } from './places'
+export {
+	fetchPlaces,
+	fetchPlacesOptions,
+	lookupPlaces,
+	reverseGeocodePlace,
+	resolvePlace,
+	createPlace,
+} from './places'
+export type { PlacesQueryParams, PlaceLookupOption } from './places'
 
 export { fetchTree } from './tree'
 export { importGedcom } from './import'

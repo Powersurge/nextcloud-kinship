@@ -34,6 +34,8 @@ class Version0007Date20260718000000 extends SimpleMigrationStep {
 			$table->addColumn('name', 'string', ['length' => 255, 'notnull' => true]);
 			$table->addColumn('full_name', 'string', ['length' => 512, 'notnull' => false]);
 			$table->addColumn('parent_id', 'integer', ['notnull' => false, 'unsigned' => true]);
+			$table->addColumn('provider', 'string', ['length' => 32, 'notnull' => false]);
+			$table->addColumn('provider_place_id', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('latitude', 'string', ['length' => 32, 'notnull' => false]);
 			$table->addColumn('longitude', 'string', ['length' => 32, 'notnull' => false]);
 			$table->addColumn('type', 'string', ['length' => 32, 'notnull' => false]);
@@ -47,6 +49,7 @@ class Version0007Date20260718000000 extends SimpleMigrationStep {
 			$table->addIndex(['parent_id'], 'kinship_place_parent_idx');
 			$table->addIndex(['owner_uid'], 'kinship_place_owner_idx');
 			$table->addIndex(['name'], 'kinship_place_name_idx');
+			$table->addIndex(['provider', 'provider_place_id'], 'kinship_place_provider_idx', ['fulltext']);
 		}
 
 		return $schema;

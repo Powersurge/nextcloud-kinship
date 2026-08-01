@@ -58,6 +58,9 @@ return [
 		// Places
 		['name' => 'place#index', 'url' => '/api/v1/places', 'verb' => 'GET'],
 		['name' => 'place#create', 'url' => '/api/v1/places', 'verb' => 'POST'],
+		['name' => 'place#lookup', 'url' => '/api/v1/places/lookup', 'verb' => 'GET'],
+		['name' => 'place#reverse', 'url' => '/api/v1/places/reverse', 'verb' => 'GET'],
+		['name' => 'place#resolve', 'url' => '/api/v1/places/resolve', 'verb' => 'POST'],
 		['name' => 'place#show', 'url' => '/api/v1/places/{id}', 'verb' => 'GET'],
 		['name' => 'place#update', 'url' => '/api/v1/places/{id}', 'verb' => 'PUT'],
 		['name' => 'place#delete', 'url' => '/api/v1/places/{id}', 'verb' => 'DELETE'],
