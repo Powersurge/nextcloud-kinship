@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import Check from 'vue-material-design-icons/Check.vue'
-import { NcAppSidebarTab, NcButton, NcTextArea } from '@nextcloud/vue'
+import { NcAppSidebarTab, NcActions, NcActionButton, NcButton, NcTextArea } from '@nextcloud/vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import PencilOutline from 'vue-material-design-icons/PencilOutline.vue'
+import Pencil from 'vue-material-design-icons/Pencil.vue'
+import Delete from 'vue-material-design-icons/Delete.vue'
 import TextAccount from 'vue-material-design-icons/TextAccount.vue'
 import CakeVariant from 'vue-material-design-icons/CakeVariant.vue'
 import GraveStone from 'vue-material-design-icons/GraveStone.vue'
@@ -10,13 +12,19 @@ import InformationOutline from 'vue-material-design-icons/InformationOutline.vue
 import Account from 'vue-material-design-icons/Account.vue'
 import TagMultiple from 'vue-material-design-icons/TagMultiple.vue'
 import Close from 'vue-material-design-icons/Close.vue'
+import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
+import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
 import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { useEventStore } from '@/stores/use-event-store.ts'
 import { useFactStore } from '@/stores/use-fact-store.ts'
 import { computed, ref, watch } from 'vue'
 import { dateDisplay } from '@/utils/date.ts'
+import { placeDisplay } from '@/utils/place.ts'
 import { FACT_TYPE_OPTIONS } from '@/constants.ts'
+import { deleteFact as deleteFactApi } from '@/api/facts.ts'
+import type { Fact } from '@/types'
+import { showConfirmation, showError } from '@nextcloud/dialogs'
 
 const peopleStore = usePeopleStore()
 const { selectedPerson } = storeToRefs(peopleStore)
@@ -28,6 +36,8 @@ const { openCreateFactForm, openEditFactForm } = factStore
 
 const birthLabel = computed(() => dateDisplay(selectedPerson.value?.birthDate))
 const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
+const birthPlaceLabel = computed(() => placeDisplay(selectedPerson.value?.birthPlace))
+const deathPlaceLabel = computed(() => placeDisplay(selectedPerson.value?.deathPlace))
 
 const editingBiography = ref(false)
 const biographyDraft = ref('')
@@ -43,18 +53,23 @@ watch(selectedPerson, () => {
 })
 
 function openCreateFact() {
-	openCreateFactForm(selectedPerson.value?.id)
+	const id = selectedPerson.value?.id
+	if (id) {
+		openCreateFactForm(id)
+	}
 }
 
 function openBirthForm() {
-	if (selectedPerson.value) {
-		openLifeDateForm('birth', selectedPerson.value)
+	const id = selectedPerson.value?.id
+	if (id) {
+		openLifeDateForm('birth', { id })
 	}
 }
 
 function openDeathForm() {
-	if (selectedPerson.value) {
-		openLifeDateForm('death', selectedPerson.value)
+	const id = selectedPerson.value?.id
+	if (id) {
+		openLifeDateForm('death', { id })
 	}
 }
 
@@ -81,6 +96,25 @@ async function saveBiography() {
 		console.error('Failed to save biography', e)
 	} finally {
 		savingBiography.value = false
+	}
+}
+
+async function onDeleteFact(fact: Fact) {
+	const confirmed = await showConfirmation({
+		name: 'Are you sure?',
+		text: 'This action will delete this fact and cannot be undone.',
+		labelReject: 'Cancel',
+	})
+
+	if (!confirmed) {
+		return
+	}
+
+	try {
+		await deleteFactApi(fact.id)
+		factStore.removeFact(fact.id)
+	} catch (e) {
+		showError('Failed to delete fact')
 	}
 }
 </script>
@@ -114,17 +148,24 @@ async function saveBiography() {
 							size="small"
 							@click="openBirthForm">
 							<template #icon>
-								<Plus v-if="!birthLabel" :size="16" />
+								<Plus v-if="!birthLabel && !birthPlaceLabel" :size="16" />
 								<PencilOutline v-else :size="16" />
 							</template>
-							{{ birthLabel ? 'Edit' : 'Add' }}
+							{{ birthLabel || birthPlaceLabel ? 'Edit' : 'Add' }}
 						</NcButton>
 					</div>
-					<div v-if="birthLabel" class="sidebar-section__value">
-						{{ birthLabel }}
+					<div v-if="birthLabel || birthPlaceLabel" class="life-details">
+						<div v-if="birthLabel" class="life-details__row">
+							<CalendarOutline :size="14" class="life-details__icon" />
+							<span>{{ birthLabel }}</span>
+						</div>
+						<div v-if="birthPlaceLabel" class="life-details__row">
+							<MapMarkerOutline :size="14" class="life-details__icon" />
+							<span>{{ birthPlaceLabel }}</span>
+						</div>
 					</div>
 					<div v-else class="sidebar-section__empty">
-						No birth date recorded
+						No birth details recorded
 					</div>
 				</div>
 			</div>
@@ -138,17 +179,24 @@ async function saveBiography() {
 							size="small"
 							@click="openDeathForm">
 							<template #icon>
-								<Plus v-if="!deathLabel" :size="16" />
+								<Plus v-if="!deathLabel && !deathPlaceLabel" :size="16" />
 								<PencilOutline v-else :size="16" />
 							</template>
-							{{ deathLabel ? 'Edit' : 'Add' }}
+							{{ deathLabel || deathPlaceLabel ? 'Edit' : 'Add' }}
 						</NcButton>
 					</div>
-					<div v-if="deathLabel" class="sidebar-section__value">
-						{{ deathLabel }}
+					<div v-if="deathLabel || deathPlaceLabel" class="life-details">
+						<div v-if="deathLabel" class="life-details__row">
+							<CalendarOutline :size="14" class="life-details__icon" />
+							<span>{{ deathLabel }}</span>
+						</div>
+						<div v-if="deathPlaceLabel" class="life-details__row">
+							<MapMarkerOutline :size="14" class="life-details__icon" />
+							<span>{{ deathPlaceLabel }}</span>
+						</div>
 					</div>
 					<div v-else class="sidebar-section__empty">
-						No death date recorded
+						No death details recorded
 					</div>
 				</div>
 			</div>
@@ -179,22 +227,41 @@ async function saveBiography() {
 							v-for="fact in facts"
 							:key="fact.id"
 							class="facts-list__item">
-							<div class="facts-list__header">
+							<div class="facts-list__top">
 								<span class="facts-list__type">{{ factTypeLabel(fact.type) }}</span>
-								<span v-if="dateDisplay(fact.date)" class="facts-list__date">
-									{{ dateDisplay(fact.date) }}
-								</span>
-								<NcButton
-									size="small"
-									@click="openEditFactForm(fact)">
-									<template #icon>
-										<PencilOutline :size="16" />
-									</template>
-								</NcButton>
+								<NcActions class="facts-list__actions">
+									<NcActionButton @click="openEditFactForm(fact)">
+										<template #icon>
+											<Pencil :size="20" />
+										</template>
+										Edit
+									</NcActionButton>
+									<NcActionButton @click="onDeleteFact(fact)">
+										<template #icon>
+											<Delete :size="20" />
+										</template>
+										Delete
+									</NcActionButton>
+								</NcActions>
 							</div>
+
 							<div v-if="fact.value" class="facts-list__value">
 								{{ fact.value }}
 							</div>
+
+							<div
+								v-if="dateDisplay(fact.date) || placeDisplay(fact.place)"
+								class="facts-list__meta">
+								<span v-if="dateDisplay(fact.date)" class="facts-list__meta-item">
+									<CalendarOutline :size="14" />
+									{{ dateDisplay(fact.date) }}
+								</span>
+								<span v-if="placeDisplay(fact.place)" class="facts-list__meta-item">
+									<MapMarkerOutline :size="14" />
+									{{ placeDisplay(fact.place) }}
+								</span>
+							</div>
+
 							<div v-if="fact.note" class="facts-list__note">
 								{{ fact.note }}
 							</div>
@@ -317,53 +384,96 @@ async function saveBiography() {
 
 .sidebar-section__editor-actions {
 	display: flex;
-	justify-content: flex-end;
+	justify-content: end;
 	gap: .5rem;
+}
+
+.life-details {
+	display: flex;
+	flex-direction: column;
+	gap: .25rem;
+}
+
+.life-details__row {
+	display: flex;
+	align-items: flex-start;
+	gap: .35rem;
+	color: var(--color-main-text);
+	line-height: 1.45;
+	font-size: .95rem;
+}
+
+.life-details__icon {
+	flex-shrink: 0;
+	margin-top: .15rem;
+	color: var(--color-text-maxcontrast);
 }
 
 .facts-list {
 	list-style: none;
 	padding: 0;
-	margin: 0;
+	margin: .35rem 0 0;
 	display: flex;
 	flex-direction: column;
-	gap: .75rem;
+	gap: .65rem;
 }
 
 .facts-list__item {
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large);
-	padding: .65rem .75rem;
+	padding: .7rem .8rem;
+	background: var(--color-main-background);
+	transition: border-color .15s ease;
 }
 
-.facts-list__header {
+.facts-list__item:hover {
+	border-color: var(--color-primary-element);
+}
+
+.facts-list__top {
 	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: .5rem;
-	margin-bottom: .25rem;
 }
 
 .facts-list__type {
-	font-size: .75rem;
+	font-size: .72rem;
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: .03em;
 	color: var(--color-text-maxcontrast);
 }
 
-.facts-list__date {
-	flex: 1;
-	font-size: .8rem;
-	color: var(--color-text-maxcontrast);
+.facts-list__actions {
+	margin: -.35rem -.4rem 0 0;
 }
 
 .facts-list__value {
+	margin-top: .3rem;
 	color: var(--color-main-text);
-	line-height: 1.5;
+	line-height: 1.45;
+	font-weight: 500;
+}
+
+.facts-list__meta {
+	display: flex;
+	flex-direction: column;
+	gap: .2rem;
+	margin-top: .4rem;
+}
+
+.facts-list__meta-item {
+	display: flex;
+	align-items: flex-start;
+	gap: .3rem;
+	font-size: .85rem;
+	line-height: 1.4;
+	color: var(--color-text-maxcontrast);
 }
 
 .facts-list__note {
-	margin-top: .25rem;
+	margin-top: .4rem;
 	font-size: .85rem;
 	color: var(--color-text-maxcontrast);
 	line-height: 1.4;

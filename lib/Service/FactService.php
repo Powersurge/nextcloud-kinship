@@ -13,20 +13,21 @@ use OCP\IUserSession;
 class FactService {
 	public function __construct(
 		private FactMapper $mapper,
+		private PlaceService $placeService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
 	}
 
 	public function get(int $id): Fact {
-		return $this->mapper->find($id);
+		return $this->hydratePlaces([$this->mapper->find($id)])[0];
 	}
 
 	/**
 	 * @return Fact[]
 	 */
 	public function getForSubject(string $subjectType, int $subjectId): array {
-		return $this->mapper->findBySubject($subjectType, $subjectId);
+		return $this->hydratePlaces($this->mapper->findBySubject($subjectType, $subjectId));
 	}
 
 	public function create(array $data): Fact {
@@ -46,7 +47,7 @@ class FactService {
 		$fact->setCreatedAt($now);
 		$fact->setUpdatedAt($now);
 
-		return $this->mapper->insert($fact);
+		return $this->hydratePlaces([$this->mapper->insert($fact)])[0];
 	}
 
 	public function update(int $id, array $data): Fact {
@@ -70,10 +71,27 @@ class FactService {
 
 		$fact->setUpdatedAt($this->timeFactory->getTime());
 
-		return $this->mapper->update($fact);
+		return $this->hydratePlaces([$this->mapper->update($fact)])[0];
 	}
 
 	public function delete(int $id): void {
 		$this->mapper->delete($this->mapper->find($id));
+	}
+
+	/**
+	 * @param Fact[] $facts
+	 * @return Fact[]
+	 */
+	private function hydratePlaces(array $facts): array {
+		$summaries = $this->placeService->summarizeByIds(
+			array_map(static fn (Fact $fact) => $fact->getPlaceId(), $facts)
+		);
+
+		foreach ($facts as $fact) {
+			$placeId = $fact->getPlaceId();
+			$fact->setPlace($placeId !== null ? ($summaries[$placeId] ?? null) : null);
+		}
+
+		return $facts;
 	}
 }

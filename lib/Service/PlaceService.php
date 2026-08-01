@@ -115,4 +115,31 @@ class PlaceService {
 	public function delete(int $id): void {
 		$this->mapper->delete($this->mapper->find($id));
 	}
+
+	/**
+	 * Batch-load place summaries keyed by place id.
+	 *
+	 * @param list<int|null> $placeIds
+	 * @return array<int, array{id: int, name: string, fullName: ?string}>
+	 */
+	public function summarizeByIds(array $placeIds): array {
+		$ids = [];
+		foreach ($placeIds as $placeId) {
+			if ($placeId !== null && $placeId > 0) {
+				$ids[$placeId] = true;
+			}
+		}
+
+		if ($ids === []) {
+			return [];
+		}
+
+		$summaries = [];
+		foreach ($this->mapper->findAll(['selected' => array_keys($ids)]) as $place) {
+			$summary = $place->getSummary();
+			$summaries[$summary['id']] = $summary;
+		}
+
+		return $summaries;
+	}
 }

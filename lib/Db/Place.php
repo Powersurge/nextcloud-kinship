@@ -56,6 +56,14 @@ class Place extends Entity implements JsonSerializable {
 		$this->addType('updatedAt', 'integer');
 	}
 
+	public function getSummary(): array {
+		return [
+			'id' => $this->id,
+			'name' => $this->name,
+			'fullName' => $this->fullName,
+		];
+	}
+
 	public function jsonSerialize(): array {
 		return [
 			'id' => $this->id,

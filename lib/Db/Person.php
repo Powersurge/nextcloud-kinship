@@ -55,13 +55,20 @@ class Person extends Entity implements JsonSerializable {
 	protected ?int $updatedAt = null;
 
 	/**
-	 * Birth/death dates are not columns on kinship_persons: they belong to the
-	 * person's birth/death events. These two are transient, filled in on read
-	 * by PersonService::hydrateLifeDates() and never persisted (they are set
-	 * outside the Entity magic setters, so no field is marked dirty).
+	 * Birth/death dates and places are not columns on kinship_persons: they
+	 * belong to the person's birth/death events. These are transient, filled
+	 * in on read by PersonService::hydrateLifeDates() and never persisted
+	 * (they are set outside the Entity magic setters, so no field is marked
+	 * dirty).
 	 */
 	private ?DateValue $birthDate = null;
 	private ?DateValue $deathDate = null;
+
+	/** @var array{id: int, name: string, fullName: ?string}|null */
+	private ?array $birthPlace = null;
+
+	/** @var array{id: int, name: string, fullName: ?string}|null */
+	private ?array $deathPlace = null;
 
 	public function __construct() {
 		$this->addType('photoFileId', 'integer');
@@ -75,6 +82,20 @@ class Person extends Entity implements JsonSerializable {
 
 	public function setDeathDate(?DateValue $deathDate): void {
 		$this->deathDate = $deathDate;
+	}
+
+	/**
+	 * @param array{id: int, name: string, fullName: ?string}|null $birthPlace
+	 */
+	public function setBirthPlace(?array $birthPlace): void {
+		$this->birthPlace = $birthPlace;
+	}
+
+	/**
+	 * @param array{id: int, name: string, fullName: ?string}|null $deathPlace
+	 */
+	public function setDeathPlace(?array $deathPlace): void {
+		$this->deathPlace = $deathPlace;
 	}
 
 	public function getFullName(): string {
@@ -98,6 +119,8 @@ class Person extends Entity implements JsonSerializable {
 			'livingStatus' => $this->livingStatus,
 			'birthDate' => $this->birthDate,
 			'deathDate' => $this->deathDate,
+			'birthPlace' => $this->birthPlace,
+			'deathPlace' => $this->deathPlace,
 			'biography' => $this->biography,
 			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,

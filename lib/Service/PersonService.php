@@ -21,6 +21,7 @@ class PersonService {
 	public function __construct(
 		private PersonMapper $mapper,
 		private EventMapper $eventMapper,
+		private PlaceService $placeService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -53,6 +54,7 @@ class PersonService {
 		}
 
 		$lifeEvents = $this->eventMapper->findLifeEventsByPersons($ids);
+		$placeIds = [];
 
 		foreach ($people as $person) {
 			$events = $lifeEvents[$person->getId()] ?? [];
@@ -61,6 +63,19 @@ class PersonService {
 
 			$person->setBirthDate($birth?->getDate());
 			$person->setDeathDate($death?->getDate());
+			$placeIds[] = $birth?->getPlaceId();
+			$placeIds[] = $death?->getPlaceId();
+		}
+
+		$places = $this->placeService->summarizeByIds($placeIds);
+
+		foreach ($people as $person) {
+			$events = $lifeEvents[$person->getId()] ?? [];
+			$birthPlaceId = ($events[EventType::BIRTH] ?? null)?->getPlaceId();
+			$deathPlaceId = ($events[EventType::DEATH] ?? null)?->getPlaceId();
+
+			$person->setBirthPlace($birthPlaceId !== null ? ($places[$birthPlaceId] ?? null) : null);
+			$person->setDeathPlace($deathPlaceId !== null ? ($places[$deathPlaceId] ?? null) : null);
 		}
 
 		return $people;

@@ -25,6 +25,13 @@ export type SelectOption = {
 	label: string,
 }
 
+/** Compact place nested on people, events, and facts. */
+export type PlaceSummary = {
+	id: number
+	name: string
+	fullName: string | null
+}
+
 export interface Person {
 	id: number;
 	fullName?: string;
@@ -38,6 +45,8 @@ export interface Person {
 	avatar?: string | null;
 	birthDate: GenealogyDateValue | null;
 	deathDate: GenealogyDateValue | null;
+	birthPlace?: PlaceSummary | null;
+	deathPlace?: PlaceSummary | null;
 }
 
 export type FamilyRelationship = Record<string, any> & {
@@ -61,6 +70,7 @@ export interface Event {
 	description: string | null;
 	date: GenealogyDateValue | null;
 	placeId: number | null;
+	place?: PlaceSummary | null;
 	customEventId?: number | null;
 	familyId?: number | null;
 }
@@ -100,6 +110,7 @@ export interface Fact {
 	type: string;
 	value: string | null;
 	placeId: number | null;
+	place?: PlaceSummary | null;
 	date: GenealogyDateValue | null;
 	note: string | null;
 }

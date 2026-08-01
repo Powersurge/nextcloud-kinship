@@ -47,11 +47,25 @@ class Fact extends Entity implements JsonSerializable {
 	protected ?int $createdAt = null;
 	protected ?int $updatedAt = null;
 
+	/**
+	 * Transient place summary filled by FactService; not a DB column.
+	 *
+	 * @var array{id: int, name: string, fullName: ?string}|null
+	 */
+	private ?array $place = null;
+
 	public function __construct() {
 		$this->addType('subjectId', 'integer');
 		$this->addType('placeId', 'integer');
 		$this->addType('createdAt', 'integer');
 		$this->addType('updatedAt', 'integer');
+	}
+
+	/**
+	 * @param array{id: int, name: string, fullName: ?string}|null $place
+	 */
+	public function setPlace(?array $place): void {
+		$this->place = $place;
 	}
 
 	public function jsonSerialize(): array {
@@ -62,6 +76,7 @@ class Fact extends Entity implements JsonSerializable {
 			'type' => $this->type,
 			'value' => $this->value,
 			'placeId' => $this->placeId,
+			'place' => $this->place,
 			'date' => $this->getDate(),
 			'note' => $this->note,
 			'ownerUid' => $this->ownerUid,

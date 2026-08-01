@@ -51,12 +51,26 @@ class Event extends Entity implements JsonSerializable {
 	protected ?int $createdAt = null;
 	protected ?int $updatedAt = null;
 
+	/**
+	 * Transient place summary filled by EventService; not a DB column.
+	 *
+	 * @var array{id: int, name: string, fullName: ?string}|null
+	 */
+	private ?array $place = null;
+
 	public function __construct() {
 		$this->addType('customEventId', 'integer');
 		$this->addType('placeId', 'integer');
 		$this->addType('familyId', 'integer');
 		$this->addType('createdAt', 'integer');
 		$this->addType('updatedAt', 'integer');
+	}
+
+	/**
+	 * @param array{id: int, name: string, fullName: ?string}|null $place
+	 */
+	public function setPlace(?array $place): void {
+		$this->place = $place;
 	}
 
 	public function jsonSerialize(): array {
@@ -67,6 +81,7 @@ class Event extends Entity implements JsonSerializable {
 			'title' => $this->title,
 			'description' => $this->description,
 			'placeId' => $this->placeId,
+			'place' => $this->place,
 			'date' => $this->getDate(),
 			'familyId' => $this->familyId,
 			'ownerUid' => $this->ownerUid,

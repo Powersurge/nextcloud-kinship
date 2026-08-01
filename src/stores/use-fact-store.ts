@@ -65,6 +65,10 @@ export const useFactStore = defineStore('factStore', () => {
 		})
 	}
 
+	function removeFact(id: number) {
+		facts.value = facts.value.filter((fact) => fact.id !== id)
+	}
+
 	return {
 		facts,
 		loading,
@@ -76,5 +80,6 @@ export const useFactStore = defineStore('factStore', () => {
 		openFactForm,
 		openCreateFactForm,
 		openEditFactForm,
+		removeFact,
 	}
 })

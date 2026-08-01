@@ -70,6 +70,14 @@ export const usePersonTimelineStore = defineStore('personTimelineStore', () => {
 		}
 	}
 
+	function removeEvent(id: number) {
+		const before = events.value.length
+		events.value = events.value.filter((event) => event.id !== id)
+		if (events.value.length < before) {
+			total.value = Math.max(0, total.value - 1)
+		}
+	}
+
 	return {
 		personId,
 		events,
@@ -81,5 +89,6 @@ export const usePersonTimelineStore = defineStore('personTimelineStore', () => {
 		loadInitial,
 		loadNextPage,
 		reloadForPerson,
+		removeEvent,
 	}
 })

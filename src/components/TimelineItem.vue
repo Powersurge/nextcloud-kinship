@@ -6,18 +6,40 @@
 		</div>
 
 		<div class="timeline-content">
-			<div class="timeline-header">
-				<span class="timeline-badge" :class="`timeline-badge--${event.type}`">
-					{{ typeLabel }}
-				</span>
-				<span v-if="when" class="timeline-date">
-					{{ when }}
-				</span>
+			<div class="timeline-content__top">
+				<div class="timeline-header">
+					<span class="timeline-badge" :class="`timeline-badge--${event.type}`">
+						{{ typeLabel }}
+					</span>
+					<span v-if="when" class="timeline-date">
+						{{ when }}
+					</span>
+				</div>
+
+				<NcActions v-if="showActions" class="timeline-actions">
+					<NcActionButton @click="emit('edit')">
+						<template #icon>
+							<Pencil :size="20" />
+						</template>
+						Edit
+					</NcActionButton>
+					<NcActionButton @click="emit('delete')">
+						<template #icon>
+							<Delete :size="20" />
+						</template>
+						Delete
+					</NcActionButton>
+				</NcActions>
 			</div>
 
 			<h3 v-if="heading !== typeLabel" class="timeline-title">
 				{{ heading }}
 			</h3>
+
+			<div v-if="where" class="timeline-meta">
+				<MapMarkerOutline :size="14" class="timeline-meta__icon" />
+				<span>{{ where }}</span>
+			</div>
 
 			<p
 				v-if="event.description"
@@ -30,12 +52,26 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { NcActions, NcActionButton } from '@nextcloud/vue'
+import Pencil from 'vue-material-design-icons/Pencil.vue'
+import Delete from 'vue-material-design-icons/Delete.vue'
+import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
 import { dateDisplay } from '@/utils/date.ts'
+import { placeDisplay } from '@/utils/place.ts'
 import type { Event } from '@/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	event: Event
 	isLast?: boolean
+	showActions?: boolean
+}>(), {
+	isLast: false,
+	showActions: true,
+})
+
+const emit = defineEmits<{
+	edit: []
+	delete: []
 }>()
 
 const TYPE_LABELS: Record<string, string> = {
@@ -47,7 +83,8 @@ const TYPE_LABELS: Record<string, string> = {
 	custom: 'Custom',
 }
 
-const when = computed(() => dateDisplay(props.event.date as { display?: string | null }))
+const when = computed(() => dateDisplay(props.event.date))
+const where = computed(() => placeDisplay(props.event.place))
 const typeLabel = computed(() => TYPE_LABELS[props.event.type] ?? props.event.type)
 const heading = computed(() => props.event.title || typeLabel.value)
 </script>
@@ -108,6 +145,7 @@ const heading = computed(() => props.event.title || typeLabel.value)
 
 .timeline-content {
 	flex: 1;
+	min-width: 0;
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large);
@@ -121,18 +159,31 @@ const heading = computed(() => props.event.title || typeLabel.value)
 	box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
 }
 
+.timeline-content__top {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: .5rem;
+}
+
 .timeline-header {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: .5rem;
+	min-width: 0;
 	margin-bottom: .35rem;
+}
+
+.timeline-actions {
+	flex-shrink: 0;
+	margin: -.25rem -.35rem 0 0;
 }
 
 .timeline-badge {
 	display: inline-block;
 	padding: 2px 8px;
-	border-radius: 999px;
+	border-radius: var(--border-radius-pill);
 	font-size: .72rem;
 	font-weight: 600;
 	text-transform: uppercase;
@@ -179,8 +230,24 @@ const heading = computed(() => props.event.title || typeLabel.value)
 	color: var(--color-main-text);
 }
 
+.timeline-meta {
+	display: flex;
+	align-items: flex-start;
+	gap: .3rem;
+	margin-top: .2rem;
+	font-size: .85rem;
+	line-height: 1.4;
+	color: var(--color-text-maxcontrast);
+}
+
+.timeline-meta__icon {
+	flex-shrink: 0;
+	margin-top: .1rem;
+	opacity: .85;
+}
+
 .timeline-description {
-	margin: .35rem 0 0;
+	margin: .45rem 0 0;
 	font-size: .875rem;
 	line-height: 1.5;
 	color: var(--color-text-maxcontrast);

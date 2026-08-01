@@ -3,7 +3,10 @@ import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
+import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
+import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
 import { dateDisplay } from '@/utils/date.ts'
+import { placeDisplay } from '@/utils/place.ts'
 
 const props = defineProps<{
 	event: Record<string, any>
@@ -26,21 +29,28 @@ const typeLabels: Record<string, string> = {
 const typeLabel = computed(() => typeLabels[props.event.type] ?? props.event.type)
 const heading = computed(() => props.event.title || typeLabel.value)
 const when = computed(() => dateDisplay(props.event.date))
+const where = computed(() => placeDisplay(props.event.place))
 </script>
 
 <template>
 	<div class="event-card">
 		<div class="event-card__body">
+			<div class="event-card__header">
+				<span class="event-card__badge">{{ typeLabel }}</span>
+			</div>
+
 			<h3 class="event-card__name">
 				{{ heading }}
 			</h3>
 
-			<p class="event-card__meta">
-				{{ typeLabel }}
+			<p v-if="when" class="event-card__meta">
+				<CalendarOutline :size="14" class="event-card__meta-icon" />
+				{{ when }}
 			</p>
 
-			<p v-if="when" class="event-card__meta">
-				{{ when }}
+			<p v-if="where" class="event-card__meta">
+				<MapMarkerOutline :size="14" class="event-card__meta-icon" />
+				{{ where }}
 			</p>
 		</div>
 
@@ -73,13 +83,40 @@ const when = computed(() => dateDisplay(props.event.date))
 	background-color: var(--color-main-background);
 }
 
+.event-card__header {
+	margin-bottom: 4px;
+}
+
+.event-card__badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: var(--border-radius-pill);
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	background: var(--color-background-dark);
+	color: var(--color-text-maxcontrast);
+}
+
 .event-card__name {
-	margin: 0 0 4px;
+	margin: 0 0 6px;
+	font-size: 1rem;
 }
 
 .event-card__meta {
-	margin: 0;
+	display: flex;
+	align-items: flex-start;
+	gap: 0.3rem;
+	margin: 0 0 2px;
 	color: var(--color-text-maxcontrast);
 	font-size: 0.9em;
+	line-height: 1.4;
+}
+
+.event-card__meta-icon {
+	flex-shrink: 0;
+	margin-top: 0.1rem;
+	opacity: 0.85;
 }
 </style>

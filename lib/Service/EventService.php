@@ -23,6 +23,7 @@ class EventService {
 	public function __construct(
 		private EventMapper $mapper,
 		private ParticipantMapper $participantMapper,
+		private PlaceService $placeService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 		private LivingStatusService $livingStatusService,
@@ -33,11 +34,11 @@ class EventService {
 	 * @return Event[]
 	 */
 	public function getAll(): array {
-		return $this->mapper->findAll();
+		return $this->hydratePlaces($this->mapper->findAll());
 	}
 
 	public function get(int $id): Event {
-		return $this->mapper->find($id);
+		return $this->hydratePlaces([$this->mapper->find($id)])[0];
 	}
 
 	/**
@@ -53,7 +54,9 @@ class EventService {
 		$offset = max(0, $offset);
 
 		return [
-			'events' => $this->mapper->findByPersonPaginated($personId, $limit, $offset, $type),
+			'events' => $this->hydratePlaces(
+				$this->mapper->findByPersonPaginated($personId, $limit, $offset, $type)
+			),
 			'total' => $this->mapper->countByPerson($personId, $type),
 			'limit' => $limit,
 			'offset' => $offset,
@@ -79,14 +82,14 @@ class EventService {
 			}
 		}
 
-		return $events;
+		return $this->hydratePlaces($events);
 	}
 
 	/**
 	 * @return Event[]
 	 */
 	public function getForFamily(int $familyId): array {
-		return $this->mapper->findByFamily($familyId);
+		return $this->hydratePlaces($this->mapper->findByFamily($familyId));
 	}
 
 	/**
@@ -132,7 +135,7 @@ class EventService {
 
 		$this->syncAffectedPersons($event);
 
-		return $event;
+		return $this->hydratePlaces([$event])[0];
 	}
 
 	public function updateEvent(int $id, array $data): Event {
@@ -165,7 +168,7 @@ class EventService {
 
 		$this->syncAffectedPersons($event);
 
-		return $event;
+		return $this->hydratePlaces([$event])[0];
 	}
 
 	public function deleteEvent(int $id): void {
@@ -197,6 +200,23 @@ class EventService {
 		$participant->setCreatedBy($uid);
 		$participant->setCreatedAt($now);
 		$this->participantMapper->insert($participant);
+	}
+
+	/**
+	 * @param Event[] $events
+	 * @return Event[]
+	 */
+	private function hydratePlaces(array $events): array {
+		$summaries = $this->placeService->summarizeByIds(
+			array_map(static fn (Event $event) => $event->getPlaceId(), $events)
+		);
+
+		foreach ($events as $event) {
+			$placeId = $event->getPlaceId();
+			$event->setPlace($placeId !== null ? ($summaries[$placeId] ?? null) : null);
+		}
+
+		return $events;
 	}
 
 	private function syncAffectedPersons(Event $event): void {
