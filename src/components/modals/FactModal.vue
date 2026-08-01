@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import FactForm from '../forms/FactForm.vue'
-import { createFact, updateFact } from '@/api/facts'
+import { createFact, updateFact } from '@/api/facts.ts'
 
 const props = defineProps<{
 	open: boolean

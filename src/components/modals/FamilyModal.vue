@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import FamilyForm from '../forms/FamilyForm.vue'
-import { createFamily, updateFamily } from '@/api/families'
+import { createFamily, updateFamily } from '@/api/families.ts'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */

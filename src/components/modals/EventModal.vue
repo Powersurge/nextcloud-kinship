@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import EventForm from '../forms/EventForm.vue'
-import { createEvent, updateEvent } from '@/api/events'
+import { createEvent, updateEvent } from '@/api/events.ts'
 
 const props = defineProps<{
 	open: boolean

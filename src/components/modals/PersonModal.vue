@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import PersonForm from '../forms/PersonForm.vue'
-import { createPerson, updatePerson } from '@/api/people'
+import { createPerson, updatePerson } from '@/api/people.ts'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */

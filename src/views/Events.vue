@@ -5,7 +5,7 @@ import Calendar from 'vue-material-design-icons/Calendar.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import EventCard from '../components/EventCard.vue'
 import EventModal from '../components/modals/EventModal.vue'
-import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events'
+import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events.ts'
 
 const events = ref<Array<Record<string, any>>>([])
 const loading = ref(true)

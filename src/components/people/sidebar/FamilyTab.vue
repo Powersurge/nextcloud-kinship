@@ -8,7 +8,7 @@ import { useRelationshipStore } from '@/stores/use-relationship-store.ts'
 import RelationshipModal from '@/components/modals/RelationshipModal.vue'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
-import { deleteRelationship as deleteRelationshipApi } from '@/api/relationships'
+import { deleteRelationship as deleteRelationshipApi } from '@/api/relationships.ts'
 
 const relationshipStore = useRelationshipStore()
 const { personId, family, loading } = storeToRefs(relationshipStore)

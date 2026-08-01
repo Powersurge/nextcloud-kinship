@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import RelationshipForm from '../forms/RelationshipForm.vue'
-import { createRelationship, updateRelationship } from '@/api/relationships'
+import { createRelationship, updateRelationship } from '@/api/relationships.ts'
 
 const props = defineProps<{
 	/** Controls visibility (use with v-model:open). */

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { NcSelect } from '@nextcloud/vue'
-import { fetchPeopleOptions } from '@/api/people'
+import { fetchPeopleOptions } from '@/api/people.ts'
 import { onMounted, ref } from 'vue'
 import type { SelectOption } from '@/types'
 

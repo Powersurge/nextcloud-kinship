@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { NcSelect } from '@nextcloud/vue'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
-import { fetchPersonFamily } from '@/api/people'
+import { fetchPersonFamily } from '@/api/people.ts'
 
 interface PartnerOption {
 	value: number

@@ -7,6 +7,7 @@ module.exports = {
 		'vue/first-attribute-linebreak': 'off',
 		'n/no-missing-import': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
+		'jsdoc/require-param-description': 'off',
 	},
 	settings: {
 		'import/resolver': {

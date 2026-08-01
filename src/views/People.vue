@@ -6,7 +6,7 @@ import Plus from 'vue-material-design-icons/Plus.vue'
 import PersonCard from '../components/PersonCard.vue'
 import PersonModal from '../components/modals/PersonModal.vue'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
-import { deletePerson as deletePersonApi, fetchPeople } from '@/api/people'
+import { deletePerson as deletePersonApi, fetchPeople } from '@/api/people.ts'
 
 const people = ref<Array<Record<string, any>>>([])
 const loading = ref(true)

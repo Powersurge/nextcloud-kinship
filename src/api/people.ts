@@ -52,7 +52,10 @@ export async function fetchPersonFamily(id: number): Promise<PersonFamily> {
 	}
 }
 
-/** People list mapped for NcSelect / option pickers. */
+/**
+ * People list mapped for NcSelect / option pickers.
+ * @param queryParams
+ */
 export async function fetchPeopleOptions(
 	queryParams: PeopleQueryParams = {},
 ): Promise<SelectOption[]> {

@@ -5,11 +5,11 @@ import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import RelationshipCard from '../components/RelationshipCard.vue'
 import RelationshipModal from '../components/modals/RelationshipModal.vue'
-import { fetchPeople } from '@/api/people'
+import { fetchPeople } from '@/api/people.ts'
 import {
 	deleteRelationship as deleteRelationshipApi,
 	fetchRelationships,
-} from '@/api/relationships'
+} from '@/api/relationships.ts'
 
 const relationships = ref<Array<Record<string, any>>>([])
 const peopleById = ref<Record<number, string>>({})

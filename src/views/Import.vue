@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { NcButton, NcLoadingIcon, NcNoteCard } from '@nextcloud/vue'
 import Upload from 'vue-material-design-icons/Upload.vue'
-import { importGedcom } from '@/api/import'
+import { importGedcom } from '@/api/import.ts'
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const importing = ref(false)

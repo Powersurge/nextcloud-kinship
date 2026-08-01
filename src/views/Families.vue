@@ -4,7 +4,7 @@ import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import FamilyCard from '../components/FamilyCard.vue'
 import FamilyModal from '../components/modals/FamilyModal.vue'
-import { fetchFamilies } from '@/api/families'
+import { fetchFamilies } from '@/api/families.ts'
 
 const families = ref<Array<Record<string, any>>>([])
 const loading = ref(true)

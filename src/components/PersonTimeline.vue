@@ -26,7 +26,7 @@
 <script>
 
 import { dateDisplay } from '@/utils/date.ts'
-import { fetchPersonTimeline } from '@/api/timeline'
+import { fetchPersonTimeline } from '@/api/timeline.ts'
 
 export default {
 
