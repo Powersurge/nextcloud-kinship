@@ -19,7 +19,7 @@ class AdminSettingsService {
 	public const DEFAULT_PRIVACY_THRESHOLD = 110;
 	public const MIN_PRIVACY_THRESHOLD = 1;
 	public const MAX_PRIVACY_THRESHOLD = 200;
-	public const DEFAULT_PLACE_LOOKUP_PROVIDER = PlaceLookupProvider::NONE;
+	public const DEFAULT_PLACE_LOOKUP_PROVIDER = PlaceLookupProvider::NOMINATIM;
 	public const DEFAULT_NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 
 	public const SETTINGS = [
