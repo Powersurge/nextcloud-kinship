@@ -9,6 +9,7 @@ import { reverseGeocodePlace, type PlaceLookupOption } from '@/api/places.ts'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import { debounce } from '@/utils/helpers.ts'
 
 L.Icon.Default.mergeOptions({
 	iconRetinaUrl: markerIcon2x,
@@ -47,21 +48,7 @@ function destroyMap() {
 	}
 }
 
-async function setPoint(lat: number, lng: number) {
-	if (!map) {
-		return
-	}
-
-	const latLng = L.latLng(lat, lng)
-	if (marker) {
-		marker.setLatLng(latLng)
-	} else {
-		marker = L.marker(latLng).addTo(map)
-	}
-	map.panTo(latLng)
-	error.value = ''
-
-	loading.value = true
+const lookup = debounce(async (lat: number, lng: number) => {
 	try {
 		const result = await reverseGeocodePlace(String(lat), String(lng))
 		picked.value = result ?? {
@@ -94,6 +81,25 @@ async function setPoint(lat: number, lng: number) {
 	} finally {
 		loading.value = false
 	}
+}, 1000)
+
+async function setPoint(lat: number, lng: number) {
+	if (!map) {
+		return
+	}
+
+	const latLng = L.latLng(lat, lng)
+	if (marker) {
+		marker.setLatLng(latLng)
+	} else {
+		marker = L.marker(latLng).addTo(map)
+	}
+	map.panTo(latLng)
+	error.value = ''
+
+	loading.value = true
+
+	lookup(lat, lng)
 }
 
 async function initMap() {

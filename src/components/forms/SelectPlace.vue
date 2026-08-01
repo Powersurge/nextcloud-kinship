@@ -95,9 +95,7 @@ async function onPicked(result: PlaceLookupOption) {
 	await applyLookupResult(result)
 }
 
-const onSearch = debounce(() => async (searchQuery: string, loading: (value: boolean) => void) => {
-	loading(true)
-
+const runSearch = debounce(async (searchQuery: string, loading: (value: boolean) => void) => {
 	const requestId = ++searchRequestId
 
 	try {
@@ -114,6 +112,11 @@ const onSearch = debounce(() => async (searchQuery: string, loading: (value: boo
 		}
 	}
 }, SEARCH_DEBOUNCE_MS)
+
+function onSearch(searchQuery: string, loading: (value: boolean) => void) {
+	loading(true)
+	runSearch(searchQuery, loading)
+}
 </script>
 
 <template>
@@ -182,5 +185,6 @@ const onSearch = debounce(() => async (searchQuery: string, loading: (value: boo
 .select-place__picker-btn {
 	height: 37px;
 	margin-bottom: 4px;
+	flex-shrink: 0;
 }
 </style>
