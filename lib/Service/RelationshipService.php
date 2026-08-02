@@ -124,7 +124,9 @@ class RelationshipService {
 		$relationship->setPersonA($canonical['personA']);
 		$relationship->setPersonB($canonical['personB']);
 		$relationship->setType($canonical['type']);
-		$relationship->setDate($date);
+        if (!empty($date)) {
+            $relationship->setDate($date);
+        }
 		$relationship->setNote($data['note'] ?? null);
 		$relationship->setOwnerUid($uid);
 		$relationship->setCreatedBy($uid);
