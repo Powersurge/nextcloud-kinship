@@ -53,14 +53,9 @@ onMounted(loadFamilies)
 		<NcEmptyContent
 			v-else-if="families.length === 0"
 			name="No families yet"
-			description="Add your first family to get started.">
+			description="Families are auto-generated. Add relations among people to see them appear here.">
 			<template #icon>
 				<HumanMaleFemaleChild />
-			</template>
-			<template #action>
-				<NcButton variant="primary" @click="openCreate">
-					New family
-				</NcButton>
 			</template>
 		</NcEmptyContent>
 
