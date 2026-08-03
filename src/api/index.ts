@@ -43,6 +43,14 @@ export {
 export type { FactsQueryParams } from './facts'
 
 export {
+	fetchSources,
+	fetchSource,
+	createSource,
+	updateSource,
+	deleteSource,
+	fetchSourceCitations,
+} from './sources'
+export {
 	fetchPlaces,
 	fetchPlacesOptions,
 	lookupPlaces,

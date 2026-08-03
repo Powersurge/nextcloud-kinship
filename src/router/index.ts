@@ -31,6 +31,11 @@ const routes = [
 		component: () => import('../views/Events.vue'),
 	},
 	{
+		path: '/sources',
+		name: 'sources',
+		component: () => import('../views/Sources.vue'),
+	},
+	{
 		path: '/tree',
 		name: 'family-tree',
 		component: () => import('../views/FamilyTree.vue'),

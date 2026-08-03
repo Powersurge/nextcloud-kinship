@@ -9,6 +9,10 @@ use OCA\Kinship\Db\SourceMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserSession;
 
+/**
+ * Sources persistence. Callers must pass already-validated data
+ * (see {@see \OCA\Kinship\Http\Requests\SourceRequest}).
+ */
 class SourceService {
 	public function __construct(
 		private SourceMapper $mapper,
@@ -28,12 +32,23 @@ class SourceService {
 		return $this->mapper->find($id);
 	}
 
+	/**
+	 * @param array{
+	 *   title: string,
+	 *   author?: ?string,
+	 *   publication?: ?string,
+	 *   repository?: ?string,
+	 *   sourceType?: ?string,
+	 *   url?: ?string,
+	 *   notes?: ?string
+	 * } $data
+	 */
 	public function create(array $data): Source {
 		$now = $this->timeFactory->getTime();
 		$uid = $this->userSession->getUser()?->getUID();
 
 		$source = new Source();
-		$source->setTitle($data['title'] ?? '');
+		$source->setTitle($data['title']);
 		$source->setAuthor($data['author'] ?? null);
 		$source->setPublication($data['publication'] ?? null);
 		$source->setRepository($data['repository'] ?? null);
@@ -48,6 +63,9 @@ class SourceService {
 		return $this->mapper->insert($source);
 	}
 
+	/**
+	 * @param array<string, mixed> $data validated partial payload
+	 */
 	public function update(int $id, array $data): Source {
 		$source = $this->mapper->find($id);
 
@@ -72,5 +90,7 @@ class SourceService {
 
 	public function delete(int $id): void {
 		$this->mapper->delete($this->mapper->find($id));
+		$source = $this->mapper->find($id);
+		$this->mapper->delete($source);
 	}
 }

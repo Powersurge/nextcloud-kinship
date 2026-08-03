@@ -38,3 +38,21 @@ export const FACT_TYPE_OPTIONS = [
 	{ value: 'physical_description', label: 'Physical description' },
 	{ value: 'name_variant', label: 'Name variant' },
 ]
+
+export const SOURCE_TYPE_OPTIONS = [
+	{ value: 'book', label: 'Book' },
+	{ value: 'census', label: 'Census' },
+	{ value: 'vital', label: 'Vital record' },
+	{ value: 'newspaper', label: 'Newspaper' },
+	{ value: 'website', label: 'Website' },
+	{ value: 'certificate', label: 'Certificate' },
+	{ value: 'letter', label: 'Letter' },
+	{ value: 'other', label: 'Other' },
+]
+
+export const CITATION_CONFIDENCE_OPTIONS = [
+	{ value: 'primary', label: 'Primary' },
+	{ value: 'secondary', label: 'Secondary' },
+	{ value: 'questionable', label: 'Questionable' },
+	{ value: 'unreliable', label: 'Unreliable' },
+]

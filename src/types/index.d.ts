@@ -115,6 +115,20 @@ export interface Fact {
 	note: string | null;
 }
 
+export interface Source {
+	id: number;
+	title: string;
+	author: string | null;
+	publication: string | null;
+	repository: string | null;
+	sourceType: string | null;
+	url: string | null;
+	notes: string | null;
+	ownerUid?: string | null;
+	createdBy?: string | null;
+	createdAt?: number | null;
+	updatedAt?: number | null;
+}
 export type GenealogyDateType = {
 	start: {
 		year: string | number,

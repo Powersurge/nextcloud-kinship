@@ -6,6 +6,7 @@ import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
 import VectorLink from 'vue-material-design-icons/VectorLink.vue'
+import BookOpenPageVariantOutline from 'vue-material-design-icons/BookOpenPageVariantOutline.vue'
 </script>
 
 <template>
@@ -34,6 +35,11 @@ import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 			<NcAppNavigationItem name="Events" to="/events">
 				<template #icon>
 					<Calendar :size="20" />
+				</template>
+			</NcAppNavigationItem>
+			<NcAppNavigationItem name="Sources" to="/sources">
+				<template #icon>
+					<BookOpenPageVariantOutline :size="20" />
 				</template>
 			</NcAppNavigationItem>
 			<NcAppNavigationItem name="Family Tree" to="/tree">

@@ -33,6 +33,9 @@
     "require": {
         "php": "^8.4",
         "bamarni/composer-bin-plugin": "^1.8",
+        "illuminate/filesystem": "^13.23",
+        "illuminate/translation": "^13.23",
+        "illuminate/validation": "^13.23",
         "liberu-genealogy/php-gedcom": "v4.2.0"
     },
     "require-dev": {
