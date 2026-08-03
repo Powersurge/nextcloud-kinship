@@ -41,6 +41,13 @@ class Citation extends Entity implements JsonSerializable {
 	protected ?int $createdAt = null;
 	protected ?int $updatedAt = null;
 
+	/**
+	 * Transient source summary filled by CitationService; not a DB column.
+	 *
+	 * @var array{id: int, title: string, sourceType: ?string, author: ?string}|null
+	 */
+	private ?array $source = null;
+
 	public function __construct() {
 		$this->addType('sourceId', 'integer');
 		$this->addType('subjectId', 'integer');
@@ -48,10 +55,18 @@ class Citation extends Entity implements JsonSerializable {
 		$this->addType('updatedAt', 'integer');
 	}
 
+	/**
+	 * @param array{id: int, title: string, sourceType: ?string, author: ?string}|null $source
+	 */
+	public function setSource(?array $source): void {
+		$this->source = $source;
+	}
+
 	public function jsonSerialize(): array {
 		return [
 			'id' => $this->id,
 			'sourceId' => $this->sourceId,
+			'source' => $this->source,
 			'subjectType' => $this->subjectType,
 			'subjectId' => $this->subjectId,
 			'detail' => $this->detail,

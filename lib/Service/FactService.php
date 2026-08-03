@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Service;
 
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Fact;
 use OCA\Kinship\Db\FactMapper;
@@ -14,6 +15,7 @@ class FactService {
 	public function __construct(
 		private FactMapper $mapper,
 		private PlaceService $placeService,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -75,7 +77,9 @@ class FactService {
 	}
 
 	public function delete(int $id): void {
-		$this->mapper->delete($this->mapper->find($id));
+		$fact = $this->mapper->find($id);
+		$this->citationService->deleteBySubject(SubjectType::FACT, $id);
+		$this->mapper->delete($fact);
 	}
 
 	/**

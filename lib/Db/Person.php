@@ -70,6 +70,10 @@ class Person extends Entity implements JsonSerializable {
 	/** @var array{id: int, name: string, fullName: ?string}|null */
 	private ?array $deathPlace = null;
 
+	/** Transient life-event ids for citing birth/death. */
+	private ?int $birthEventId = null;
+	private ?int $deathEventId = null;
+
 	public function __construct() {
 		$this->addType('photoFileId', 'integer');
 		$this->addType('createdAt', 'integer');
@@ -98,6 +102,14 @@ class Person extends Entity implements JsonSerializable {
 		$this->deathPlace = $deathPlace;
 	}
 
+	public function setBirthEventId(?int $birthEventId): void {
+		$this->birthEventId = $birthEventId;
+	}
+
+	public function setDeathEventId(?int $deathEventId): void {
+		$this->deathEventId = $deathEventId;
+	}
+
 	public function getFullName(): string {
 		return implode(' ', array_filter([
 			$this->firstName,
@@ -121,6 +133,8 @@ class Person extends Entity implements JsonSerializable {
 			'deathDate' => $this->deathDate,
 			'birthPlace' => $this->birthPlace,
 			'deathPlace' => $this->deathPlace,
+			'birthEventId' => $this->birthEventId,
+			'deathEventId' => $this->deathEventId,
 			'biography' => $this->biography,
 			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,

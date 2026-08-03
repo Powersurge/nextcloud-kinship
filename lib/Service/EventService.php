@@ -6,6 +6,7 @@ namespace OCA\Kinship\Service;
 
 use OCA\Kinship\Constants\EventType;
 use OCA\Kinship\Constants\ParticipantRole;
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Event;
 use OCA\Kinship\Db\EventMapper;
@@ -24,6 +25,7 @@ class EventService {
 		private EventMapper $mapper,
 		private ParticipantMapper $participantMapper,
 		private PlaceService $placeService,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 		private LivingStatusService $livingStatusService,
@@ -182,6 +184,7 @@ class EventService {
 			$this->participantMapper->delete($participant);
 		}
 
+		$this->citationService->deleteBySubject(SubjectType::EVENT, $id);
 		$this->mapper->delete($event);
 
 		if ($event->getType() === EventType::DEATH || $event->getType() === EventType::BIRTH) {
@@ -240,24 +243,22 @@ class EventService {
 	 *
 	 * @param array<string, mixed>|null $date DateValue payload
 	 */
-	public function setLifeDate(int $personId, string $type, ?array $date): void {
+	public function setLifeDate(int $personId, string $type, ?array $date): ?Event {
 		if (!in_array($type, [EventType::BIRTH, EventType::DEATH], true)) {
-			return;
+			return null;
 		}
 
 		$event = $this->mapper->findLifeEvent($personId, $type);
 
 		if ($event !== null) {
-			$this->updateEvent($event->getId(), ['date' => $date]);
-
-			return;
+			return $this->updateEvent($event->getId(), ['date' => $date]);
 		}
 
 		if (DateValue::fromArray($date)->isEmpty()) {
-			return;
+			return null;
 		}
 
-		$this->create([
+		return $this->create([
 			'type' => $type,
 			'date' => $date,
 			'participants' => [

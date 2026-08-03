@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Service;
 
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\Family;
 use OCA\Kinship\Db\FamilyMapper;
 use OCA\Kinship\Db\FamilyMember;
@@ -21,6 +22,7 @@ class FamilyService {
 	public function __construct(
 		private FamilyMapper $mapper,
 		private FamilyMemberMapper $memberMapper,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -82,6 +84,7 @@ class FamilyService {
 	public function deleteFamily(int $id): void {
 		$family = $this->mapper->find($id);
 		$this->memberMapper->deleteByFamily($id);
+		$this->citationService->deleteBySubject(SubjectType::FAMILY, $id);
 		$this->mapper->delete($family);
 	}
 }

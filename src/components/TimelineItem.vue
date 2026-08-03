@@ -17,6 +17,10 @@
 				</div>
 
 				<NcActions v-if="showActions" class="timeline-actions">
+					<CiteAction
+						v-if="event.id"
+						subject-type="event"
+						:subject-id="event.id" />
 					<NcActionButton @click="emit('edit')">
 						<template #icon>
 							<Pencil :size="20" />
@@ -46,6 +50,12 @@
 				class="timeline-description">
 				{{ event.description }}
 			</p>
+
+			<CitationList
+				v-if="event.id"
+				subject-type="event"
+				:subject-id="event.id"
+				compact />
 		</div>
 	</div>
 </template>
@@ -59,6 +69,8 @@ import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
 import type { Event } from '@/types'
+import CiteAction from '@/components/citations/CiteAction.vue'
+import CitationList from '@/components/citations/CitationList.vue'
 
 const props = withDefaults(defineProps<{
 	event: Event

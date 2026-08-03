@@ -16,6 +16,7 @@ use OCP\IUserSession;
 class SourceService {
 	public function __construct(
 		private SourceMapper $mapper,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -89,8 +90,8 @@ class SourceService {
 	}
 
 	public function delete(int $id): void {
-		$this->mapper->delete($this->mapper->find($id));
 		$source = $this->mapper->find($id);
+		$this->citationService->deleteBySource($id);
 		$this->mapper->delete($source);
 	}
 }

@@ -47,6 +47,8 @@ export interface Person {
 	deathDate: GenealogyDateValue | null;
 	birthPlace?: PlaceSummary | null;
 	deathPlace?: PlaceSummary | null;
+	birthEventId?: number | null;
+	deathEventId?: number | null;
 }
 
 export type FamilyRelationship = Record<string, any> & {
@@ -115,6 +117,13 @@ export interface Fact {
 	note: string | null;
 }
 
+export type SourceSummary = {
+	id: number
+	title: string
+	sourceType: string | null
+	author: string | null
+}
+
 export interface Source {
 	id: number;
 	title: string;
@@ -129,6 +138,22 @@ export interface Source {
 	createdAt?: number | null;
 	updatedAt?: number | null;
 }
+
+export interface Citation {
+	id: number;
+	sourceId: number;
+	source?: SourceSummary | null;
+	subjectType: string;
+	subjectId: number;
+	detail: string | null;
+	transcription: string | null;
+	confidence: string | null;
+	accessedDate: string | null;
+	createdBy?: string | null;
+	createdAt?: number | null;
+	updatedAt?: number | null;
+}
+
 export type GenealogyDateType = {
 	start: {
 		year: string | number,

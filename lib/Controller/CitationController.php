@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
+use OCA\Kinship\Exception\ValidationException;
+use OCA\Kinship\Http\Requests\CitationRequest;
 use OCA\Kinship\Service\CitationService;
-use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 
-class CitationController extends ApiController {
+class CitationController extends BaseApiController {
 	public function __construct(
 		string $appName,
 		IRequest $request,
@@ -33,11 +34,23 @@ class CitationController extends ApiController {
 	}
 
 	public function create(array $data): DataResponse {
-		return new DataResponse($this->service->create($data), Http::STATUS_CREATED);
+		try {
+			$validated = $this->validate($data, CitationRequest::class);
+		} catch (ValidationException $e) {
+			return $this->validationErrorResponse($e);
+		}
+
+		return new DataResponse($this->service->create($validated), Http::STATUS_CREATED);
 	}
 
 	public function update(int $id, array $data): DataResponse {
-		return new DataResponse($this->service->update($id, $data));
+		try {
+			$validated = $this->validate($data, CitationRequest::class, true);
+		} catch (ValidationException $e) {
+			return $this->validationErrorResponse($e);
+		}
+
+		return new DataResponse($this->service->update($id, $validated));
 	}
 
 	public function delete(int $id): DataResponse {

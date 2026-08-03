@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import RelationshipForm from '../forms/RelationshipForm.vue'
+import CitationList from '@/components/citations/CitationList.vue'
 import { createRelationship, updateRelationship } from '@/api/relationships.ts'
 
 const props = defineProps<{
@@ -25,6 +26,9 @@ const error = ref('')
 
 const isEdit = computed(() => Boolean(props.relationship?.id))
 const title = computed(() => (isEdit.value ? 'Edit relationship' : 'New relationship'))
+const relationshipId = computed(() =>
+	typeof props.relationship?.id === 'number' ? props.relationship.id : null,
+)
 
 function close() {
 	emit('update:open', false)
@@ -69,6 +73,12 @@ async function onSubmit(data: Record<string, unknown>) {
 				:saving="saving"
 				@submit="onSubmit"
 				@cancel="close" />
+
+			<CitationList
+				v-if="relationshipId"
+				class="rel-dialog-citations"
+				subject-type="relationship"
+				:subject-id="relationshipId" />
 		</div>
 	</NcDialog>
 </template>
@@ -76,5 +86,11 @@ async function onSubmit(data: Record<string, unknown>) {
 <style>
 .rel-dialog-content {
 	padding: 10px 0px;
+}
+
+.rel-dialog-citations {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border);
 }
 </style>

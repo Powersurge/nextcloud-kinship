@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonTimelineStore } from '@/stores/use-person-timeline-store.ts'
 import { useEventStore } from '@/stores/use-event-store.ts'
+import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 import { deleteEvent as deleteEventApi } from '@/api/events.ts'
 import type { Event } from '@/types'
 import { showConfirmation, showError } from '@nextcloud/dialogs'
@@ -105,6 +106,15 @@ watch([sentinel, hasMore, events], () => {
 		observer?.disconnect()
 	}
 })
+
+watch(
+	() => events.value.map((event) => event.id).filter(Boolean).join(','),
+	(ids, previous) => {
+		if (ids && ids !== previous) {
+			usePersonSidebarStore().reloadCitations()
+		}
+	},
+)
 
 onMounted(setupObserver)
 onBeforeUnmount(() => observer?.disconnect())

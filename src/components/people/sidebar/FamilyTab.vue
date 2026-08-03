@@ -9,6 +9,8 @@ import RelationshipModal from '@/components/modals/RelationshipModal.vue'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
 import { deleteRelationship as deleteRelationshipApi } from '@/api/relationships.ts'
+import CitationList from '@/components/citations/CitationList.vue'
+import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 
 const relationshipStore = useRelationshipStore()
 const { personId, family, loading } = storeToRefs(relationshipStore)
@@ -52,8 +54,9 @@ async function deleteRelationship(relationship: Record<string, any>) {
 	}
 }
 
-function onSaved() {
-	refresh()
+async function onSaved() {
+	await refresh()
+	await usePersonSidebarStore().reloadCitations()
 }
 </script>
 
@@ -107,6 +110,10 @@ function onSaved() {
 									Delete
 								</NcButton>
 							</div>
+							<CitationList
+								subject-type="relationship"
+								:subject-id="relationship.id"
+								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">
@@ -142,6 +149,10 @@ function onSaved() {
 									Delete
 								</NcButton>
 							</div>
+							<CitationList
+								subject-type="relationship"
+								:subject-id="relationship.id"
+								compact />
 						</li>
 					</ul>
 				</section>
@@ -180,6 +191,10 @@ function onSaved() {
 									Delete
 								</NcButton>
 							</div>
+							<CitationList
+								subject-type="relationship"
+								:subject-id="relationship.id"
+								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">
@@ -213,6 +228,10 @@ function onSaved() {
 									Delete
 								</NcButton>
 							</div>
+							<CitationList
+								subject-type="relationship"
+								:subject-id="relationship.id"
+								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">

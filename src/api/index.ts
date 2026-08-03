@@ -50,6 +50,15 @@ export {
 	deleteSource,
 	fetchSourceCitations,
 } from './sources'
+
+export {
+	fetchCitations,
+	createCitation,
+	updateCitation,
+	deleteCitation,
+} from './citations'
+export type { CitationsQueryParams } from './citations'
+
 export {
 	fetchPlaces,
 	fetchPlacesOptions,

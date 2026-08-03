@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import EventForm from '../forms/EventForm.vue'
+import CitationList from '@/components/citations/CitationList.vue'
 import { createEvent, updateEvent } from '@/api/events.ts'
 
 const props = defineProps<{
@@ -20,6 +21,7 @@ const error = ref('')
 
 const isEdit = computed(() => Boolean(props.event?.id))
 const title = computed(() => (isEdit.value ? 'Edit event' : 'New event'))
+const eventId = computed(() => (typeof props.event?.id === 'number' ? props.event.id : null))
 
 function close() {
 	emit('update:open', false)
@@ -62,6 +64,12 @@ async function onSubmit(data: Record<string, unknown>) {
 				:saving="saving"
 				@submit="onSubmit"
 				@cancel="close" />
+
+			<CitationList
+				v-if="eventId"
+				class="event-dialog-citations"
+				subject-type="event"
+				:subject-id="eventId" />
 		</div>
 	</NcDialog>
 </template>
@@ -69,5 +77,11 @@ async function onSubmit(data: Record<string, unknown>) {
 <style>
 .event-dialog-content {
 	padding: 10px 0px;
+}
+
+.event-dialog-citations {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border);
 }
 </style>

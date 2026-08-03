@@ -60,6 +60,30 @@ class CitationMapper extends QBMapper {
 		return $this->findEntities($qb);
 	}
 
+	public function deleteBySource(int $sourceId): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->delete($this->getTableName())
+			->where($qb->expr()->eq('source_id', $qb->createNamedParameter($sourceId, IQueryBuilder::PARAM_INT)));
+		$qb->executeStatement();
+	}
+
+	public function deleteBySubject(string $subjectType, int $subjectId): void {
+		$qb = $this->db->getQueryBuilder();
+		$qb->delete($this->getTableName())
+			->where($qb->expr()->eq('subject_type', $qb->createNamedParameter($subjectType)))
+			->andWhere($qb->expr()->eq('subject_id', $qb->createNamedParameter($subjectId, IQueryBuilder::PARAM_INT)));
+		$qb->executeStatement();
+	}
+
+	public function countBySource(int $sourceId): int {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select($qb->func()->count('*'))
+			->from($this->getTableName())
+			->where($qb->expr()->eq('source_id', $qb->createNamedParameter($sourceId, IQueryBuilder::PARAM_INT)));
+
+		return (int)$qb->executeQuery()->fetchOne();
+	}
+
 	public function insert(Citation|Entity $citation): Citation {
 		return parent::insert($citation);
 	}

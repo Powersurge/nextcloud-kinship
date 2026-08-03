@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\Kinship\Service;
 
 use OCA\Kinship\Constants\RelationshipType;
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\DateValue;
 use OCA\Kinship\Db\Relationship;
 use OCA\Kinship\Db\RelationshipMapper;
@@ -21,6 +22,7 @@ class RelationshipService {
 	public function __construct(
 		private RelationshipMapper $mapper,
 		private FamilyMembershipService $familyMembership,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -124,9 +126,9 @@ class RelationshipService {
 		$relationship->setPersonA($canonical['personA']);
 		$relationship->setPersonB($canonical['personB']);
 		$relationship->setType($canonical['type']);
-        if (!empty($date)) {
-            $relationship->setDate($date);
-        }
+		if (!empty($date)) {
+			$relationship->setDate($date);
+		}
 		$relationship->setNote($data['note'] ?? null);
 		$relationship->setOwnerUid($uid);
 		$relationship->setCreatedBy($uid);
@@ -273,7 +275,9 @@ class RelationshipService {
 	}
 
 	public function delete(int $id): void {
-		$this->mapper->delete($this->mapper->find($id));
+		$relationship = $this->mapper->find($id);
+		$this->citationService->deleteBySubject(SubjectType::RELATIONSHIP, $id);
+		$this->mapper->delete($relationship);
 		$this->familyMembership->rebuildAll();
 	}
 }

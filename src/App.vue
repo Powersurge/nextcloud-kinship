@@ -4,24 +4,30 @@ import { NcContent, NcAppContent } from '@nextcloud/vue'
 import Navigation from './components/ui/Navigation.vue'
 import EventModal from '@/components/modals/EventModal.vue'
 import FactModal from '@/components/modals/FactModal.vue'
+import CitationModal from '@/components/modals/CitationModal.vue'
 import { storeToRefs } from 'pinia'
 import { useEventStore } from '@/stores/use-event-store.ts'
 import { useFactStore } from '@/stores/use-fact-store.ts'
+import { useCitationStore } from '@/stores/use-citation-store.ts'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonTimelineStore } from '@/stores/use-person-timeline-store.ts'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
+import type { Citation } from '@/types'
 
 const { showFormModal, eventForm } = storeToRefs(useEventStore())
 const { showFormModal: showFactModal, factForm } = storeToRefs(useFactStore())
+const { showFormModal: showCitationModal, citationForm } = storeToRefs(useCitationStore())
 const { refreshSelectedPerson } = usePeopleStore()
 const { reloadForPerson } = usePersonTimelineStore()
 const { loadFacts } = useFactStore()
+const { upsertCitation } = useCitationStore()
 
 async function onEventSaved() {
 	const personId = usePersonSidebarStore().selectedPersonId
 	await refreshSelectedPerson()
 	if (personId) {
 		await reloadForPerson(personId)
+		await usePersonSidebarStore().reloadCitations()
 	}
 }
 
@@ -29,7 +35,12 @@ async function onFactSaved() {
 	const personId = usePersonSidebarStore().selectedPersonId
 	if (personId) {
 		await loadFacts('person', personId)
+		await usePersonSidebarStore().reloadCitations()
 	}
+}
+
+function onCitationSaved(citation: Record<string, unknown>) {
+	upsertCitation(citation as Citation)
 }
 </script>
 
@@ -52,5 +63,10 @@ async function onFactSaved() {
 			v-model:open="showFactModal"
 			:fact="factForm"
 			@saved="onFactSaved" />
+
+		<CitationModal
+			v-model:open="showCitationModal"
+			:citation="citationForm"
+			@saved="onCitationSaved" />
 	</NcContent>
 </template>

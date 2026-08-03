@@ -6,6 +6,7 @@ namespace OCA\Kinship\Service;
 
 use OCA\Kinship\Constants\EventType;
 use OCA\Kinship\Constants\LivingStatus;
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\EventMapper;
 use OCA\Kinship\Db\Person;
 use OCA\Kinship\Db\PersonMapper;
@@ -22,6 +23,7 @@ class PersonService {
 		private PersonMapper $mapper,
 		private EventMapper $eventMapper,
 		private PlaceService $placeService,
+		private CitationService $citationService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -63,6 +65,8 @@ class PersonService {
 
 			$person->setBirthDate($birth?->getDate());
 			$person->setDeathDate($death?->getDate());
+			$person->setBirthEventId($birth?->getId());
+			$person->setDeathEventId($death?->getId());
 			$placeIds[] = $birth?->getPlaceId();
 			$placeIds[] = $death?->getPlaceId();
 		}
@@ -140,6 +144,8 @@ class PersonService {
 	}
 
 	public function deletePerson(int $id): void {
-		$this->mapper->delete($this->mapper->find($id));
+		$person = $this->mapper->find($id);
+		$this->citationService->deleteBySubject(SubjectType::PERSON, $id);
+		$this->mapper->delete($person);
 	}
 }

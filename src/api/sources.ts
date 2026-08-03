@@ -1,5 +1,5 @@
 import axios from '@nextcloud/axios'
-import type { Source } from '@/types'
+import type { Citation, Source } from '@/types'
 import { apiUrl } from './client'
 
 export async function fetchSources(): Promise<Source[]> {
@@ -24,4 +24,9 @@ export async function updateSource(id: number, payload: unknown): Promise<Source
 
 export async function deleteSource(id: number): Promise<void> {
 	await axios.delete(apiUrl(`/sources/${id}`))
+}
+
+export async function fetchSourceCitations(id: number): Promise<Citation[]> {
+	const { data } = await axios.get(apiUrl(`/sources/${id}/citations`))
+	return data.citations ?? []
 }

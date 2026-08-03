@@ -29,7 +29,20 @@ final class SubjectType {
 		self::CLAIM,
 	];
 
+	/** Subjects that may receive citations in v0.2. */
+	public const CITABLE = [
+		self::PERSON,
+		self::EVENT,
+		self::FACT,
+		self::RELATIONSHIP,
+		self::FAMILY,
+	];
+
 	public static function isValid(string $type): bool {
 		return in_array($type, self::ALL, true);
+	}
+
+	public static function isCitable(string $type): bool {
+		return in_array($type, self::CITABLE, true);
 	}
 }
