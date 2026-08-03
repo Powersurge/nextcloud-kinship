@@ -3,6 +3,9 @@ import { apiUrl } from './client'
 
 export type GedcomImportResult = {
 	imported: number
+	relationships?: number
+	sources?: number
+	citations?: number
 	[key: string]: unknown
 }
 

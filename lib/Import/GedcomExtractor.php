@@ -8,6 +8,9 @@ use Gedcom\Gedcom;
 use Gedcom\Record\Fam;
 use Gedcom\Record\Indi;
 use Gedcom\Record\Indi\Name;
+use Gedcom\Record\Sour;
+use Gedcom\Record\SourRef;
+use OCA\Kinship\Constants\CitationConfidence;
 use OCA\Kinship\Constants\LivingStatus;
 
 /**
@@ -17,12 +20,24 @@ class GedcomExtractor {
 	/**
 	 * @return array{
 	 *   people: array<string, array<string, mixed>>,
-	 *   families: array<string, array<string, mixed>>
+	 *   families: array<string, array<string, mixed>>,
+	 *   sources: array<string, array<string, mixed>>
 	 * }
 	 */
 	public function extract(Gedcom $gedcom): array {
-		$people = [];
+		$sources = [];
+		foreach ($gedcom->getSour() as $sour) {
+			if (!$sour instanceof Sour) {
+				continue;
+			}
+			$id = $this->normalizeRef($sour->getSour() ?: $sour->getId());
+			if ($id === null) {
+				continue;
+			}
+			$sources[$id] = $this->extractSource($sour, $id);
+		}
 
+		$people = [];
 		foreach ($gedcom->getIndi() as $indi) {
 			$people[$indi->getId()] = $this->extractPerson($indi);
 		}
@@ -35,6 +50,38 @@ class GedcomExtractor {
 		return [
 			'people' => $people,
 			'families' => $families,
+			'sources' => $sources,
+		];
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function extractSource(Sour $sour, string $id): array {
+		$repo = $sour->getRepo();
+		$repository = null;
+		if (is_object($repo) && method_exists($repo, 'getRepo')) {
+			$repository = $this->normalizeRef($repo->getRepo());
+		}
+
+		$notes = $sour->getText();
+		if (!is_string($notes) || trim($notes) === '') {
+			$notes = null;
+		}
+
+		$title = is_string($sour->getTitl()) ? trim($sour->getTitl()) : '';
+		if ($title === '') {
+			$abbr = is_string($sour->getAbbr()) ? trim($sour->getAbbr()) : '';
+			$title = $abbr !== '' ? $abbr : 'Source ' . $id;
+		}
+
+		return [
+			'gedcomId' => $id,
+			'title' => $title,
+			'author' => $this->nullableString($sour->getAuth()),
+			'publication' => $this->nullableString($sour->getPubl()),
+			'repository' => $repository,
+			'notes' => $notes,
 		];
 	}
 
@@ -63,6 +110,9 @@ class GedcomExtractor {
 				: LivingStatus::UNKNOWN,
 			'birthDate' => $birthDate,
 			'deathDate' => $deathDate,
+			'citations' => $this->extractSourRefs($indi->getSour()),
+			'birthCitations' => $birthEvent !== null ? $this->extractSourRefs($birthEvent->getSour()) : [],
+			'deathCitations' => $deathEvent !== null ? $this->extractSourRefs($deathEvent->getSour()) : [],
 		];
 	}
 
@@ -193,6 +243,11 @@ class GedcomExtractor {
 		}
 
 		$divorced = $fam->getEven('DIV') !== null;
+		try {
+			$familySours = $fam->getSour();
+		} catch (\Throwable) {
+			$familySours = [];
+		}
 
 		return [
 			'gedcomId' => $fam->getId(),
@@ -204,7 +259,55 @@ class GedcomExtractor {
 			))),
 			'marriageDate' => $marriageDate,
 			'divorced' => $divorced,
+			'citations' => $this->extractSourRefs($familySours),
 		];
+	}
+
+	/**
+	 * @param mixed $refs
+	 * @return list<array{sourceRef: string, detail: ?string, transcription: ?string, confidence: ?string}>
+	 */
+	private function extractSourRefs(mixed $refs): array {
+		if (!is_array($refs)) {
+			return [];
+		}
+
+		$citations = [];
+		foreach ($refs as $ref) {
+			if (!$ref instanceof SourRef) {
+				continue;
+			}
+
+			$sourceRef = $this->normalizeRef($ref->getSour());
+			if ($sourceRef === null) {
+				continue;
+			}
+
+			$text = $this->nullableString($ref->getText());
+			$data = $ref->getData();
+			if ($text === null && is_object($data) && method_exists($data, 'getText')) {
+				$text = $this->nullableString($data->getText());
+			}
+
+			$citations[] = [
+				'sourceRef' => $sourceRef,
+				'detail' => $this->nullableString($ref->getPage()),
+				'transcription' => $text,
+				'confidence' => CitationConfidence::fromQuay($ref->getQuay()),
+			];
+		}
+
+		return $citations;
+	}
+
+	private function nullableString(mixed $value): ?string {
+		if (!is_string($value)) {
+			return null;
+		}
+
+		$value = trim($value);
+
+		return $value !== '' ? $value : null;
 	}
 
 	private function normalizeRef(mixed $ref): ?string {
@@ -213,6 +316,7 @@ class GedcomExtractor {
 		}
 
 		$ref = trim($ref);
+		$ref = trim($ref, '@');
 
 		return $ref !== '' ? $ref : null;
 	}

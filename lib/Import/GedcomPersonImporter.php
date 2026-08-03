@@ -21,11 +21,16 @@ class GedcomPersonImporter {
 
 	/**
 	 * @param array<string, array<string, mixed>> $people
-	 * @return array<string, int> gedcomId => kinship person id
+	 * @return array{
+	 *   people: array<string, int>,
+	 *   events: array<string, array{birth: ?int, death: ?int}>
+	 * }
 	 */
 	public function import(array $people): array {
-		/** @var array<string, int> $map */
-		$map = [];
+		/** @var array<string, int> $peopleMap */
+		$peopleMap = [];
+		/** @var array<string, array{birth: ?int, death: ?int}> $eventsMap */
+		$eventsMap = [];
 
 		foreach ($people as $gedcomId => $data) {
 			$person = new Person();
@@ -39,17 +44,29 @@ class GedcomPersonImporter {
 
 			$person = $this->personService->create($person);
 			$personId = $person->getId();
+			$peopleMap[$gedcomId] = $personId;
+
+			$birthEventId = null;
+			$deathEventId = null;
 
 			if (!empty($data['birthDate'])) {
-				$this->eventService->setLifeDate($personId, EventType::BIRTH, $data['birthDate']);
+				$birthEvent = $this->eventService->setLifeDate($personId, EventType::BIRTH, $data['birthDate']);
+				$birthEventId = $birthEvent?->getId();
 			}
 			if (!empty($data['deathDate'])) {
-				$this->eventService->setLifeDate($personId, EventType::DEATH, $data['deathDate']);
+				$deathEvent = $this->eventService->setLifeDate($personId, EventType::DEATH, $data['deathDate']);
+				$deathEventId = $deathEvent?->getId();
 			}
 
-			$map[$gedcomId] = $personId;
+			$eventsMap[$gedcomId] = [
+				'birth' => $birthEventId,
+				'death' => $deathEventId,
+			];
 		}
 
-		return $map;
+		return [
+			'people' => $peopleMap,
+			'events' => $eventsMap,
+		];
 	}
 }

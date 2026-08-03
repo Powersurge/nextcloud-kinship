@@ -27,7 +27,17 @@ async function onFileChange(event: Event) {
 	try {
 		const content = await file.text()
 		const result = await importGedcom(content)
-		message.value = `Imported ${result.imported} people.`
+		const parts = [`${result.imported} people`]
+		if (typeof result.relationships === 'number') {
+			parts.push(`${result.relationships} relationships`)
+		}
+		if (typeof result.sources === 'number') {
+			parts.push(`${result.sources} sources`)
+		}
+		if (typeof result.citations === 'number') {
+			parts.push(`${result.citations} citations`)
+		}
+		message.value = `Imported ${parts.join(', ')}.`
 	} catch (e) {
 		error.value = 'Could not import the file. Please try again.'
 		console.error('Failed to import GEDCOM', e)
