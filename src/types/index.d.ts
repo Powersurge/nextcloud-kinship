@@ -43,6 +43,7 @@ export interface Person {
 	livingStatus?: string;
 	biography?: string | null;
 	avatar?: string | null;
+	photoFileId?: number | null;
 	birthDate: GenealogyDateValue | null;
 	deathDate: GenealogyDateValue | null;
 	birthPlace?: PlaceSummary | null;
@@ -152,6 +153,44 @@ export interface Citation {
 	createdBy?: string | null;
 	createdAt?: number | null;
 	updatedAt?: number | null;
+}
+
+export type MediaFileSummary = {
+	fileId: number
+	name: string
+	path: string
+	mime: string
+	size: number
+	mtime: number
+}
+
+export interface Media {
+	id: number
+	fileId: number
+	file?: MediaFileSummary | null
+	subjectType: string
+	subjectId: number
+	albumId: number | null
+	sortOrder: number
+	caption: string | null
+	isPrimary: boolean
+	ownerUid?: string | null
+	createdBy?: string | null
+	createdAt?: number | null
+}
+
+export interface Album {
+	id: number
+	title: string
+	description: string | null
+	ownerType: string
+	ownerId: number
+	coverMediaId: number | null
+	coverFile?: MediaFileSummary | null
+	ownerUid?: string | null
+	createdBy?: string | null
+	createdAt?: number | null
+	updatedAt?: number | null
 }
 
 export type GenealogyDateType = {

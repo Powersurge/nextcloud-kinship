@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import { dateDisplay } from '@/utils/date.ts'
+import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
@@ -23,6 +24,12 @@ const emit = defineEmits<{
 const statusLabel = computed(() => getLivingStatusLabel(props.person.livingStatus))
 const birthLabel = computed(() => dateDisplay(props.person.birthDate))
 const deathLabel = computed(() => dateDisplay(props.person.deathDate))
+const photoUrl = computed(() => {
+	const fileId = props.person.photoFileId
+	return typeof fileId === 'number' && fileId > 0
+		? mediaPreviewUrl(fileId, 168)
+		: null
+})
 </script>
 
 <template>
@@ -46,7 +53,12 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 		</div>
 
 		<div class="person-card__avatar">
-			<Account :size="56" />
+			<img
+				v-if="photoUrl"
+				:src="photoUrl"
+				:alt="person.fullName || 'Person photo'"
+				class="person-card__photo">
+			<Account v-else :size="56" />
 		</div>
 
 		<h3 class="person-card__name">
@@ -136,6 +148,14 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 	background: var(--color-background-hover);
 
 	color: var(--color-primary);
+
+	overflow: hidden;
+}
+
+.person-card__photo {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .person-card__name {

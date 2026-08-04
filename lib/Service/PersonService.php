@@ -24,6 +24,8 @@ class PersonService {
 		private EventMapper $eventMapper,
 		private PlaceService $placeService,
 		private CitationService $citationService,
+		private MediaService $mediaService,
+		private AlbumService $albumService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -146,6 +148,8 @@ class PersonService {
 	public function deletePerson(int $id): void {
 		$person = $this->mapper->find($id);
 		$this->citationService->deleteBySubject(SubjectType::PERSON, $id);
+		$this->albumService->deleteByOwner(SubjectType::PERSON, $id);
+		$this->mediaService->deleteBySubject(SubjectType::PERSON, $id);
 		$this->mapper->delete($person);
 	}
 }

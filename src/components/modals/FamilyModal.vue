@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import FamilyForm from '../forms/FamilyForm.vue'
+import MediaSection from '@/components/media/MediaSection.vue'
 import { createFamily, updateFamily } from '@/api/families.ts'
 
 const props = defineProps<{
@@ -22,6 +23,7 @@ const error = ref('')
 
 const isEdit = computed(() => Boolean(props.family?.id))
 const title = computed(() => (isEdit.value ? 'Edit family' : 'New family'))
+const familyId = computed(() => (typeof props.family?.id === 'number' ? props.family.id : null))
 
 function close() {
 	emit('update:open', false)
@@ -64,6 +66,13 @@ async function onSubmit(data: Record<string, unknown>) {
 				:saving="saving"
 				@submit="onSubmit"
 				@cancel="close" />
+
+			<MediaSection
+				v-if="familyId"
+				class="family-dialog-media"
+				subject-type="family"
+				:subject-id="familyId"
+				:show-primary-action="false" />
 		</div>
 	</NcDialog>
 </template>
@@ -71,5 +80,11 @@ async function onSubmit(data: Record<string, unknown>) {
 <style>
 .family-dialog-content {
 	padding: 10px 0px;
+}
+
+.family-dialog-media {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border);
 }
 </style>

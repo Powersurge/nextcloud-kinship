@@ -6,11 +6,13 @@ import EventModal from '@/components/modals/EventModal.vue'
 import FactModal from '@/components/modals/FactModal.vue'
 import CitationModal from '@/components/modals/CitationModal.vue'
 import AlbumModal from '@/components/modals/AlbumModal.vue'
+import AttachMediaModal from '@/components/modals/AttachMediaModal.vue'
 import { storeToRefs } from 'pinia'
 import { useEventStore } from '@/stores/use-event-store.ts'
 import { useFactStore } from '@/stores/use-fact-store.ts'
 import { useCitationStore } from '@/stores/use-citation-store.ts'
 import { useAlbumStore } from '@/stores/use-album-store.ts'
+import { useMediaStore } from '@/stores/use-media-store.ts'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonTimelineStore } from '@/stores/use-person-timeline-store.ts'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
@@ -20,6 +22,7 @@ const { showFormModal, eventForm } = storeToRefs(useEventStore())
 const { showFormModal: showFactModal, factForm } = storeToRefs(useFactStore())
 const { showFormModal: showCitationModal, citationForm } = storeToRefs(useCitationStore())
 const { showFormModal: showAlbumModal, albumForm } = storeToRefs(useAlbumStore())
+const { showAttachModal } = storeToRefs(useMediaStore())
 const { refreshSelectedPerson } = usePeopleStore()
 const { reloadForPerson } = usePersonTimelineStore()
 const { loadFacts } = useFactStore()
@@ -45,6 +48,12 @@ async function onFactSaved() {
 function onCitationSaved(citation: Record<string, unknown>) {
 	upsertCitation(citation as Citation)
 }
+
+async function onMediaSaved() {
+	await refreshSelectedPerson()
+	await usePersonSidebarStore().reloadMedia()
+}
+
 async function onAlbumSaved() {
 	await usePersonSidebarStore().reloadMedia()
 }

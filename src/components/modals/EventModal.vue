@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import EventForm from '../forms/EventForm.vue'
 import CitationList from '@/components/citations/CitationList.vue'
+import MediaSection from '@/components/media/MediaSection.vue'
 import { createEvent, updateEvent } from '@/api/events.ts'
 
 const props = defineProps<{
@@ -70,6 +71,13 @@ async function onSubmit(data: Record<string, unknown>) {
 				class="event-dialog-citations"
 				subject-type="event"
 				:subject-id="eventId" />
+
+			<MediaSection
+				v-if="eventId"
+				class="event-dialog-media"
+				subject-type="event"
+				:subject-id="eventId"
+				:show-primary-action="false" />
 		</div>
 	</NcDialog>
 </template>
@@ -79,7 +87,8 @@ async function onSubmit(data: Record<string, unknown>) {
 	padding: 10px 0px;
 }
 
-.event-dialog-citations {
+.event-dialog-citations,
+.event-dialog-media {
 	margin-top: 1rem;
 	padding-top: 0.75rem;
 	border-top: 1px solid var(--color-border);

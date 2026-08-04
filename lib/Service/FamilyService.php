@@ -23,6 +23,8 @@ class FamilyService {
 		private FamilyMapper $mapper,
 		private FamilyMemberMapper $memberMapper,
 		private CitationService $citationService,
+		private MediaService $mediaService,
+		private AlbumService $albumService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -85,6 +87,8 @@ class FamilyService {
 		$family = $this->mapper->find($id);
 		$this->memberMapper->deleteByFamily($id);
 		$this->citationService->deleteBySubject(SubjectType::FAMILY, $id);
+		$this->albumService->deleteByOwner(SubjectType::FAMILY, $id);
+		$this->mediaService->deleteBySubject(SubjectType::FAMILY, $id);
 		$this->mapper->delete($family);
 	}
 }

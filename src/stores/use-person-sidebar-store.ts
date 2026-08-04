@@ -5,8 +5,10 @@ import { usePersonTimelineStore } from '@/stores/use-person-timeline-store.ts'
 import { useFactStore } from '@/stores/use-fact-store.ts'
 import { useRelationshipStore } from '@/stores/use-relationship-store.ts'
 import { useCitationStore, type CitationSubject } from '@/stores/use-citation-store.ts'
+import { useMediaStore } from '@/stores/use-media-store.ts'
+import { useAlbumStore } from '@/stores/use-album-store.ts'
 
-export type SidebarTab = 'overview' | 'timeline' | 'family'
+export type SidebarTab = 'overview' | 'timeline' | 'family' | 'media'
 
 export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 	const selectedPersonId = ref<number | null>(null)
@@ -30,11 +32,15 @@ export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 		const factStore = useFactStore()
 		const relationshipStore = useRelationshipStore()
 		const citationStore = useCitationStore()
+		const mediaStore = useMediaStore()
+		const albumStore = useAlbumStore()
 
 		factStore.reset()
 		timelineStore.reset()
 		relationshipStore.reset()
 		citationStore.reset()
+		mediaStore.reset()
+		albumStore.reset()
 
 		await Promise.all([
 			peopleStore.loadPersonSummary(personId),
@@ -43,7 +49,10 @@ export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 			relationshipStore.loadForPerson(personId),
 		])
 
-		await reloadCitations()
+		await Promise.all([
+			reloadCitations(),
+			reloadMedia(),
+		])
 	}
 
 	async function reloadCitations() {
@@ -98,6 +107,18 @@ export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 		await citationStore.loadForSubjects(subjects)
 	}
 
+	async function reloadMedia() {
+		const personId = selectedPersonId.value
+		if (!personId) {
+			return
+		}
+
+		await Promise.all([
+			useMediaStore().loadForSubject('person', personId),
+			useAlbumStore().loadForOwner('person', personId),
+		])
+	}
+
 	function close() {
 		selectedPersonId.value = null
 		activeTab.value = 'overview'
@@ -107,6 +128,8 @@ export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 		useFactStore().reset()
 		useRelationshipStore().reset()
 		useCitationStore().reset()
+		useMediaStore().reset()
+		useAlbumStore().reset()
 	}
 
 	function setActiveTab(tab: SidebarTab) {
@@ -122,5 +145,6 @@ export const usePersonSidebarStore = defineStore('personSidebarStore', () => {
 		setActiveTab,
 		onPersonOpened,
 		reloadCitations,
+		reloadMedia,
 	}
 })

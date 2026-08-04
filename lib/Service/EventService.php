@@ -26,6 +26,8 @@ class EventService {
 		private ParticipantMapper $participantMapper,
 		private PlaceService $placeService,
 		private CitationService $citationService,
+		private MediaService $mediaService,
+		private AlbumService $albumService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 		private LivingStatusService $livingStatusService,
@@ -185,6 +187,8 @@ class EventService {
 		}
 
 		$this->citationService->deleteBySubject(SubjectType::EVENT, $id);
+		$this->albumService->deleteByOwner(SubjectType::EVENT, $id);
+		$this->mediaService->deleteBySubject(SubjectType::EVENT, $id);
 		$this->mapper->delete($event);
 
 		if ($event->getType() === EventType::DEATH || $event->getType() === EventType::BIRTH) {
