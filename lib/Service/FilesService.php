@@ -9,6 +9,7 @@ use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
+use OCP\IPreview;
 use OCP\IUserSession;
 use RuntimeException;
 
@@ -22,6 +23,7 @@ class FilesService {
 	public function __construct(
 		private IRootFolder $rootFolder,
 		private IUserSession $userSession,
+		private IPreview $previewManager,
 	) {
 	}
 
@@ -76,19 +78,38 @@ class FilesService {
 	/**
 	 * Resolve a file the current user can access.
 	 *
+	 * path is relative to the user folder (e.g. /Kinship/Uploads/photo.jpg)
+	 * so it can be passed to OCA.Viewer / WebDAV.
+	 *
 	 * @return array{fileId: int, name: string, path: string, mime: string, size: int, mtime: int}|null
 	 */
 	public function resolveFile(int $fileId): ?array {
+		$uid = $this->userSession->getUser()?->getUID();
+		if ($uid === null) {
+			return null;
+		}
+
 		$file = $this->getAccessibleFile($fileId);
 		if ($file === null) {
 			return null;
 		}
 
+		$userFolder = $this->rootFolder->getUserFolder($uid);
+		$relativePath = $userFolder->getRelativePath($file->getPath());
+		if ($relativePath === null || $relativePath === '') {
+			return null;
+		}
+
+		if (!str_starts_with($relativePath, '/')) {
+			$relativePath = '/' . $relativePath;
+		}
+
 		return [
 			'fileId' => $file->getId(),
 			'name' => $file->getName(),
-			'path' => $file->getPath(),
+			'path' => $relativePath,
 			'mime' => $file->getMimeType(),
+			'hasPreview' => $this->previewManager->isAvailable($file),
 			'size' => $file->getSize(),
 			'mtime' => $file->getMTime(),
 		];

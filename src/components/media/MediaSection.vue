@@ -10,6 +10,8 @@ import Star from 'vue-material-design-icons/Star.vue'
 import StarOutline from 'vue-material-design-icons/StarOutline.vue'
 import ImageMultiple from 'vue-material-design-icons/ImageMultiple.vue'
 import ArrowLeft from 'vue-material-design-icons/ArrowLeft.vue'
+import EyeOutline from 'vue-material-design-icons/EyeOutline.vue'
+import Download from 'vue-material-design-icons/Download.vue'
 import { storeToRefs } from 'pinia'
 import { useMediaStore } from '@/stores/use-media-store.ts'
 import { useAlbumStore } from '@/stores/use-album-store.ts'
@@ -18,7 +20,9 @@ import { deleteMedia as deleteMediaApi, updateMedia } from '@/api/media.ts'
 import type { Album, Media } from '@/types'
 import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 import { pickLocalFiles, pickMediaFileIds } from '@/utils/mediaPicker.ts'
+import { canOpenInViewer, downloadMediaFile, openMediaInViewer } from '@/utils/mediaViewer.ts'
 import { showConfirmation, showError } from '@nextcloud/dialogs'
+import { generateUrl } from '@nextcloud/router'
 
 const props = withDefaults(defineProps<{
 	subjectType: string
@@ -159,17 +163,39 @@ async function onTogglePrimary(media: Media) {
 	}
 }
 
-function coverUrl(album: Album): string | null {
-	const fileId = album.coverFile?.fileId
-	return fileId ? mediaPreviewUrl(fileId, 256) : null
+function onOpenMedia(media: Media) {
+	if (!media.file) {
+		showError('File is unavailable')
+		return
+	}
+	openMediaInViewer(media, mediaItems.value)
 }
 
-function thumbUrl(media: Media): string | null {
+function onDownloadMedia(media: Media) {
+	downloadMediaFile(media.file)
+}
+
+function canPreview(media: Media): boolean {
+	return canOpenInViewer(media.file?.mime)
+}
+
+function coverUrl(album: Album): string | null {
+	const fileId = album.coverFile?.fileId
+	return fileId
+		? mediaPreviewUrl(fileId, 256)
+		: generateUrl('/core/mimeicon?mime=folder')
+}
+
+function thumbUrl(media: Media): string {
 	const mime = media.file?.mime ?? ''
-	if (mime.startsWith('image/') || mime.startsWith('video/')) {
+
+	if (media.file?.hasPreview) {
 		return mediaPreviewUrl(media.fileId, 256)
 	}
-	return null
+
+	return generateUrl(`/core/mimeicon?mime=${mime}`, {
+		mime,
+	})
 }
 </script>
 
@@ -250,7 +276,7 @@ function thumbUrl(media: Media): string | null {
 					<div class="media-section__thumb">
 						<img
 							v-if="coverUrl(album)"
-							:src="coverUrl(album)!"
+							:src="coverUrl(album)"
 							:alt="album.title">
 						<ImageMultiple
 							v-else
@@ -286,10 +312,14 @@ function thumbUrl(media: Media): string | null {
 				:key="`media-${media.id}`"
 				class="media-section__tile"
 				:class="{ 'media-section__tile--primary': media.isPrimary }">
-				<div class="media-section__thumb">
+				<button
+					type="button"
+					class="media-section__thumb media-section__thumb--button"
+					:title="canPreview(media) ? 'Open preview' : 'Open file'"
+					@click="onOpenMedia(media)">
 					<img
 						v-if="thumbUrl(media)"
-						:src="thumbUrl(media)!"
+						:src="thumbUrl(media)"
 						:alt="media.caption || media.file?.name || 'Media'">
 					<span v-else class="media-section__fallback">
 						{{ media.file?.name ?? `File #${media.fileId}` }}
@@ -299,12 +329,24 @@ function thumbUrl(media: Media): string | null {
 						class="media-section__badge">
 						Primary
 					</span>
-				</div>
+				</button>
 				<div class="media-section__meta">
 					<div class="media-section__caption">
 						{{ media.caption || media.file?.name || `File #${media.fileId}` }}
 					</div>
 					<NcActions>
+						<NcActionButton close-after-click @click="onOpenMedia(media)">
+							<template #icon>
+								<EyeOutline :size="20" />
+							</template>
+							{{ canPreview(media) ? 'Open' : 'Preview' }}
+						</NcActionButton>
+						<NcActionButton close-after-click @click="onDownloadMedia(media)">
+							<template #icon>
+								<Download :size="20" />
+							</template>
+							Download
+						</NcActionButton>
 						<NcActionButton
 							v-if="showPrimaryAction"
 							close-after-click
@@ -411,6 +453,23 @@ function thumbUrl(media: Media): string | null {
 	justify-content: center;
 	color: var(--color-text-maxcontrast);
 	overflow: hidden;
+}
+
+.media-section__thumb--button {
+	width: 100%;
+	padding: 0;
+	border: none;
+	cursor: pointer;
+	color: inherit;
+}
+
+.media-section__thumb--button:hover {
+	opacity: 0.92;
+}
+
+.media-section__thumb--button:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: -2px;
 }
 
 .media-section__thumb img {

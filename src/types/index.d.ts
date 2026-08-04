@@ -162,6 +162,7 @@ export type MediaFileSummary = {
 	mime: string
 	size: number
 	mtime: number
+	hasPreview: boolean
 }
 
 export interface Media {

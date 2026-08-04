@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.viewer.modal-mask {
+    width: 100% !important;
+}
+
+.viewer__file-wrapper {
+    width: 100%;
+    height: auto;
+}

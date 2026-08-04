@@ -4,6 +4,9 @@ import '@nextcloud/dialogs/style.css'
 /**
  * Open the Nextcloud file picker and return selected file ids.
  * Returns null if the user cancels.
+ * @param options
+ * @param options.title
+ * @param options.multiSelect
  */
 export async function pickMediaFileIds(options?: {
 	title?: string
@@ -40,6 +43,9 @@ export async function pickMediaFileIds(options?: {
 
 /**
  * Open a hidden file input for local uploads. Returns null if cancelled.
+ * @param options
+ * @param options.accept
+ * @param options.multiple
  */
 export function pickLocalFiles(options?: {
 	accept?: string
