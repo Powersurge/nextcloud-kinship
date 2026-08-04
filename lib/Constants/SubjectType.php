@@ -38,11 +38,22 @@ final class SubjectType {
 		self::FAMILY,
 	];
 
+	/** Genealogy objects that may own albums. */
+	public const ALBUM_OWNERS = [
+		self::PERSON,
+		self::FAMILY,
+		self::EVENT,
+	];
+
 	public static function isValid(string $type): bool {
 		return in_array($type, self::ALL, true);
 	}
 
 	public static function isCitable(string $type): bool {
 		return in_array($type, self::CITABLE, true);
+	}
+
+	public static function isAlbumOwner(string $type): bool {
+		return in_array($type, self::ALBUM_OWNERS, true);
 	}
 }

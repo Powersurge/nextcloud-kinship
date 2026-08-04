@@ -60,6 +60,25 @@ export {
 export type { CitationsQueryParams } from './citations'
 
 export {
+	fetchMedia,
+	createMedia,
+	updateMedia,
+	deleteMedia,
+	uploadMedia,
+} from './media'
+export type { MediaQueryParams, MediaPayload } from './media'
+
+export {
+	fetchAlbums,
+	fetchAlbum,
+	fetchAlbumMedia,
+	createAlbum,
+	updateAlbum,
+	deleteAlbum,
+} from './albums'
+export type { AlbumsQueryParams, AlbumPayload } from './albums'
+
+export {
 	fetchPlaces,
 	fetchPlacesOptions,
 	lookupPlaces,

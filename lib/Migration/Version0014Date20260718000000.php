@@ -29,11 +29,13 @@ class Version0014Date20260718000000 extends SimpleMigrationStep {
 				'notnull' => true,
 				'unsigned' => true,
 			]);
+			$table->addColumn('album_id', 'integer', ['notnull' => false, 'unsigned' => true]);
 			$table->addColumn('file_id', 'integer', ['notnull' => true, 'unsigned' => true]);
 			$table->addColumn('subject_type', 'string', ['length' => 16, 'notnull' => true]);
 			$table->addColumn('subject_id', 'integer', ['notnull' => true, 'unsigned' => true]);
 			$table->addColumn('caption', 'string', ['length' => 255, 'notnull' => false]);
 			$table->addColumn('is_primary', 'boolean', ['notnull' => false, 'default' => false]);
+			$table->addColumn('sort_order', 'integer', ['notnull' => true, 'default' => 0]);
 			$table->addColumn('owner_uid', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_by', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_at', 'bigint', ['notnull' => false, 'unsigned' => true]);
@@ -41,6 +43,7 @@ class Version0014Date20260718000000 extends SimpleMigrationStep {
 			$table->setPrimaryKey(['id']);
 			$table->addIndex(['subject_type', 'subject_id'], 'kinship_media_subject_idx');
 			$table->addIndex(['file_id'], 'kinship_media_file_idx');
+			$table->addIndex(['album_id'], 'kinship_media_album_idx');
 		}
 
 		return $schema;

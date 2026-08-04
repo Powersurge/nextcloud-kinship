@@ -95,12 +95,21 @@ return [
 		['name' => 'claim#reject', 'url' => '/api/v1/claims/{id}/reject', 'verb' => 'POST'],
 		['name' => 'claim#delete', 'url' => '/api/v1/claims/{id}', 'verb' => 'DELETE'],
 
-		// Media references (?subjectType=&subjectId=)
+		// Media references (?subjectType=&subjectId=&albumId=)
 		['name' => 'media#index', 'url' => '/api/v1/media', 'verb' => 'GET'],
 		['name' => 'media#create', 'url' => '/api/v1/media', 'verb' => 'POST'],
+		['name' => 'media#upload', 'url' => '/api/v1/media/upload', 'verb' => 'POST'],
 		['name' => 'media#show', 'url' => '/api/v1/media/{id}', 'verb' => 'GET'],
 		['name' => 'media#update', 'url' => '/api/v1/media/{id}', 'verb' => 'PUT'],
 		['name' => 'media#delete', 'url' => '/api/v1/media/{id}', 'verb' => 'DELETE'],
+
+		// Albums (?ownerType=&ownerId=)
+		['name' => 'album#index', 'url' => '/api/v1/albums', 'verb' => 'GET'],
+		['name' => 'album#create', 'url' => '/api/v1/albums', 'verb' => 'POST'],
+		['name' => 'album#show', 'url' => '/api/v1/albums/{id}', 'verb' => 'GET'],
+		['name' => 'album#update', 'url' => '/api/v1/albums/{id}', 'verb' => 'PUT'],
+		['name' => 'album#delete', 'url' => '/api/v1/albums/{id}', 'verb' => 'DELETE'],
+		['name' => 'album#media', 'url' => '/api/v1/albums/{id}/media', 'verb' => 'GET'],
 
 		// Custom event types (owner-only management UI is v0.2)
 		['name' => 'custom_event#index', 'url' => '/api/v1/custom-events', 'verb' => 'GET'],

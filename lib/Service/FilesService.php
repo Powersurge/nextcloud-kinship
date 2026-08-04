@@ -1,0 +1,165 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OCA\Kinship\Service;
+
+use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\Files\IRootFolder;
+use OCP\Files\NotFoundException;
+use OCP\Files\NotPermittedException;
+use OCP\IUserSession;
+use RuntimeException;
+
+/**
+ * Nextcloud Files helpers for Kinship media (inbox uploads + file resolution).
+ */
+class FilesService {
+	private const KINSHIP_FOLDER = 'Kinship';
+	private const UPLOADS_FOLDER = 'Uploads';
+
+	public function __construct(
+		private IRootFolder $rootFolder,
+		private IUserSession $userSession,
+	) {
+	}
+
+	/**
+	 * Ensure Kinship/Uploads exists under the current user's files.
+	 *
+	 * @throws RuntimeException
+	 */
+	public function ensureUploadsFolder(): Folder {
+		$userFolder = $this->userFolder();
+
+		try {
+			$kinship = $userFolder->get(self::KINSHIP_FOLDER);
+			if (!($kinship instanceof Folder)) {
+				throw new RuntimeException('Kinship path exists but is not a folder');
+			}
+		} catch (NotFoundException) {
+			$kinship = $userFolder->newFolder(self::KINSHIP_FOLDER);
+		}
+
+		try {
+			$uploads = $kinship->get(self::UPLOADS_FOLDER);
+			if (!($uploads instanceof Folder)) {
+				throw new RuntimeException('Kinship/Uploads path exists but is not a folder');
+			}
+		} catch (NotFoundException) {
+			$uploads = $kinship->newFolder(self::UPLOADS_FOLDER);
+		}
+
+		return $uploads;
+	}
+
+	/**
+	 * Store a new file in Kinship/Uploads and return its file id.
+	 *
+	 * @param resource|string $content
+	 * @throws RuntimeException
+	 */
+	public function uploadToInbox(string $name, mixed $content): int {
+		$uploads = $this->ensureUploadsFolder();
+		$safeName = $this->uniqueName($uploads, $this->sanitizeFilename($name));
+
+		try {
+			$file = $uploads->newFile($safeName, $content);
+		} catch (NotPermittedException $e) {
+			throw new RuntimeException('Cannot write to Kinship/Uploads: ' . $e->getMessage(), 0, $e);
+		}
+
+		return $file->getId();
+	}
+
+	/**
+	 * Resolve a file the current user can access.
+	 *
+	 * @return array{fileId: int, name: string, path: string, mime: string, size: int, mtime: int}|null
+	 */
+	public function resolveFile(int $fileId): ?array {
+		$file = $this->getAccessibleFile($fileId);
+		if ($file === null) {
+			return null;
+		}
+
+		return [
+			'fileId' => $file->getId(),
+			'name' => $file->getName(),
+			'path' => $file->getPath(),
+			'mime' => $file->getMimeType(),
+			'size' => $file->getSize(),
+			'mtime' => $file->getMTime(),
+		];
+	}
+
+	/**
+	 * @throws RuntimeException when the file is missing or inaccessible
+	 */
+	public function assertUserCanAccess(int $fileId): void {
+		if ($this->getAccessibleFile($fileId) === null) {
+			throw new RuntimeException('File not found or inaccessible');
+		}
+	}
+
+	private function getAccessibleFile(int $fileId): ?File {
+		$uid = $this->userSession->getUser()?->getUID();
+		if ($uid === null) {
+			return null;
+		}
+
+		try {
+			$nodes = $this->rootFolder->getUserFolder($uid)->getById($fileId);
+		} catch (NotFoundException) {
+			return null;
+		}
+
+		foreach ($nodes as $node) {
+			if ($node instanceof File) {
+				return $node;
+			}
+		}
+
+		return null;
+	}
+
+	private function userFolder(): Folder {
+		$uid = $this->userSession->getUser()?->getUID();
+		if ($uid === null) {
+			throw new RuntimeException('No authenticated user');
+		}
+
+		return $this->rootFolder->getUserFolder($uid);
+	}
+
+	private function sanitizeFilename(string $name): string {
+		$name = basename(str_replace(["\0", '/', '\\'], '', $name));
+		$name = trim($name);
+		if ($name === '' || $name === '.' || $name === '..') {
+			return 'upload.bin';
+		}
+
+		return $name;
+	}
+
+	private function uniqueName(Folder $folder, string $name): string {
+		if (!$folder->nodeExists($name)) {
+			return $name;
+		}
+
+		$pathInfo = pathinfo($name);
+		$base = $pathInfo['filename'] ?? 'upload';
+		$ext = isset($pathInfo['extension']) && $pathInfo['extension'] !== ''
+			? '.' . $pathInfo['extension']
+			: '';
+
+		$i = 1;
+		do {
+			$candidate = $base . ' (' . $i . ')' . $ext;
+			$i++;
+		} while ($folder->nodeExists($candidate));
+
+		return $candidate;
+	}
+}
