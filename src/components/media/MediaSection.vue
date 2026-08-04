@@ -424,13 +424,13 @@ function thumbUrl(media: Media): string {
 	margin: 0;
 	padding: 0;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 	gap: 0.5rem;
 }
 
 .media-section__tile {
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius);
+	padding: 8px;
+	border-radius: calc(var(--border-radius) + 4px);
 	background: var(--color-background-dark);
 	overflow: hidden;
 }

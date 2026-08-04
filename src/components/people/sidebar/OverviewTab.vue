@@ -172,11 +172,6 @@ async function onDeleteFact(fact: Fact) {
 					<div v-else class="sidebar-section__empty">
 						No birth details recorded
 					</div>
-					<CitationList
-						v-if="birthEventId"
-						subject-type="event"
-						:subject-id="birthEventId"
-						compact />
 				</div>
 			</div>
 
@@ -208,11 +203,6 @@ async function onDeleteFact(fact: Fact) {
 					<div v-else class="sidebar-section__empty">
 						No death details recorded
 					</div>
-					<CitationList
-						v-if="deathEventId"
-						subject-type="event"
-						:subject-id="deathEventId"
-						compact />
 				</div>
 			</div>
 
@@ -281,24 +271,8 @@ async function onDeleteFact(fact: Fact) {
 							<div v-if="fact.note" class="facts-list__note">
 								{{ fact.note }}
 							</div>
-
-							<CitationList
-								subject-type="fact"
-								:subject-id="fact.id"
-								compact />
 						</li>
 					</ul>
-				</div>
-			</div>
-
-			<div v-if="selectedPerson?.id" class="sidebar-section">
-				<BookOpenPageVariantOutline :size="20" class="sidebar-section__icon" />
-				<div class="sidebar-section__body">
-					<label class="sidebar-section__label">Person sources</label>
-					<CitationList
-						subject-type="person"
-						:subject-id="selectedPerson.id"
-						compact />
 				</div>
 			</div>
 

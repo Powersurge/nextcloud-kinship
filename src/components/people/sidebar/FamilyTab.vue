@@ -116,10 +116,6 @@ async function onSaved() {
 									Delete
 								</NcButton>
 							</div>
-							<CitationList
-								subject-type="relationship"
-								:subject-id="relationship.id"
-								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">
@@ -162,10 +158,6 @@ async function onSaved() {
 									Delete
 								</NcButton>
 							</div>
-							<CitationList
-								subject-type="relationship"
-								:subject-id="relationship.id"
-								compact />
 						</li>
 					</ul>
 				</section>
@@ -211,10 +203,6 @@ async function onSaved() {
 									Delete
 								</NcButton>
 							</div>
-							<CitationList
-								subject-type="relationship"
-								:subject-id="relationship.id"
-								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">
@@ -248,10 +236,6 @@ async function onSaved() {
 									Delete
 								</NcButton>
 							</div>
-							<CitationList
-								subject-type="relationship"
-								:subject-id="relationship.id"
-								compact />
 						</li>
 					</ul>
 					<p v-else class="family-section__empty">
