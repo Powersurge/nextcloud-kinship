@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
-import EventCard from '../components/EventCard.vue'
-import EventModal from '../components/modals/EventModal.vue'
+import EventCard from '@/components/EventCard.vue'
+import EventModal from '@/components/modals/EventModal.vue'
 import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events.ts'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
+const router = useRouter()
 const events = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
 
@@ -28,6 +30,13 @@ async function loadEvents() {
 function openCreate() {
 	editing.value = null
 	modalOpen.value = true
+}
+
+function openEvent(event: Record<string, any>) {
+	if (!event?.id) {
+		return
+	}
+	router.push({ name: 'event-detail', params: { id: String(event.id) } })
 }
 
 function openEdit(event: Record<string, any>) {
@@ -88,6 +97,7 @@ onMounted(loadEvents)
 				v-for="event in events"
 				:key="event.id"
 				:event="event"
+				@click="openEvent(event)"
 				@edit="openEdit(event)"
 				@delete="deleteEvent(event)" />
 		</div>

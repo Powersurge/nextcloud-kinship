@@ -11,14 +11,14 @@ const routes = [
 		path: '/people',
 		name: 'people',
 		components: {
-			default: () => import('../views/People.vue'),
+			default: () => import('../views/people/Index.vue'),
 			sidebar: () => import('../components/people/PersonSidebar.vue'),
 		},
 	},
 	{
 		path: '/families',
 		name: 'families',
-		component: () => import('../views/Families.vue'),
+		component: () => import('../views/family/Index.vue'),
 	},
 	{
 		path: '/relationships',
@@ -28,7 +28,7 @@ const routes = [
 	{
 		path: '/events',
 		name: 'events',
-		component: () => import('../views/Events.vue'),
+		component: () => import('../views/event/Index.vue'),
 	},
 	{
 		path: '/sources',
