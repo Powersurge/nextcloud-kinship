@@ -1,4 +1,5 @@
 import { generateRemoteUrl } from '@nextcloud/router'
+import { getCurrentUser } from '@nextcloud/auth'
 import { showError } from '@nextcloud/dialogs'
 import type { Media, MediaFileSummary } from '@/types'
 
@@ -123,6 +124,12 @@ export function openMediaInViewer(media: Media, siblings: Media[] = []): boolean
 export function downloadMediaFile(file: MediaFileSummary | null | undefined): void {
 	if (!file?.path || !file.name) {
 		showError('File is unavailable for download')
+		return
+	}
+
+	const user = getCurrentUser()
+	if (!user?.uid) {
+		showError('You must be logged in to download files')
 		return
 	}
 
