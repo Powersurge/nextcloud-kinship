@@ -14,7 +14,6 @@ import TagMultiple from 'vue-material-design-icons/TagMultiple.vue'
 import Close from 'vue-material-design-icons/Close.vue'
 import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
 import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
-import BookOpenPageVariantOutline from 'vue-material-design-icons/BookOpenPageVariantOutline.vue'
 import { storeToRefs } from 'pinia'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { useEventStore } from '@/stores/use-event-store.ts'
@@ -26,7 +25,6 @@ import { FACT_TYPE_OPTIONS } from '@/constants.ts'
 import { deleteFact as deleteFactApi } from '@/api/facts.ts'
 import type { Fact } from '@/types'
 import { showConfirmation, showError } from '@nextcloud/dialogs'
-import CitationList from '@/components/citations/CitationList.vue'
 import CiteAction from '@/components/citations/CiteAction.vue'
 
 const peopleStore = usePeopleStore()
@@ -41,8 +39,6 @@ const birthLabel = computed(() => dateDisplay(selectedPerson.value?.birthDate))
 const deathLabel = computed(() => dateDisplay(selectedPerson.value?.deathDate))
 const birthPlaceLabel = computed(() => placeDisplay(selectedPerson.value?.birthPlace))
 const deathPlaceLabel = computed(() => placeDisplay(selectedPerson.value?.deathPlace))
-const birthEventId = computed(() => selectedPerson.value?.birthEventId ?? null)
-const deathEventId = computed(() => selectedPerson.value?.deathEventId ?? null)
 
 const editingBiography = ref(false)
 const biographyDraft = ref('')

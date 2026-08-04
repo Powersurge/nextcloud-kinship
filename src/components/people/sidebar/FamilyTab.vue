@@ -9,7 +9,6 @@ import RelationshipModal from '@/components/modals/RelationshipModal.vue'
 import { relationshipTypeLabel } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
 import { deleteRelationship as deleteRelationshipApi } from '@/api/relationships.ts'
-import CitationList from '@/components/citations/CitationList.vue'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 
 const relationshipStore = useRelationshipStore()
