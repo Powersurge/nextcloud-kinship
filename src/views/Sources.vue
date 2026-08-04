@@ -7,7 +7,8 @@ import SourceCard from '../components/SourceCard.vue'
 import SourceModal from '../components/modals/SourceModal.vue'
 import { deleteSource as deleteSourceApi, fetchSources } from '@/api/sources.ts'
 import type { Source } from '@/types'
-import { showConfirmation, showError } from '@nextcloud/dialogs'
+import { showError } from '@nextcloud/dialogs'
+import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
 const sources = ref<Source[]>([])
 const loading = ref(true)
@@ -41,12 +42,11 @@ function onSaved() {
 }
 
 async function deleteSource(source: Source) {
-	const confirmed = await showConfirmation({
+	const confirmed = await showDeleteConfirmationDialog({
 		name: 'Delete source?',
 		text: `Delete “${source.title}”? All citations using this source will also be removed.`,
-		labelReject: 'Cancel',
-		severity: 'error',
 	})
+
 	if (!confirmed) {
 		return
 	}

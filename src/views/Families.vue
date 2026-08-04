@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
+import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import FamilyCard from '../components/FamilyCard.vue'
 import FamilyModal from '../components/modals/FamilyModal.vue'
@@ -21,11 +21,6 @@ async function loadFamilies() {
 	} finally {
 		loading.value = false
 	}
-}
-
-function openCreate() {
-	editing.value = null
-	modalOpen.value = true
 }
 
 function openEdit(family: Record<string, any>) {

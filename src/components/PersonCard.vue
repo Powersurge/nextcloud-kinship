@@ -29,14 +29,14 @@ const deathLabel = computed(() => dateDisplay(props.person.deathDate))
 	<div class="person-card">
 		<div class="person-card__actions">
 			<NcActions>
-				<NcActionButton @click="emit('edit')">
+				<NcActionButton close-after-click @click="emit('edit')">
 					<template #icon>
 						<Pencil :size="20" />
 					</template>
 					Edit
 				</NcActionButton>
 
-				<NcActionButton @click="emit('delete')">
+				<NcActionButton close-after-click @click="emit('delete')">
 					<template #icon>
 						<Delete :size="20" />
 					</template>

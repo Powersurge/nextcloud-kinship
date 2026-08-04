@@ -7,6 +7,7 @@ import PersonCard from '../components/PersonCard.vue'
 import PersonModal from '../components/modals/PersonModal.vue'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 import { deletePerson as deletePersonApi, fetchPeople } from '@/api/people.ts'
+import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
 const people = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
@@ -42,9 +43,12 @@ function onSaved() {
 }
 
 async function deletePerson(person: Record<string, any>) {
-	if (!window.confirm(`Delete ${person.firstName} ${person.lastName}?`)) {
+	const confirmed = await showDeleteConfirmationDialog()
+
+	if (!confirmed) {
 		return
 	}
+
 	try {
 		await deletePersonApi(person.id)
 		people.value = people.value.filter((p) => p.id !== person.id)

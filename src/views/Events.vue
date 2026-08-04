@@ -6,6 +6,7 @@ import Plus from 'vue-material-design-icons/Plus.vue'
 import EventCard from '../components/EventCard.vue'
 import EventModal from '../components/modals/EventModal.vue'
 import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events.ts'
+import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
 const events = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
@@ -39,7 +40,9 @@ function onSaved() {
 }
 
 async function deleteEvent(event: Record<string, any>) {
-	if (!window.confirm(`Delete ${event.title || event.type || 'this event'}?`)) {
+	const confirmed = await showDeleteConfirmationDialog()
+
+	if (!confirmed) {
 		return
 	}
 	try {

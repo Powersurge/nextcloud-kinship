@@ -10,6 +10,7 @@ import {
 	deleteRelationship as deleteRelationshipApi,
 	fetchRelationships,
 } from '@/api/relationships.ts'
+import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
 const relationships = ref<Array<Record<string, any>>>([])
 const peopleById = ref<Record<number, string>>({})
@@ -59,9 +60,12 @@ function onSaved() {
 }
 
 async function deleteRelationship(relationship: Record<string, any>) {
-	if (!window.confirm('Delete this relationship?')) {
+	const confirmed = await showDeleteConfirmationDialog()
+
+	if (!confirmed) {
 		return
 	}
+
 	try {
 		await deleteRelationshipApi(relationship.id)
 		relationships.value = relationships.value.filter((r) => r.id !== relationship.id)
