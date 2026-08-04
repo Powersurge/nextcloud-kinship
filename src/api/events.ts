@@ -14,6 +14,11 @@ export async function fetchEvents(): Promise<Event[]> {
 	return data.events ?? []
 }
 
+export async function fetchEvent(id: number): Promise<Event> {
+	const { data } = await axios.get(apiUrl(`/events/${id}`))
+	return data
+}
+
 export async function createEvent(payload: unknown): Promise<Event> {
 	const { data } = await axios.post(apiUrl('/events'), { data: payload })
 	return data

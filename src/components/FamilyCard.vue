@@ -9,6 +9,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	edit: []
+	click: []
 }>()
 
 const typeLabels: Record<string, string> = {
@@ -23,7 +24,12 @@ const typeLabel = computed(() =>
 </script>
 
 <template>
-	<div class="family-card">
+	<div
+		class="family-card"
+		role="button"
+		tabindex="0"
+		@click="emit('click')"
+		@keydown.enter.prevent="emit('click')">
 		<div class="family-card__body">
 			<h3 class="family-card__name">
 				{{ name }}
@@ -39,7 +45,7 @@ const typeLabel = computed(() =>
 			</p>
 		</div>
 
-		<NcActions class="family-card__actions">
+		<NcActions class="family-card__actions" @click.stop>
 			<NcActionButton @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
@@ -60,6 +66,11 @@ const typeLabel = computed(() =>
 	border-radius: var(--border-radius-large, 8px);
 	padding: 12px 16px;
 	background-color: var(--color-main-background);
+	cursor: pointer;
+}
+
+.family-card:hover {
+	border-color: var(--color-primary-element);
 }
 
 .family-card__name {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
@@ -9,6 +10,7 @@ import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import Cake from 'vue-material-design-icons/CakeVariant.vue'
 import GraveStone from 'vue-material-design-icons/GraveStone.vue'
+import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
 const props = defineProps<{
@@ -30,12 +32,17 @@ const photoUrl = computed(() => {
 		? mediaPreviewUrl(fileId, 168)
 		: null
 })
+
+const detailTo = computed(() => ({
+	name: 'person-detail',
+	params: { id: String(props.person.id) },
+}))
 </script>
 
 <template>
 	<div class="person-card">
 		<div class="person-card__actions">
-			<NcActions>
+			<NcActions @click.stop>
 				<NcActionButton close-after-click @click="emit('edit')">
 					<template #icon>
 						<Pencil :size="20" />
@@ -94,6 +101,15 @@ const photoUrl = computed(() => {
 				<span>{{ deathLabel }}</span>
 			</div>
 		</div>
+
+		<RouterLink
+			v-if="person.id"
+			:to="detailTo"
+			class="person-card__detail-link"
+			@click.stop>
+			<OpenInNew :size="16" />
+			View details
+		</RouterLink>
 	</div>
 </template>
 
@@ -225,5 +241,30 @@ const photoUrl = computed(() => {
 
 .detail svg {
 	flex-shrink: 0;
+}
+
+.person-card__detail-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.35rem;
+	margin-top: 16px;
+	padding-top: 14px;
+	width: 100%;
+	border-top: 1px solid var(--color-border);
+	color: var(--color-primary-element);
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.person-card__details + .person-card__detail-link {
+	margin-top: 14px;
+	padding-top: 0;
+	border-top: none;
+}
+
+.person-card__detail-link:hover {
+	text-decoration: underline;
 }
 </style>

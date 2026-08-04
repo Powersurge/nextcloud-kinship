@@ -91,14 +91,20 @@ async function onSaved() {
 							v-for="relationship in family.activePartnerships"
 							:key="relationship.id"
 							class="family-list__item">
-							<div class="family-list__main">
+							<router-link class="family-list__main"
+								:to="{
+									name: 'person-detail',
+									params: {
+										id: relationship.relatedPersonId,
+									}
+								}">
 								<span class="family-list__name">
 									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge">
 									{{ relationshipTypeLabel(relationship.type) }}
 								</span>
-							</div>
+							</router-link>
 							<p v-if="dateDisplay(relationship.date)" class="family-list__meta">
 								{{ dateDisplay(relationship.date) }}
 							</p>
@@ -130,14 +136,21 @@ async function onSaved() {
 							v-for="relationship in family.endedPartnerships"
 							:key="relationship.id"
 							class="family-list__item family-list__item--ended">
-							<div class="family-list__main">
+							<router-link
+								class="family-list__main"
+								:to="{
+									name: 'person-detail',
+									params: {
+										id: relationship.relatedPersonId,
+									}
+								}">
 								<span class="family-list__name">
 									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge family-list__badge--ended">
 									{{ relationshipTypeLabel(relationship.type) }}
 								</span>
-							</div>
+							</router-link>
 							<p v-if="dateDisplay(relationship.date)" class="family-list__meta">
 								{{ dateDisplay(relationship.date) }}
 							</p>
@@ -175,14 +188,21 @@ async function onSaved() {
 							v-for="relationship in family.children"
 							:key="relationship.id"
 							class="family-list__item">
-							<div class="family-list__main">
+							<router-link
+								class="family-list__main"
+								:to="{
+									name: 'person-detail',
+									params: {
+										id: relationship.relatedPersonId,
+									}
+								}">
 								<span class="family-list__name">
 									{{ relationship.relatedPersonName }}
 								</span>
 								<span class="family-list__badge family-list__badge--muted">
 									{{ relationshipTypeLabel(relationship.type) }}
 								</span>
-							</div>
+							</router-link>
 							<div class="family-list__actions">
 								<NcButton size="small" @click="openEdit(relationship)">
 									Edit

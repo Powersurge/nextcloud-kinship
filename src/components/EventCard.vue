@@ -15,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
 	edit: []
 	delete: []
+	click: []
 }>()
 
 const typeLabels: Record<string, string> = {
@@ -33,7 +34,12 @@ const where = computed(() => placeDisplay(props.event.place))
 </script>
 
 <template>
-	<div class="event-card">
+	<div
+		class="event-card"
+		role="button"
+		tabindex="0"
+		@click="emit('click')"
+		@keydown.enter.prevent="emit('click')">
 		<div class="event-card__body">
 			<div class="event-card__header">
 				<span class="event-card__badge">{{ typeLabel }}</span>
@@ -54,7 +60,7 @@ const where = computed(() => placeDisplay(props.event.place))
 			</p>
 		</div>
 
-		<NcActions class="event-card__actions">
+		<NcActions class="event-card__actions" @click.stop>
 			<NcActionButton @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
@@ -81,6 +87,11 @@ const where = computed(() => placeDisplay(props.event.place))
 	border-radius: var(--border-radius-large, 8px);
 	padding: 12px 16px;
 	background-color: var(--color-main-background);
+	cursor: pointer;
+}
+
+.event-card:hover {
+	border-color: var(--color-primary-element);
 }
 
 .event-card__header {

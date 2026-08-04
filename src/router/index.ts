@@ -16,9 +16,21 @@ const routes = [
 		},
 	},
 	{
+		path: '/people/:id',
+		name: 'person-detail',
+		component: () => import('../views/people/Detail.vue'),
+		props: true,
+	},
+	{
 		path: '/families',
 		name: 'families',
 		component: () => import('../views/family/Index.vue'),
+	},
+	{
+		path: '/families/:id',
+		name: 'family-detail',
+		component: () => import('../views/family/Detail.vue'),
+		props: true,
 	},
 	{
 		path: '/relationships',
@@ -29,6 +41,12 @@ const routes = [
 		path: '/events',
 		name: 'events',
 		component: () => import('../views/event/Index.vue'),
+	},
+	{
+		path: '/events/:id',
+		name: 'event-detail',
+		component: () => import('../views/event/Detail.vue'),
+		props: true,
 	},
 	{
 		path: '/sources',
