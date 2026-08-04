@@ -5,6 +5,7 @@ module.exports = {
 	rules: {
 		'jsdoc/require-jsdoc': 'off',
 		'vue/first-attribute-linebreak': 'off',
+		'vue/no-multiple-template-root': 'off',
 		'n/no-missing-import': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
 		'jsdoc/require-param-description': 'off',
