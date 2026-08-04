@@ -18,13 +18,14 @@ use OCA\Kinship\Constants\LivingStatus;
  */
 class GedcomExtractor {
 	/**
+	 * @param array<string, array<string, string>> $rawDates
 	 * @return array{
 	 *   people: array<string, array<string, mixed>>,
 	 *   families: array<string, array<string, mixed>>,
 	 *   sources: array<string, array<string, mixed>>
 	 * }
 	 */
-	public function extract(Gedcom $gedcom): array {
+	public function extract(Gedcom $gedcom, array $rawDates = []): array {
 		$sources = [];
 		foreach ($gedcom->getSour() as $sour) {
 			if (!$sour instanceof Sour) {
@@ -39,12 +40,12 @@ class GedcomExtractor {
 
 		$people = [];
 		foreach ($gedcom->getIndi() as $indi) {
-			$people[$indi->getId()] = $this->extractPerson($indi);
+			$people[$indi->getId()] = $this->extractPerson($indi, $rawDates);
 		}
 
 		$families = [];
 		foreach ($gedcom->getFam() as $fam) {
-			$families[$fam->getId()] = $this->extractFamily($fam);
+			$families[$fam->getId()] = $this->extractFamily($fam, $rawDates);
 		}
 
 		return [
@@ -86,15 +87,19 @@ class GedcomExtractor {
 	}
 
 	/**
+	 * @param array<string, array<string, string>> $rawDates
 	 * @return array<string, mixed>
 	 */
-	private function extractPerson(Indi $indi): array {
+	private function extractPerson(Indi $indi, array $rawDates = []): array {
 		$name = $this->pickPrimaryName($indi);
 		$birthEvent = $this->firstIndiEvent($indi, 'BIRT');
 		$deathEvent = $this->firstIndiEvent($indi, 'DEAT');
-		$birthDate = GedcomDateParser::fromIndiEvent($birthEvent)
+		$indiId = (string)$indi->getId();
+		$birthDate = GedcomDateParser::fromDateString($rawDates[$indiId]['BIRT'] ?? null)
+			?? GedcomDateParser::fromIndiEvent($birthEvent)
 			?? GedcomDateParser::fromBirthOrDeath($indi->getBirt());
-		$deathDate = GedcomDateParser::fromIndiEvent($deathEvent)
+		$deathDate = GedcomDateParser::fromDateString($rawDates[$indiId]['DEAT'] ?? null)
+			?? GedcomDateParser::fromIndiEvent($deathEvent)
 			?? GedcomDateParser::fromBirthOrDeath($indi->getDeat());
 
 		return [
@@ -225,24 +230,27 @@ class GedcomExtractor {
 	}
 
 	/**
+	 * @param array<string, array<string, string>> $rawDates
 	 * @return array<string, mixed>
 	 */
-	private function extractFamily(Fam $fam): array {
+	private function extractFamily(Fam $fam, array $rawDates = []): array {
 		$children = $fam->getChil();
 		if (!is_array($children)) {
 			$children = $children !== null && $children !== '' ? [$children] : [];
 		}
 
-		$marriageDate = null;
+		$famId = (string)$fam->getId();
+		$marriageDate = GedcomDateParser::fromDateString($rawDates[$famId]['MARR'] ?? null);
 		$marr = $fam->getEven('MARR');
-		if ($marr !== null) {
-			$date = $marr->getDate();
-			if (is_string($date) && trim($date) !== '') {
-				$marriageDate = GedcomDateParser::fromDateString($date);
-			}
+		if (is_array($marr)) {
+			$marr = $marr[0] ?? null;
+		}
+		if ($marriageDate === null && $marr !== null && is_object($marr) && method_exists($marr, 'getDate')) {
+			$marriageDate = GedcomDateParser::fromDateString($marr->getDate());
 		}
 
-		$divorced = $fam->getEven('DIV') !== null;
+		$div = $fam->getEven('DIV');
+		$divorced = $div !== null && $div !== [];
 		try {
 			$familySours = $fam->getSour();
 		} catch (\Throwable) {

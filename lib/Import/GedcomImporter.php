@@ -48,7 +48,8 @@ class GedcomImporter {
 				throw new \RuntimeException('Failed to parse GEDCOM file');
 			}
 
-			$extracted = $this->extractor->extract($gedcom);
+			$rawDates = GedcomRawDateIndex::build($content);
+			$extracted = $this->extractor->extract($gedcom, $rawDates);
 			$sourceMap = $this->sourceImporter->importSources($extracted['sources'] ?? []);
 			$imported = $this->personImporter->import($extracted['people']);
 			$idMap = $imported['people'];

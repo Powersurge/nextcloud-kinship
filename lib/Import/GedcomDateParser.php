@@ -22,12 +22,7 @@ final class GedcomDateParser {
 			return null;
 		}
 
-		$dateString = $event->getDate();
-		if (!is_string($dateString) || trim($dateString) === '') {
-			return null;
-		}
-
-		return self::fromDateString($dateString);
+		return self::fromDateString($event->getDate());
 	}
 
 	/**
@@ -38,37 +33,58 @@ final class GedcomDateParser {
 			return null;
 		}
 
-		$dateString = $record->getDate();
-		if (!is_string($dateString) || trim($dateString) === '') {
-			return null;
-		}
-
-		return self::fromDateString($dateString, $record);
+		return self::fromDateString($record->getDate(), $record);
 	}
 
 	/**
+	 * Accepts raw GEDCOM date text, php-gedcom's year integers, or short ISO
+	 * strings like "570-03-25".
+	 *
 	 * @return array<string, mixed>|null
 	 */
 	public static function fromDateString(
-		?string $dateString,
+		mixed $dateString,
 		Birt|Deat|null $record = null,
 	): ?array {
-		if ($dateString === null || trim($dateString) === '') {
+		if ($dateString === null) {
 			return null;
 		}
 
-		$isoPayload = self::fromIsoDateString(trim($dateString));
+		if (is_int($dateString) || is_float($dateString)) {
+			$year = (int)$dateString;
+			if ($year <= 0) {
+				return null;
+			}
+
+			return self::toPayload(
+				DateValue::KIND_EXACT,
+				$year,
+				null,
+				null,
+				null,
+				null,
+				null,
+			);
+		}
+
+		if (!is_string($dateString)) {
+			return null;
+		}
+
+		$trimmed = trim($dateString);
+		if ($trimmed === '' || strtoupper($trimmed) === 'UNKNOWN') {
+			return null;
+		}
+
+		$isoPayload = self::fromIsoDateString($trimmed);
 		if ($isoPayload !== null) {
 			return $isoPayload;
 		}
 
-		$dateString = strtoupper(trim($dateString));
+		$dateString = strtoupper($trimmed);
 		$parts = preg_split('/\s+/', $dateString) ?: [];
 
 		$kind = DateValue::KIND_EXACT;
-		$startYear = null;
-		$startMonth = null;
-		$startDay = null;
 		$endYear = null;
 		$endMonth = null;
 		$endDay = null;
@@ -97,6 +113,10 @@ final class GedcomDateParser {
 			}
 		}
 
+		$startYear = null;
+		$startMonth = null;
+		$startDay = null;
+
 		if ($record instanceof Birt || $record instanceof Deat) {
 			$year = $record->getYear();
 			if ($year > 0) {
@@ -110,7 +130,9 @@ final class GedcomDateParser {
 			if ($day !== null) {
 				$startDay = $day;
 			}
-		} else {
+		}
+
+		if ($startYear === null) {
 			$parsed = self::parseDateParts($parts);
 			$startYear = $parsed['year'];
 			$startMonth = $parsed['month'];
@@ -189,18 +211,18 @@ final class GedcomDateParser {
 	}
 
 	/**
-	 * @param list<string> $parts
-	 * @return array{year: ?int, month: ?int, day: ?int}
-	 */
-	/**
 	 * @return array<string, mixed>|null
 	 */
 	private static function fromIsoDateString(string $dateString): ?array {
-		if (preg_match('/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/', $dateString, $matches) !== 1) {
+		if (preg_match('/^(\d{1,4})(?:-(\d{2}))?(?:-(\d{2}))?$/', $dateString, $matches) !== 1) {
 			return null;
 		}
 
 		$year = (int)$matches[1];
+		if ($year <= 0) {
+			return null;
+		}
+
 		$month = isset($matches[2]) && $matches[2] !== '' ? (int)$matches[2] : null;
 		$day = isset($matches[3]) && $matches[3] !== '' ? (int)$matches[3] : null;
 
@@ -215,30 +237,51 @@ final class GedcomDateParser {
 		);
 	}
 
+	/**
+	 * @param list<string> $parts
+	 * @return array{year: ?int, month: ?int, day: ?int}
+	 */
 	private static function parseDateParts(array $parts): array {
 		$months = [
 			'JAN' => 1, 'FEB' => 2, 'MAR' => 3, 'APR' => 4, 'MAY' => 5, 'JUN' => 6,
 			'JUL' => 7, 'AUG' => 8, 'SEP' => 9, 'OCT' => 10, 'NOV' => 11, 'DEC' => 12,
 		];
 
-		$year = null;
 		$month = null;
-		$day = null;
-
-		foreach ($parts as $part) {
+		$monthIndex = null;
+		foreach ($parts as $index => $part) {
 			if (isset($months[$part])) {
 				$month = $months[$part];
+				$monthIndex = $index;
+				break;
+			}
+		}
+
+		$year = null;
+		$day = null;
+
+		foreach ($parts as $index => $part) {
+			// Dual years such as 636/37 → use the first year.
+			if (preg_match('/^(\d{1,4})(?:\/\d{1,4})?$/', $part, $matches) !== 1) {
 				continue;
 			}
 
-			if (ctype_digit($part)) {
-				$value = (int)$part;
-				if ($value >= 1000) {
-					$year = $value;
-				} elseif ($value >= 1 && $value <= 31 && $day === null) {
-					$day = $value;
-				}
+			$value = (int)$matches[1];
+			if ($value <= 0) {
+				continue;
 			}
+
+			if ($monthIndex !== null) {
+				if ($index < $monthIndex && $value >= 1 && $value <= 31) {
+					$day = $value;
+				} elseif ($index > $monthIndex) {
+					$year = $value;
+				}
+				continue;
+			}
+
+			// Year-only (or trailing year) GEDCOM forms: "670", "ABT 670".
+			$year = $value;
 		}
 
 		return [
