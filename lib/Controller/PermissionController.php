@@ -38,14 +38,23 @@ class PermissionController extends ApiController {
 	}
 
 	/**
-	 * The current user's global role.
+	 * The current user's effective role and capabilities.
 	 */
+	#[Http\Attribute\NoAdminRequired]
 	public function me(): DataResponse {
 		$uid = $this->service->currentUid();
+		if ($uid === null) {
+			return new DataResponse([
+				'uid' => null,
+				'role' => null,
+				'capabilities' => [],
+			]);
+		}
 
 		return new DataResponse([
 			'uid' => $uid,
-			'role' => $uid !== null ? $this->service->getRole($uid) : null,
+			'role' => $this->service->getEffectiveRole($uid),
+			'capabilities' => $this->service->capabilities($uid),
 		]);
 	}
 

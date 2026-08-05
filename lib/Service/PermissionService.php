@@ -7,15 +7,16 @@ namespace OCA\Kinship\Service;
 use OCA\Kinship\Constants\PermissionRole;
 use OCA\Kinship\Db\Permission;
 use OCA\Kinship\Db\PermissionMapper;
+use OCA\Kinship\Exception\PermissionDeniedException;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IGroupManager;
 use OCP\IUserSession;
 
 /**
- * Core permissions model (v0.1 scaffolding).
+ * Global role grants and capability checks.
  *
- * Records role grants and answers role/capability questions. Actual
- * enforcement across controllers and object-level scoping land with sharing in
- * v0.2; this service intentionally does not block anything yet.
+ * Nextcloud admins are implicit Kinship owners. Users without an explicit
+ * grant receive the admin-configured default role.
  */
 class PermissionService {
 	/**
@@ -23,25 +24,27 @@ class PermissionService {
 	 * matrix in docs/ROADMAP.md.
 	 */
 	private const ACTION_MIN_RANK = [
-		'view' => 1,           // viewer
-		'create_people' => 2,  // contributor
-		'add_sources' => 2,
-		'add_notes' => 2,
-		'add_claims' => 2,
-		'manage_participants' => 2,
-		'edit' => 2,
-		'accept_claims' => 3,  // editor
-		'merge' => 3,
-		'delete' => 3,
-		'manage_custom_events' => 3,
-		'manage_places' => 3,
-		'manage_permissions' => 4, // owner
+		PermissionRole::ACTION_VIEW => 1,
+		PermissionRole::ACTION_CREATE_PEOPLE => 2,
+		PermissionRole::ACTION_ADD_SOURCES => 2,
+		PermissionRole::ACTION_ADD_NOTES => 2,
+		PermissionRole::ACTION_ADD_CLAIMS => 2,
+		PermissionRole::ACTION_MANAGE_PARTICIPANTS => 2,
+		PermissionRole::ACTION_EDIT => 2,
+		PermissionRole::ACTION_ACCEPT_CLAIMS => 3,
+		PermissionRole::ACTION_MERGE => 3,
+		PermissionRole::ACTION_DELETE => 3,
+		PermissionRole::ACTION_MANAGE_CUSTOM_EVENTS => 3,
+		PermissionRole::ACTION_MANAGE_PLACES => 3,
+		PermissionRole::ACTION_MANAGE_PERMISSIONS => 4,
 	];
 
 	public function __construct(
 		private PermissionMapper $mapper,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
+		private AdminSettingsService $adminSettings,
+		private IGroupManager $groupManager,
 	) {
 	}
 
@@ -57,7 +60,7 @@ class PermissionService {
 	}
 
 	/**
-	 * The role a user holds at a scope, or null if none granted.
+	 * The stored role grant at a scope, or null if none.
 	 */
 	public function getRole(
 		string $uid,
@@ -68,17 +71,72 @@ class PermissionService {
 	}
 
 	/**
-	 * Whether a user may perform an action (v0.1: advisory only).
+	 * Effective role used for capability checks.
 	 */
+	public function getEffectiveRole(string $uid): ?string {
+		if ($this->groupManager->isAdmin($uid)) {
+			return PermissionRole::OWNER;
+		}
+
+		$granted = $this->getRole($uid);
+		if ($granted !== null) {
+			return $granted;
+		}
+
+		$default = $this->adminSettings->getDefaultRole();
+		if ($default === PermissionRole::NONE) {
+			return null;
+		}
+
+		return $default;
+	}
+
 	public function can(string $uid, string $action): bool {
-		$role = $this->getRole($uid);
+		$role = $this->getEffectiveRole($uid);
 		if ($role === null) {
 			return false;
 		}
 
 		$required = self::ACTION_MIN_RANK[$action] ?? PHP_INT_MAX;
+		if (PermissionRole::rankOf($role) < $required) {
+			return false;
+		}
 
-		return PermissionRole::rankOf($role) >= $required;
+		if ($role === PermissionRole::EDITOR) {
+			if ($action === PermissionRole::ACTION_DELETE && !$this->adminSettings->isEditorCanDelete()) {
+				return false;
+			}
+			if ($action === PermissionRole::ACTION_ACCEPT_CLAIMS && !$this->adminSettings->isEditorCanAcceptClaims()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @throws PermissionDeniedException
+	 */
+	public function requireCan(string $action): void {
+		$uid = $this->currentUid();
+		if ($uid === null || !$this->can($uid, $action)) {
+			throw new PermissionDeniedException(
+				'You do not have permission to perform this action.',
+				$action,
+			);
+		}
+	}
+
+	/**
+	 * @return array<string, bool>
+	 */
+	public function capabilities(string $uid): array {
+		$capabilities = [];
+		foreach (PermissionRole::ACTIONS as $action) {
+			$capabilities[$action] = $this->can($uid, $action);
+		}
+
+		return $capabilities;
 	}
 
 	/**
@@ -89,7 +147,7 @@ class PermissionService {
 		string $role,
 		string $scopeType = PermissionRole::SCOPE_GLOBAL,
 		?int $scopeId = null,
-	): Permission {
+	) {
 		if (!PermissionRole::isValid($role)) {
 			throw new \InvalidArgumentException('Unknown permission role: ' . $role);
 		}

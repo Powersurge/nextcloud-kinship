@@ -42,6 +42,11 @@ export type UserSearchResult = {
 	displayName: string
 }
 
+export async function fetchMyPermissions(): Promise<MyPermissions> {
+	const { data } = await axios.get<MyPermissions>(apiUrl('/permissions/me'))
+	return data
+}
+
 export async function fetchPermissionGrants(): Promise<PermissionGrant[]> {
 	const { data } = await axios.get<{ permissions: PermissionGrant[] }>(
 		apiUrl('/permissions'),
