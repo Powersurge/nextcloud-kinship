@@ -1,18 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { loadState } from '@nextcloud/initial-state'
-import {
-	NcNoteCard,
-	NcPasswordField,
-	NcSelect,
-	NcSettingsSection,
-	NcTextField,
-} from '@nextcloud/vue'
-import {
-	type AdminSettings,
-	type PlaceLookupProvider,
-	updateAdminSettings,
-} from '@/api/settings.ts'
+import { NcNoteCard, NcPasswordField, NcSelect, NcSettingsSection, NcTextField } from '@nextcloud/vue'
+import { type AdminSettings, type PlaceLookupProvider, updateAdminSettings } from '@/api/settings.ts'
+import PermissionSettings from '@/views/settings/PermissionSettings.vue'
 
 type ProviderOption = {
 	value: PlaceLookupProvider
@@ -27,6 +18,9 @@ const settings = ref<AdminSettings>(
 		placeLookupProvider: 'none',
 		nominatimBaseUrl: 'https://nominatim.openstreetmap.org',
 		googleMapsApiKey: '',
+		defaultRole: 'viewer',
+		editorCanDelete: true,
+		editorCanAcceptClaims: true,
 	}),
 )
 const error = ref('')
@@ -77,6 +71,10 @@ async function save(): Promise<void> {
 				max="200"
 				@blur="save" />
 		</NcSettingsSection>
+
+		<PermissionSettings
+			v-model="settings"
+			@save="save" />
 
 		<NcSettingsSection
 			name="Place lookup"

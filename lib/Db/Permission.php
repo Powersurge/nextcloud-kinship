@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OCA\Kinship\Db;
 
 use JsonSerializable;
-use OCA\Kinship\Constants\PermissionRole;
 use OCP\AppFramework\Db\Entity;
 
 /**
@@ -29,8 +28,10 @@ use OCP\AppFramework\Db\Entity;
  */
 class Permission extends Entity implements JsonSerializable {
 	protected string $uid = '';
-	protected string $role = PermissionRole::VIEWER;
-	protected string $scopeType = PermissionRole::SCOPE_GLOBAL;
+	/** Empty default so setters always dirty-mark for insert (Entity skips unchanged values). */
+	protected string $role = '';
+	/** Empty default so setters always dirty-mark for insert. */
+	protected string $scopeType = '';
 	protected ?int $scopeId = null;
 	protected ?string $grantedBy = null;
 	protected ?int $createdAt = null;

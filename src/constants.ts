@@ -1,3 +1,5 @@
+import type { RoleOption } from '@/types'
+
 export const DATETIME_FORMAT = 'MMMM dd, yyyy'
 
 export const LIVING_STATUSES = {
@@ -55,4 +57,18 @@ export const CITATION_CONFIDENCE_OPTIONS = [
 	{ value: 'secondary', label: 'Secondary' },
 	{ value: 'questionable', label: 'Questionable' },
 	{ value: 'unreliable', label: 'Unreliable' },
+]
+
+export const DEFAULT_ROLE_OPTIONS: RoleOption[] = [
+	{ value: 'none', label: 'None (no access until granted)' },
+	{ value: 'viewer', label: 'Viewer' },
+	{ value: 'contributor', label: 'Contributor' },
+	{ value: 'editor', label: 'Editor' },
+]
+
+export const GRANT_ROLE_OPTIONS: RoleOption[] = [
+	{ value: 'viewer', label: 'Viewer' },
+	{ value: 'contributor', label: 'Contributor' },
+	{ value: 'editor', label: 'Editor' },
+	{ value: 'owner', label: 'Owner' },
 ]

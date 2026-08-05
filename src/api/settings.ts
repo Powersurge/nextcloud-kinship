@@ -3,6 +3,8 @@ import { apiUrl } from './client'
 
 export type PlaceLookupProvider = 'none' | 'nominatim' | 'google'
 
+export type DefaultRole = 'none' | 'viewer' | 'contributor' | 'editor'
+
 export type AdminSettings = {
 	gedcomImportEnabled: boolean
 	extensionsEnabled: boolean
@@ -10,6 +12,9 @@ export type AdminSettings = {
 	placeLookupProvider: PlaceLookupProvider
 	nominatimBaseUrl: string
 	googleMapsApiKey: string
+	defaultRole: DefaultRole
+	editorCanDelete: boolean
+	editorCanAcceptClaims: boolean
 }
 
 export async function updateAdminSettings(

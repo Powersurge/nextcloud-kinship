@@ -1,4 +1,6 @@
 import type { DateKind } from '../constants.ts'
+import type { DefaultRole } from '@/api/settings.ts'
+import type { PermissionRole } from '@/api/permissions.ts'
 
 /**
  * A date as the API returns it (lib/Db/DateValue.php): numeric parts plus the
@@ -207,4 +209,15 @@ export type GenealogyDateType = {
 	},
 	kind: DateKind,
 	precision: string,
+}
+
+export type RoleOption = {
+	value: DefaultRole | PermissionRole
+	label: string
+}
+
+export type UserOption = {
+	uid: string
+	displayName: string
+	label: string
 }
