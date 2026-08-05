@@ -118,11 +118,12 @@ return [
 		['name' => 'custom_event#update', 'url' => '/api/v1/custom-events/{id}', 'verb' => 'PUT'],
 		['name' => 'custom_event#delete', 'url' => '/api/v1/custom-events/{id}', 'verb' => 'DELETE'],
 
-		// Permissions (core model; enforcement in v0.2)
+		// Permissions
 		['name' => 'permission#index', 'url' => '/api/v1/permissions', 'verb' => 'GET'],
 		['name' => 'permission#me', 'url' => '/api/v1/permissions/me', 'verb' => 'GET'],
 		['name' => 'permission#create', 'url' => '/api/v1/permissions', 'verb' => 'POST'],
 		['name' => 'permission#delete', 'url' => '/api/v1/permissions/{id}', 'verb' => 'DELETE'],
+		['name' => 'permission#searchUsers', 'url' => '/api/v1/admin/users', 'verb' => 'GET'],
 
 		// Admin settings
 		['name' => 'settings#index', 'url' => '/api/v1/admin/settings', 'verb' => 'GET'],
