@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import './styles/app.css'
-import { NcContent, NcAppContent } from '@nextcloud/vue'
+import { NcAppContent, NcContent, NcEmptyContent } from '@nextcloud/vue'
+import LockOutline from 'vue-material-design-icons/LockOutline.vue'
 import Navigation from './components/ui/Navigation.vue'
 import EventModal from '@/components/modals/EventModal.vue'
 import FactModal from '@/components/modals/FactModal.vue'
@@ -17,9 +18,11 @@ import { useMediaStore } from '@/stores/use-media-store.ts'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonTimelineStore } from '@/stores/use-person-timeline-store.ts'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 import type { Citation } from '@/types'
 
 const route = useRoute()
+const { canView } = storeToRefs(usePermissionsStore())
 const { showFormModal, eventForm } = storeToRefs(useEventStore())
 const { showFormModal: showFactModal, factForm } = storeToRefs(useFactStore())
 const { showFormModal: showCitationModal, citationForm } = storeToRefs(useCitationStore())
@@ -117,36 +120,56 @@ async function onAlbumSaved() {
 
 <template>
 	<NcContent app-name="kinship-app-navigation" class="content-styleguidist">
-		<Navigation />
+		<template v-if="canView">
+			<Navigation />
 
-		<NcAppContent>
-			<RouterView />
+			<NcAppContent>
+				<RouterView />
+			</NcAppContent>
+
+			<RouterView name="sidebar" />
+
+			<EventModal
+				v-model:open="showFormModal"
+				:event="eventForm"
+				@saved="onEventSaved" />
+
+			<FactModal
+				v-model:open="showFactModal"
+				:fact="factForm"
+				@saved="onFactSaved" />
+
+			<CitationModal
+				v-model:open="showCitationModal"
+				:citation="citationForm"
+				@saved="onCitationSaved" />
+
+			<AlbumModal
+				v-model:open="showAlbumModal"
+				:album="albumForm"
+				@saved="onAlbumSaved" />
+
+			<AttachMediaModal
+				v-model:open="showAttachModal"
+				@saved="onMediaSaved" />
+		</template>
+
+		<NcAppContent v-else>
+			<NcEmptyContent
+				class="kinship-no-access"
+				name="Access required"
+				description="You do not have permission to view Kinship. Ask a Nextcloud administrator to grant you a role in Settings → Administration → Kinship.">
+				<template #icon>
+					<LockOutline />
+				</template>
+			</NcEmptyContent>
 		</NcAppContent>
-
-		<RouterView name="sidebar" />
-
-		<EventModal
-			v-model:open="showFormModal"
-			:event="eventForm"
-			@saved="onEventSaved" />
-
-		<FactModal
-			v-model:open="showFactModal"
-			:fact="factForm"
-			@saved="onFactSaved" />
-
-		<CitationModal
-			v-model:open="showCitationModal"
-			:citation="citationForm"
-			@saved="onCitationSaved" />
-
-		<AlbumModal
-			v-model:open="showAlbumModal"
-			:album="albumForm"
-			@saved="onAlbumSaved" />
-
-		<AttachMediaModal
-			v-model:open="showAttachModal"
-			@saved="onMediaSaved" />
 	</NcContent>
 </template>
+
+<style scoped>
+.kinship-no-access {
+	margin: auto;
+	padding: 48px 24px;
+}
+</style>

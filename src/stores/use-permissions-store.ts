@@ -30,6 +30,7 @@ export const usePermissionsStore = defineStore('permissionsStore', () => {
 	const loaded = ref(false)
 	const loading = ref(false)
 
+	const canView = computed(() => capabilities.value.view)
 	const canCreatePeople = computed(() => capabilities.value.create_people)
 	const canEdit = computed(() => capabilities.value.edit)
 	const canDelete = computed(() => capabilities.value.delete)
@@ -72,6 +73,7 @@ export const usePermissionsStore = defineStore('permissionsStore', () => {
 		capabilities,
 		loaded,
 		loading,
+		canView,
 		canCreatePeople,
 		canEdit,
 		canDelete,
