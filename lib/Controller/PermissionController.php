@@ -10,6 +10,7 @@ use OCA\Kinship\Settings\KinshipAdminSettings;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use OCP\IUserManager;
@@ -40,7 +41,7 @@ class PermissionController extends ApiController {
 	/**
 	 * The current user's effective role and capabilities.
 	 */
-	#[Http\Attribute\NoAdminRequired]
+	#[NoAdminRequired]
 	public function me(): DataResponse {
 		$uid = $this->service->currentUid();
 		if ($uid === null) {

@@ -4,22 +4,28 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Controller;
 
+use OCA\Kinship\Constants\PermissionRole;
 use OCA\Kinship\Exception\ValidationException;
 use OCA\Kinship\Http\Requests\MediaRequest;
 use OCA\Kinship\Service\FilesService;
 use OCA\Kinship\Service\MediaService;
+use OCA\Kinship\Service\PermissionService;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 use RuntimeException;
 
 class MediaController extends BaseApiController {
+	use ChecksPermissions;
+
 	public function __construct(
 		string $appName,
 		IRequest $request,
 		private MediaService $service,
 		private FilesService $filesService,
+		private PermissionService $permissions,
 	) {
 		parent::__construct($appName, $request);
 	}
@@ -28,7 +34,12 @@ class MediaController extends BaseApiController {
 	 * Media references for a subject, e.g. ?subjectType=person&subjectId=5
 	 * Optional albumId: omit = all; 0 = loose only; >0 = that album.
 	 */
+	#[NoAdminRequired]
 	public function index(string $subjectType, int $subjectId): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_VIEW)) {
+			return $denied;
+		}
+
 		$albumParam = $this->request->getParam('albumId');
 		$albumId = null;
 		if ($albumParam !== null && $albumParam !== '') {
@@ -40,11 +51,21 @@ class MediaController extends BaseApiController {
 		]);
 	}
 
+	#[NoAdminRequired]
 	public function show(int $id): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_VIEW)) {
+			return $denied;
+		}
+
 		return new DataResponse($this->service->get($id));
 	}
 
+	#[NoAdminRequired]
 	public function create(array $data): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_EDIT)) {
+			return $denied;
+		}
+
 		try {
 			$validated = $this->validate($data, MediaRequest::class);
 			return new DataResponse($this->service->create($validated), Http::STATUS_CREATED);
@@ -59,7 +80,12 @@ class MediaController extends BaseApiController {
 	 * Upload a file into Kinship/Uploads and attach it as media.
 	 */
 	#[NoCSRFRequired]
+	#[NoAdminRequired]
 	public function upload(): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_EDIT)) {
+			return $denied;
+		}
+
 		$uploaded = $this->request->getUploadedFile('file');
 		if ($uploaded === null || !isset($uploaded['tmp_name'], $uploaded['name'])) {
 			return new DataResponse(['error' => 'File is required'], Http::STATUS_BAD_REQUEST);
@@ -103,7 +129,12 @@ class MediaController extends BaseApiController {
 		}
 	}
 
+	#[NoAdminRequired]
 	public function update(int $id, array $data): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_EDIT)) {
+			return $denied;
+		}
+
 		try {
 			$validated = $this->validate($data, MediaRequest::class, true);
 			return new DataResponse($this->service->update($id, $validated));
@@ -114,7 +145,12 @@ class MediaController extends BaseApiController {
 		}
 	}
 
+	#[NoAdminRequired]
 	public function delete(int $id): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_DELETE)) {
+			return $denied;
+		}
+
 		$this->service->delete($id);
 
 		return new DataResponse(['deleted' => true]);

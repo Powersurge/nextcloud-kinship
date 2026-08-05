@@ -5,20 +5,26 @@ declare(strict_types=1);
 namespace OCA\Kinship\Controller;
 
 use OCA\Kinship\Constants\EventType;
+use OCA\Kinship\Constants\PermissionRole;
 use OCA\Kinship\Db\Person;
 use OCA\Kinship\Service\EventService;
+use OCA\Kinship\Service\PermissionService;
 use OCA\Kinship\Service\PersonService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 
 class PersonController extends ApiController {
+	use ChecksPermissions;
+
 	public function __construct(
 		string $appName,
 		IRequest $request,
 		private PersonService $service,
 		private EventService $eventService,
+		private PermissionService $permissions,
 	) {
 		parent::__construct(
 			$appName,
@@ -26,10 +32,15 @@ class PersonController extends ApiController {
 		);
 	}
 
+	#[NoAdminRequired]
 	public function index(
 		?string $searchQuery = null,
 		?array $selected = [],
 	): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_VIEW)) {
+			return $denied;
+		}
+
 		$people = $this->service->getAll([
 			'searchQuery' => $searchQuery,
 			'selected' => $selected,
@@ -40,9 +51,14 @@ class PersonController extends ApiController {
 		]);
 	}
 
+	#[NoAdminRequired]
 	public function show(
 		int $id,
 	): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_VIEW)) {
+			return $denied;
+		}
+
 		return new DataResponse(
 			$this->service->get($id)
 		);
@@ -52,9 +68,14 @@ class PersonController extends ApiController {
 	 * Create person. `birthDate` / `deathDate` in the payload are stored as
 	 * birth/death events, never as person columns.
 	 */
+	#[NoAdminRequired]
 	public function create(
 		array $data,
 	): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_CREATE_PEOPLE)) {
+			return $denied;
+		}
+
 		$instance = new Person();
 
 		$instance->setFirstName($data['firstName'] ?? '');
@@ -80,11 +101,16 @@ class PersonController extends ApiController {
 		);
 	}
 
+	#[NoAdminRequired]
 	public function update(
 		int $id,
 		array $data,
 		EventService $eventService,
 	): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_EDIT)) {
+			return $denied;
+		}
+
 		try {
 			$person = $this->service->updatePerson($id, $data);
 
@@ -121,9 +147,14 @@ class PersonController extends ApiController {
 		}
 	}
 
+	#[NoAdminRequired]
 	public function delete(
 		int $id,
 	): DataResponse {
+		if ($denied = $this->denyUnlessCan($this->permissions, PermissionRole::ACTION_DELETE)) {
+			return $denied;
+		}
+
 		$this->service->deletePerson($id);
 
 		return new DataResponse(['deleted' => true]);
