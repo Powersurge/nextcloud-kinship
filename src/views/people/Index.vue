@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import Account from 'vue-material-design-icons/Account.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import PersonCard from '@/components/PersonCard.vue'
 import PersonModal from '@/components/modals/PersonModal.vue'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 import { deletePerson as deletePersonApi, fetchPeople } from '@/api/people.ts'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 
@@ -16,6 +18,7 @@ const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
 
 const sidebarStore = usePersonSidebarStore()
+const { canCreatePeople, canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 async function loadPeople() {
 	loading.value = true
@@ -62,7 +65,7 @@ onMounted(loadPeople)
 
 <template>
 	<div class="people">
-		<div class="people__header">
+		<div v-if="canCreatePeople" class="people__header">
 			<NcButton variant="primary" @click="openCreate">
 				<template #icon>
 					<Plus :size="20" />
@@ -80,7 +83,7 @@ onMounted(loadPeople)
 			<template #icon>
 				<Account />
 			</template>
-			<template #action>
+			<template v-if="canCreatePeople" #action>
 				<NcButton variant="primary" @click="openCreate">
 					New person
 				</NcButton>
@@ -92,6 +95,8 @@ onMounted(loadPeople)
 				v-for="person in people"
 				:key="person.id"
 				:person="person"
+				:can-edit="canEdit"
+				:can-delete="canDelete"
 				@edit="openEdit(person)"
 				@delete="deletePerson(person)"
 				@click="sidebarStore.openPerson(person)" />

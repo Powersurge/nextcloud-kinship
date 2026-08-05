@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import VectorLink from 'vue-material-design-icons/VectorLink.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
@@ -11,6 +12,9 @@ import {
 	fetchRelationships,
 } from '@/api/relationships.ts'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
+
+const { canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 const relationships = ref<Array<Record<string, any>>>([])
 const peopleById = ref<Record<number, string>>({})
@@ -79,7 +83,7 @@ onMounted(loadAll)
 
 <template>
 	<div class="relationships">
-		<div class="relationships__header">
+		<div v-if="canEdit" class="relationships__header">
 			<NcButton variant="primary" @click="openCreate">
 				<template #icon>
 					<Plus :size="20" />
@@ -97,7 +101,7 @@ onMounted(loadAll)
 			<template #icon>
 				<VectorLink />
 			</template>
-			<template #action>
+			<template v-if="canEdit" #action>
 				<NcButton variant="primary" @click="openCreate">
 					New relationship
 				</NcButton>
@@ -111,6 +115,8 @@ onMounted(loadAll)
 				:relationship="relationship"
 				:a-name="nameOf(relationship.personA)"
 				:b-name="nameOf(relationship.personB)"
+				:can-edit="canEdit"
+				:can-delete="canDelete"
 				@edit="openEdit(relationship)"
 				@delete="deleteRelationship(relationship)" />
 		</div>

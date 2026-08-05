@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import BookOpenPageVariantOutline from 'vue-material-design-icons/BookOpenPageVariantOutline.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
@@ -9,6 +10,9 @@ import { deleteSource as deleteSourceApi, fetchSources } from '@/api/sources.ts'
 import type { Source } from '@/types'
 import { showError } from '@nextcloud/dialogs'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
+
+const { canAddSources, canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 const sources = ref<Source[]>([])
 const loading = ref(true)
@@ -63,7 +67,7 @@ onMounted(loadSources)
 
 <template>
 	<div class="sources">
-		<div class="sources__header">
+		<div v-if="canAddSources" class="sources__header">
 			<NcButton variant="primary" @click="openCreate">
 				<template #icon>
 					<Plus :size="20" />
@@ -81,7 +85,7 @@ onMounted(loadSources)
 			<template #icon>
 				<BookOpenPageVariantOutline />
 			</template>
-			<template #action>
+			<template v-if="canAddSources" #action>
 				<NcButton variant="primary" @click="openCreate">
 					New source
 				</NcButton>
@@ -93,6 +97,8 @@ onMounted(loadSources)
 				v-for="source in sources"
 				:key="source.id"
 				:source="source"
+				:can-edit="canEdit"
+				:can-delete="canDelete"
 				@edit="openEdit(source)"
 				@delete="deleteSource(source)" />
 		</div>

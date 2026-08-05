@@ -8,9 +8,14 @@ import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	event: Record<string, any>
-}>()
+	canEdit?: boolean
+	canDelete?: boolean
+}>(), {
+	canEdit: true,
+	canDelete: true,
+})
 
 const emit = defineEmits<{
 	edit: []
@@ -60,14 +65,14 @@ const where = computed(() => placeDisplay(props.event.place))
 			</p>
 		</div>
 
-		<NcActions class="event-card__actions" @click.stop>
-			<NcActionButton @click="emit('edit')">
+		<NcActions v-if="canEdit || canDelete" class="event-card__actions" @click.stop>
+			<NcActionButton v-if="canEdit" @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
 				</template>
 				Edit
 			</NcActionButton>
-			<NcActionButton @click="emit('delete')">
+			<NcActionButton v-if="canDelete" @click="emit('delete')">
 				<template #icon>
 					<Delete :size="20" />
 				</template>

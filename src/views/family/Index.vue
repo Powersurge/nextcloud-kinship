@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
 import FamilyCard from '@/components/FamilyCard.vue'
 import FamilyModal from '@/components/modals/FamilyModal.vue'
 import { fetchFamilies } from '@/api/families.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
 const router = useRouter()
 const families = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
+const { canEdit } = storeToRefs(usePermissionsStore())
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
@@ -68,6 +71,7 @@ onMounted(loadFamilies)
 				v-for="family in families"
 				:key="family.id"
 				:family="family"
+				:can-edit="canEdit"
 				@click="openFamily(family)"
 				@edit="openEdit(family)" />
 		</div>

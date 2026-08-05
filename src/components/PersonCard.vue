@@ -13,9 +13,14 @@ import GraveStone from 'vue-material-design-icons/GraveStone.vue'
 import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	person: Record<string, any>
-}>()
+	canEdit?: boolean
+	canDelete?: boolean
+}>(), {
+	canEdit: true,
+	canDelete: true,
+})
 
 const emit = defineEmits<{
 	select: {}
@@ -41,16 +46,16 @@ const detailTo = computed(() => ({
 
 <template>
 	<div class="person-card">
-		<div class="person-card__actions">
+		<div v-if="canEdit || canDelete" class="person-card__actions">
 			<NcActions @click.stop>
-				<NcActionButton close-after-click @click="emit('edit')">
+				<NcActionButton v-if="canEdit" close-after-click @click="emit('edit')">
 					<template #icon>
 						<Pencil :size="20" />
 					</template>
 					Edit
 				</NcActionButton>
 
-				<NcActionButton close-after-click @click="emit('delete')">
+				<NcActionButton v-if="canDelete" close-after-click @click="emit('delete')">
 					<template #icon>
 						<Delete :size="20" />
 					</template>

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { NcButton, NcLoadingIcon, NcNoteCard } from '@nextcloud/vue'
 import Upload from 'vue-material-design-icons/Upload.vue'
 import { importGedcom } from '@/api/import.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
+
+const { canEdit } = storeToRefs(usePermissionsStore())
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const importing = ref(false)
@@ -61,23 +65,29 @@ async function onFileChange(event: Event) {
 				Upload a GEDCOM (.ged) file to import people into Kinship.
 			</p>
 
-			<input
-				ref="fileInput"
-				type="file"
-				accept=".ged,.gedcom"
-				class="import__file-input"
-				@change="onFileChange">
+			<NcNoteCard v-if="!canEdit" type="warning">
+				You do not have permission to import data.
+			</NcNoteCard>
 
-			<NcButton
-				variant="primary"
-				:disabled="importing"
-				@click="pickFile">
-				<template #icon>
-					<NcLoadingIcon v-if="importing" :size="20" />
-					<Upload v-else :size="20" />
-				</template>
-				Choose file
-			</NcButton>
+			<template v-else>
+				<input
+					ref="fileInput"
+					type="file"
+					accept=".ged,.gedcom"
+					class="import__file-input"
+					@change="onFileChange">
+
+				<NcButton
+					variant="primary"
+					:disabled="importing"
+					@click="pickFile">
+					<template #icon>
+						<NcLoadingIcon v-if="importing" :size="20" />
+						<Upload v-else :size="20" />
+					</template>
+					Choose file
+				</NcButton>
+			</template>
 
 			<NcNoteCard v-if="message" type="success">
 				{{ message }}

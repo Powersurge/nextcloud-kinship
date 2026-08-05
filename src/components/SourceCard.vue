@@ -8,9 +8,14 @@ import BookOpenPageVariantOutline from 'vue-material-design-icons/BookOpenPageVa
 import { useSourceStore } from '@/stores/use-source-store.ts'
 import type { Source } from '@/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	source: Record<string, any>
-}>()
+	canEdit?: boolean
+	canDelete?: boolean
+}>(), {
+	canEdit: true,
+	canDelete: true,
+})
 
 const emit = defineEmits<{
 	edit: []
@@ -47,14 +52,14 @@ const metaLine = computed(() => getMetaLine(props.source as Source))
 			</p>
 		</div>
 
-		<NcActions class="source-card__actions">
-			<NcActionButton close-after-click @click="emit('edit')">
+		<NcActions v-if="canEdit || canDelete" class="source-card__actions">
+			<NcActionButton v-if="canEdit" close-after-click @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
 				</template>
 				Edit
 			</NcActionButton>
-			<NcActionButton close-after-click @click="emit('delete')">
+			<NcActionButton v-if="canDelete" close-after-click @click="emit('delete')">
 				<template #icon>
 					<Delete :size="20" />
 				</template>

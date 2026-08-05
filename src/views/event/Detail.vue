@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { NcButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
@@ -12,6 +13,9 @@ import { fetchEvent } from '@/api/events.ts'
 import type { Event } from '@/types'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
+
+const { canEdit } = storeToRefs(usePermissionsStore())
 
 const props = defineProps<{
 	id: string | number
@@ -105,7 +109,7 @@ async function onSaved(saved: Record<string, unknown>) {
 		@update:active-tab="activeTab = $event">
 		<template #actions>
 			<NcButton
-				v-if="event"
+				v-if="event && canEdit"
 				variant="primary"
 				@click="openEdit">
 				<template #icon>

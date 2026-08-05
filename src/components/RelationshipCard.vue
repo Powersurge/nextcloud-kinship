@@ -10,11 +10,16 @@ import {
 } from '@/utils/relationships.ts'
 import { dateDisplay } from '@/utils/date.ts'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	relationship: Record<string, any>
 	aName: string
 	bName: string
-}>()
+	canEdit?: boolean
+	canDelete?: boolean
+}>(), {
+	canEdit: true,
+	canDelete: true,
+})
 
 const emit = defineEmits<{
 	edit: []
@@ -50,14 +55,14 @@ const isPartnership = computed(() => isPartnershipType(props.relationship.type))
 			</p>
 		</div>
 
-		<NcActions class="rel-card__actions">
-			<NcActionButton @click="emit('edit')">
+		<NcActions v-if="canEdit || canDelete" class="rel-card__actions">
+			<NcActionButton v-if="canEdit" @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
 				</template>
 				Edit
 			</NcActionButton>
-			<NcActionButton @click="emit('delete')">
+			<NcActionButton v-if="canDelete" @click="emit('delete')">
 				<template #icon>
 					<Delete :size="20" />
 				</template>

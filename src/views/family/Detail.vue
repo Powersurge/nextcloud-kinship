@@ -8,6 +8,7 @@ import FamilyMembersTree from '@/components/families/FamilyMembersTree.vue'
 import FamilyModal from '@/components/modals/FamilyModal.vue'
 import MediaSection from '@/components/media/MediaSection.vue'
 import { useFamilyDetailStore } from '@/stores/use-family-detail-store.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
 const props = defineProps<{
 	id: string | number
@@ -15,6 +16,7 @@ const props = defineProps<{
 
 const familyStore = useFamilyDetailStore()
 const { family, loading, error } = storeToRefs(familyStore)
+const { canEdit } = storeToRefs(usePermissionsStore())
 
 const activeTab = ref('overview')
 const modalOpen = ref(false)
@@ -88,7 +90,7 @@ async function onSaved() {
 		@update:active-tab="activeTab = $event">
 		<template #actions>
 			<NcButton
-				v-if="family"
+				v-if="family && canEdit"
 				variant="primary"
 				@click="openEdit">
 				<template #icon>

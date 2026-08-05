@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import Calendar from 'vue-material-design-icons/Calendar.vue'
@@ -8,10 +9,12 @@ import EventCard from '@/components/EventCard.vue'
 import EventModal from '@/components/modals/EventModal.vue'
 import { deleteEvent as deleteEventApi, fetchEvents } from '@/api/events.ts'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
 const router = useRouter()
 const events = ref<Array<Record<string, any>>>([])
 const loading = ref(true)
+const { canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
@@ -67,7 +70,7 @@ onMounted(loadEvents)
 
 <template>
 	<div class="events">
-		<div class="events__header">
+		<div v-if="canEdit" class="events__header">
 			<NcButton variant="primary" @click="openCreate">
 				<template #icon>
 					<Plus :size="20" />
@@ -85,7 +88,7 @@ onMounted(loadEvents)
 			<template #icon>
 				<Calendar />
 			</template>
-			<template #action>
+			<template v-if="canEdit" #action>
 				<NcButton variant="primary" @click="openCreate">
 					New event
 				</NcButton>
@@ -97,6 +100,8 @@ onMounted(loadEvents)
 				v-for="event in events"
 				:key="event.id"
 				:event="event"
+				:can-edit="canEdit"
+				:can-delete="canDelete"
 				@click="openEvent(event)"
 				@edit="openEdit(event)"
 				@delete="deleteEvent(event)" />

@@ -11,6 +11,7 @@ import MediaPanel from '@/components/people/panels/MediaPanel.vue'
 import PersonModal from '@/components/modals/PersonModal.vue'
 import { usePeopleStore } from '@/stores/use-people-store.ts'
 import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
+import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
 import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 import { generateUrl } from '@nextcloud/router'
@@ -22,6 +23,7 @@ const props = defineProps<{
 const peopleStore = usePeopleStore()
 const sidebarStore = usePersonSidebarStore()
 const { selectedPerson } = storeToRefs(peopleStore)
+const { canEdit } = storeToRefs(usePermissionsStore())
 
 const activeTab = ref('overview')
 const loading = ref(false)
@@ -113,7 +115,7 @@ async function onSaved() {
 		@update:active-tab="activeTab = $event">
 		<template #actions>
 			<NcButton
-				v-if="selectedPerson"
+				v-if="selectedPerson && canEdit"
 				variant="primary"
 				@click="openEdit">
 				<template #icon>

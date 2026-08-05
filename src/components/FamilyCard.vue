@@ -3,9 +3,12 @@ import { computed } from 'vue'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
 	family: Record<string, any>
-}>()
+	canEdit?: boolean
+}>(), {
+	canEdit: true,
+})
 
 const emit = defineEmits<{
 	edit: []
@@ -45,7 +48,7 @@ const typeLabel = computed(() =>
 			</p>
 		</div>
 
-		<NcActions class="family-card__actions" @click.stop>
+		<NcActions v-if="canEdit" class="family-card__actions" @click.stop>
 			<NcActionButton @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
