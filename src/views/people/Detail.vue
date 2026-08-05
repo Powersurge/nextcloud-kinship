@@ -110,7 +110,6 @@ async function onSaved() {
 		:loading="loading"
 		:error="error"
 		:avatar-url="avatar"
-		wide
 		@update:active-tab="activeTab = $event">
 		<template #actions>
 			<NcButton

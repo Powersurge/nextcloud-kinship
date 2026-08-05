@@ -208,26 +208,6 @@ function selectTab(id: string) {
 	padding: 0.5rem 0;
 }
 
-.entity-detail__tab {
-	appearance: none;
-	border: none;
-	background: transparent;
-	font-weight: 600;
-	font-size: 0.95rem;
-	padding: 0.65rem 0.9rem;
-	cursor: pointer;
-	margin-bottom: -1px;
-}
-
-.entity-detail__tab:hover {
-	color: var(--color-main-text);
-}
-
-.entity-detail__tab--active {
-	color: var(--color-main-text);
-	border-bottom-color: var(--color-primary-element);
-}
-
 .entity-detail__body {
 	padding: 1.25rem 0.25rem 0;
 	flex: 1;
