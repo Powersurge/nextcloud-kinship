@@ -14,17 +14,30 @@ import {
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
+interface PersonSummary {
+	name: string
+	photoFileId: number | null
+}
+
 const { canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 const relationships = ref<Array<Record<string, any>>>([])
-const peopleById = ref<Record<number, string>>({})
+const peopleById = ref<Record<number, PersonSummary>>({})
 const loading = ref(true)
 
 const modalOpen = ref(false)
 const editing = ref<Record<string, any> | null>(null)
 
+function personOf(id: number): PersonSummary {
+	return peopleById.value[id] ?? { name: `#${id}`, photoFileId: null }
+}
+
 function nameOf(id: number): string {
-	return peopleById.value[id] ?? `#${id}`
+	return personOf(id).name
+}
+
+function photoOf(id: number): number | null {
+	return personOf(id).photoFileId
 }
 
 async function loadAll() {
@@ -35,9 +48,15 @@ async function loadAll() {
 			fetchPeople(),
 		])
 		relationships.value = rels
-		const map: Record<number, string> = {}
+		const map: Record<number, PersonSummary> = {}
 		for (const p of people) {
-			map[p.id] = `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`
+			const photoFileId = typeof p.photoFileId === 'number' && p.photoFileId > 0
+				? p.photoFileId
+				: null
+			map[p.id] = {
+				name: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim() || `#${p.id}`,
+				photoFileId,
+			}
 		}
 		peopleById.value = map
 	} catch (e) {
@@ -115,6 +134,8 @@ onMounted(loadAll)
 				:relationship="relationship"
 				:a-name="nameOf(relationship.personA)"
 				:b-name="nameOf(relationship.personB)"
+				:a-photo-file-id="photoOf(relationship.personA)"
+				:b-photo-file-id="photoOf(relationship.personB)"
 				:can-edit="canEdit"
 				:can-delete="canDelete"
 				@edit="openEdit(relationship)"
@@ -149,9 +170,9 @@ onMounted(loadAll)
 }
 
 .relationships__list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+	gap: 16px;
 	margin: 16px;
 }
 </style>
