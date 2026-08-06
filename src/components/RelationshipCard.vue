@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
@@ -63,6 +64,16 @@ const aFirst = computed(() => firstName(props.aName))
 const bFirst = computed(() => firstName(props.bName))
 const aPhoto = computed(() => photoUrl(props.aPhotoFileId))
 const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
+
+const aDetailTo = computed(() => ({
+	name: 'person-detail',
+	params: { id: String(props.relationship.personA) },
+}))
+
+const bDetailTo = computed(() => ({
+	name: 'person-detail',
+	params: { id: String(props.relationship.personB) },
+}))
 </script>
 
 <template>
@@ -87,7 +98,10 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 		</div>
 
 		<div class="rel-card__diagram" :aria-label="`${aName} ${typeLabel} ${bName}`">
-			<div class="rel-card__person">
+			<RouterLink
+				:to="aDetailTo"
+				class="rel-card__person"
+				:title="`Open ${aName}`">
 				<div class="rel-card__avatar">
 					<img
 						v-if="aPhoto"
@@ -103,7 +117,7 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 					:title="aName">
 					{{ aName }}
 				</span>
-			</div>
+			</RouterLink>
 
 			<div class="rel-card__link">
 				<span class="rel-card__rail" aria-hidden="true" />
@@ -115,7 +129,10 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 				<span class="rel-card__rail" aria-hidden="true" />
 			</div>
 
-			<div class="rel-card__person">
+			<RouterLink
+				:to="bDetailTo"
+				class="rel-card__person"
+				:title="`Open ${bName}`">
 				<div class="rel-card__avatar">
 					<img
 						v-if="bPhoto"
@@ -131,7 +148,7 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 					:title="bName">
 					{{ bName }}
 				</span>
-			</div>
+			</RouterLink>
 		</div>
 
 		<footer v-if="when || relationship.note" class="rel-card__footer">
@@ -193,7 +210,26 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
+	color: inherit;
 	text-align: center;
+	text-decoration: none;
+	border-radius: var(--border-radius-large, 8px);
+	outline: none;
+	transition: color .15s;
+}
+
+.rel-card__person:hover .rel-card__firstname,
+.rel-card__person:focus-visible .rel-card__firstname {
+	color: var(--rel-accent);
+	text-decoration: underline;
+}
+
+.rel-card__person:hover .rel-card__avatar,
+.rel-card__person:focus-visible .rel-card__avatar {
+	transform: scale(1.04);
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--rel-accent) 45%, transparent),
+		0 4px 12px color-mix(in srgb, var(--rel-accent) 25%, transparent);
 }
 
 .rel-card__avatar {
@@ -211,6 +247,7 @@ const bPhoto = computed(() => photoUrl(props.bPhotoFileId))
 	letter-spacing: 0.02em;
 	box-shadow: 0 0 0 1px color-mix(in srgb, var(--rel-accent) 35%, transparent);
 	overflow: hidden;
+	transition: transform .15s, box-shadow .15s;
 }
 
 .rel-card__photo {
