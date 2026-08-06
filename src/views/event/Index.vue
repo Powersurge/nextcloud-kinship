@@ -136,9 +136,8 @@ onMounted(loadEvents)
 
 .events__list {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-	gap: 12px;
-	margin: 12px 16px 24px;
-	max-width: 1100px;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+	gap: 16px;
+	margin: 16px;
 }
 </style>
