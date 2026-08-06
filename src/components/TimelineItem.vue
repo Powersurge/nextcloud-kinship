@@ -1,5 +1,8 @@
 <template>
-	<div class="timeline-item" :class="{ 'timeline-item--last': isLast }">
+	<div class="timeline-item"
+		:class="{ 'timeline-item--last': isLast }"
+		@click="emit('click')"
+		@keydown.enter.prevent="emit('click')">
 		<div class="timeline-marker">
 			<div class="timeline-dot" :class="`timeline-dot--${event.type}`" />
 			<div v-if="!isLast" class="timeline-line" />
@@ -16,7 +19,7 @@
 					</span>
 				</div>
 
-				<NcActions v-if="showActions" class="timeline-actions">
+				<NcActions v-if="showActions" class="timeline-actions" @click.stop>
 					<CiteAction
 						v-if="event.id"
 						subject-type="event"
@@ -50,12 +53,6 @@
 				class="timeline-description">
 				{{ event.description }}
 			</p>
-
-			<CitationList
-				v-if="event.id"
-				subject-type="event"
-				:subject-id="event.id"
-				compact />
 		</div>
 	</div>
 </template>
@@ -70,7 +67,6 @@ import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
 import type { Event } from '@/types'
 import CiteAction from '@/components/citations/CiteAction.vue'
-import CitationList from '@/components/citations/CitationList.vue'
 
 const props = withDefaults(defineProps<{
 	event: Event
@@ -82,6 +78,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
+	click: []
 	edit: []
 	delete: []
 }>()
