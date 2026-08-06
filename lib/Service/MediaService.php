@@ -202,7 +202,10 @@ class MediaService {
 	 */
 	private function hydrateFiles(array $items): array {
 		foreach ($items as $media) {
-			$media->setFile($this->filesService->resolveFile($media->getFileId()));
+			$ownerUid = $media->getOwnerUid() ?? $media->getCreatedBy();
+			$media->setFile(
+				$this->filesService->resolveAttachedFile($media->getFileId(), $ownerUid),
+			);
 		}
 
 		return $items;

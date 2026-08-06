@@ -36,6 +36,23 @@ class MediaMapper extends QBMapper {
 	}
 
 	/**
+	 * First media row referencing a Nextcloud file id (for proxy authorization).
+	 */
+	public function findFirstByFileId(int $fileId): ?Media {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from($this->getTableName())
+			->where($qb->expr()->eq('file_id', $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT)))
+			->setMaxResults(1);
+
+		try {
+			return $this->findEntity($qb);
+		} catch (\Exception) {
+			return null;
+		}
+	}
+
+	/**
 	 * @return Media[]
 	 */
 	public function findBySubject(string $subjectType, int $subjectId, ?int $albumId = null): array {

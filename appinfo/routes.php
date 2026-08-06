@@ -95,6 +95,10 @@ return [
 		['name' => 'claim#reject', 'url' => '/api/v1/claims/{id}/reject', 'verb' => 'POST'],
 		['name' => 'claim#delete', 'url' => '/api/v1/claims/{id}', 'verb' => 'DELETE'],
 
+		// Media file proxy (must be before media/{id})
+		['name' => 'media_file#preview', 'url' => '/api/v1/media/files/{fileId}/preview', 'verb' => 'GET'],
+		['name' => 'media_file#download', 'url' => '/api/v1/media/files/{fileId}/download', 'verb' => 'GET'],
+
 		// Media references (?subjectType=&subjectId=&albumId=)
 		['name' => 'media#index', 'url' => '/api/v1/media', 'verb' => 'GET'],
 		['name' => 'media#create', 'url' => '/api/v1/media', 'verb' => 'POST'],

@@ -146,7 +146,10 @@ class AlbumService {
 				continue;
 			}
 
-			$album->setCoverFile($this->filesService->resolveFile($media->getFileId()));
+			$ownerUid = $media->getOwnerUid() ?? $media->getCreatedBy();
+			$album->setCoverFile(
+				$this->filesService->resolveAttachedFile($media->getFileId(), $ownerUid),
+			);
 		}
 
 		return $albums;

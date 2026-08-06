@@ -160,6 +160,7 @@ export interface Citation {
 export type MediaFileSummary = {
 	fileId: number
 	name: string
+	/** Relative DAV path when the current user can access the file; empty otherwise. */
 	path: string
 	mime: string
 	size: number

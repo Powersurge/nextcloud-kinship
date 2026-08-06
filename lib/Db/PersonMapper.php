@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Db;
 
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
@@ -98,7 +99,24 @@ class PersonMapper extends QBMapper {
 	): ?Person {
 		try {
 			return $this->find($id);
-		} catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+		} catch (DoesNotExistException $e) {
+			return null;
+		}
+	}
+
+	/**
+	 * First person using this Nextcloud file as primary photo (for proxy authorization).
+	 */
+	public function findFirstByPhotoFileId(int $fileId): ?Person {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from($this->getTableName())
+			->where($qb->expr()->eq('photo_file_id', $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT)))
+			->setMaxResults(1);
+
+		try {
+			return $this->findEntity($qb);
+		} catch (DoesNotExistException) {
 			return null;
 		}
 	}

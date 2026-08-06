@@ -79,9 +79,9 @@ class FilesService {
 	 * Resolve a file the current user can access.
 	 *
 	 * path is relative to the user folder (e.g. /Kinship/Uploads/photo.jpg)
-	 * so it can be passed to OCA.Viewer / WebDAV.
+	 * so it can be used with WebDAV / download helpers.
 	 *
-	 * @return array{fileId: int, name: string, path: string, mime: string, size: int, mtime: int}|null
+	 * @return array{fileId: int, name: string, path: string, mime: string, hasPreview: bool, size: int, mtime: int}|null
 	 */
 	public function resolveFile(int $fileId): ?array {
 		$uid = $this->userSession->getUser()?->getUID();
@@ -104,15 +104,60 @@ class FilesService {
 			$relativePath = '/' . $relativePath;
 		}
 
-		return [
-			'fileId' => $file->getId(),
-			'name' => $file->getName(),
-			'path' => $relativePath,
-			'mime' => $file->getMimeType(),
-			'hasPreview' => $this->previewManager->isAvailable($file),
-			'size' => $file->getSize(),
-			'mtime' => $file->getMTime(),
-		];
+		return $this->summarizeFile($file, $relativePath);
+	}
+
+	/**
+	 * Resolve a file from an owner's storage (for Kinship proxy hydration).
+	 * path is empty — the current user may not have DAV access.
+	 *
+	 * @return array{fileId: int, name: string, path: string, mime: string, hasPreview: bool, size: int, mtime: int}|null
+	 */
+	public function resolveFileForOwner(int $fileId, string $ownerUid): ?array {
+		$file = $this->getFileForOwner($fileId, $ownerUid);
+		if ($file === null) {
+			return null;
+		}
+
+		return $this->summarizeFile($file, '');
+	}
+
+	/**
+	 * Prefer current-user access (with DAV path); fall back to owner metadata.
+	 *
+	 * @return array{fileId: int, name: string, path: string, mime: string, hasPreview: bool, size: int, mtime: int}|null
+	 */
+	public function resolveAttachedFile(int $fileId, ?string $ownerUid): ?array {
+		$resolved = $this->resolveFile($fileId);
+		if ($resolved !== null) {
+			return $resolved;
+		}
+
+		if ($ownerUid === null || $ownerUid === '') {
+			return null;
+		}
+
+		return $this->resolveFileForOwner($fileId, $ownerUid);
+	}
+
+	public function getFileForOwner(int $fileId, string $ownerUid): ?File {
+		if ($ownerUid === '') {
+			return null;
+		}
+
+		try {
+			$nodes = $this->rootFolder->getUserFolder($ownerUid)->getById($fileId);
+		} catch (\Exception) {
+			return null;
+		}
+
+		foreach ($nodes as $node) {
+			if ($node instanceof File) {
+				return $node;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -124,6 +169,21 @@ class FilesService {
 		}
 	}
 
+	/**
+	 * @return array{fileId: int, name: string, path: string, mime: string, hasPreview: bool, size: int, mtime: int}
+	 */
+	private function summarizeFile(File $file, string $path): array {
+		return [
+			'fileId' => $file->getId(),
+			'name' => $file->getName(),
+			'path' => $path,
+			'mime' => $file->getMimeType(),
+			'hasPreview' => $this->previewManager->isAvailable($file),
+			'size' => $file->getSize(),
+			'mtime' => $file->getMTime(),
+		];
+	}
+
 	private function getAccessibleFile(int $fileId): ?File {
 		$uid = $this->userSession->getUser()?->getUID();
 		if ($uid === null) {
@@ -132,7 +192,7 @@ class FilesService {
 
 		try {
 			$nodes = $this->rootFolder->getUserFolder($uid)->getById($fileId);
-		} catch (NotFoundException) {
+		} catch (\Exception) {
 			return null;
 		}
 
