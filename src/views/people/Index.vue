@@ -131,7 +131,7 @@ onMounted(loadPeople)
 
 .people__list {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
 	gap: 16px;
 	margin: 16px;
 }

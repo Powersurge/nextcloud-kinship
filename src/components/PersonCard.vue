@@ -8,8 +8,6 @@ import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
-import Cake from 'vue-material-design-icons/CakeVariant.vue'
-import GraveStone from 'vue-material-design-icons/GraveStone.vue'
 import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
 
@@ -31,6 +29,18 @@ const emit = defineEmits<{
 const statusLabel = computed(() => getLivingStatusLabel(props.person.livingStatus))
 const birthLabel = computed(() => dateDisplay(props.person.birthDate))
 const deathLabel = computed(() => dateDisplay(props.person.deathDate))
+const lifespan = computed(() => {
+	if (birthLabel.value && deathLabel.value) {
+		return `${birthLabel.value} – ${deathLabel.value}`
+	}
+	if (birthLabel.value) {
+		return `b. ${birthLabel.value}`
+	}
+	if (deathLabel.value) {
+		return `d. ${deathLabel.value}`
+	}
+	return ''
+})
 const photoUrl = computed(() => {
 	const fileId = props.person.photoFileId
 	return typeof fileId === 'number' && fileId > 0
@@ -45,131 +55,102 @@ const detailTo = computed(() => ({
 </script>
 
 <template>
-	<div class="person-card">
-		<div v-if="canEdit || canDelete" class="person-card__actions">
-			<NcActions @click.stop>
-				<NcActionButton v-if="canEdit" close-after-click @click="emit('edit')">
-					<template #icon>
-						<Pencil :size="20" />
-					</template>
-					Edit
-				</NcActionButton>
-
-				<NcActionButton v-if="canDelete" close-after-click @click="emit('delete')">
-					<template #icon>
-						<Delete :size="20" />
-					</template>
-					Delete
-				</NcActionButton>
-			</NcActions>
-		</div>
-
+	<div class="person-card" role="button" tabindex="0">
 		<div class="person-card__avatar">
 			<img
 				v-if="photoUrl"
 				:src="photoUrl"
 				:alt="person.fullName || 'Person photo'"
 				class="person-card__photo">
-			<Account v-else :size="56" />
+			<Account v-else :size="36" />
 		</div>
 
-		<h3 class="person-card__name">
-			{{ person.fullName }}
-		</h3>
+		<div class="person-card__body">
+			<div class="person-card__top">
+				<div class="person-card__identity">
+					<h3 class="person-card__name">
+						{{ person.fullName }}
+					</h3>
+					<span
+						v-if="person.preferredName"
+						class="person-card__nickname">
+						“{{ person.preferredName }}”
+					</span>
+				</div>
 
-		<div
-			v-if="person.preferredName"
-			class="person-card__nickname">
-			"{{ person.preferredName }}"
-		</div>
+				<div v-if="canEdit || canDelete" class="person-card__actions" @click.stop>
+					<NcActions>
+						<NcActionButton v-if="canEdit" close-after-click @click="emit('edit')">
+							<template #icon>
+								<Pencil :size="20" />
+							</template>
+							Edit
+						</NcActionButton>
 
-		<div
-			class="person-card__status"
-			:class="person.livingStatus">
-			{{ statusLabel }}
-		</div>
-
-		<div
-			v-if="birthLabel || deathLabel"
-			class="person-card__details">
-			<div
-				v-if="birthLabel"
-				class="detail">
-				<Cake :size="18" />
-				<span>{{ birthLabel }}</span>
+						<NcActionButton v-if="canDelete" close-after-click @click="emit('delete')">
+							<template #icon>
+								<Delete :size="20" />
+							</template>
+							Delete
+						</NcActionButton>
+					</NcActions>
+				</div>
 			</div>
 
-			<div
-				v-if="deathLabel"
-				class="detail">
-				<GraveStone :size="18" />
-				<span>{{ deathLabel }}</span>
+			<div class="person-card__meta">
+				<span
+					class="person-card__status"
+					:class="person.livingStatus">
+					{{ statusLabel }}
+				</span>
+				<span v-if="lifespan" class="person-card__lifespan">
+					{{ lifespan }}
+				</span>
 			</div>
-		</div>
 
-		<RouterLink
-			v-if="person.id"
-			:to="detailTo"
-			class="person-card__detail-link"
-			@click.stop>
-			<OpenInNew :size="16" />
-			View details
-		</RouterLink>
+			<RouterLink
+				v-if="person.id"
+				:to="detailTo"
+				class="person-card__detail-link"
+				@click.stop>
+				View details
+				<OpenInNew :size="14" />
+			</RouterLink>
+		</div>
 	</div>
 </template>
 
 <style scoped>
 .person-card {
-	position: relative;
-
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-
-	padding: 20px 18px;
-
+	align-items: stretch;
+	gap: 14px;
+	height: 100%;
+	padding: 14px;
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large);
-
 	background: var(--color-main-background);
-
-	text-align: center;
-
-	transition: box-shadow .15s,
-	transform .15s,
-	border-color .15s;
+	cursor: pointer;
+	transition: border-color .15s, box-shadow .15s, background-color .15s;
 }
 
-.person-card:hover {
-	transform: translateY(-2px);
-
-	border-color: var(--color-primary);
-
-	box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
-}
-
-.person-card__actions {
-	position: absolute;
-	top: 10px;
-	right: 10px;
+.person-card:hover,
+.person-card:focus-visible {
+	border-color: var(--color-primary-element);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+	outline: none;
 }
 
 .person-card__avatar {
 	display: flex;
+	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
-
-	width: 84px;
-	height: 84px;
-
-	margin-bottom: 16px;
-
+	width: 64px;
+	height: 64px;
 	border-radius: 50%;
-
-	background: var(--color-background-hover);
-
-	color: var(--color-primary);
-
+	background: var(--color-background-dark);
+	color: var(--color-primary-element);
 	overflow: hidden;
 }
 
@@ -179,36 +160,68 @@ const detailTo = computed(() => ({
 	object-fit: cover;
 }
 
+.person-card__body {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+}
+
+.person-card__top {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.person-card__identity {
+	min-width: 0;
+}
+
 .person-card__name {
 	margin: 0;
-
 	font-size: 1.05rem;
 	font-weight: 600;
-
 	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .person-card__nickname {
-	margin-top: 4px;
-
+	display: block;
+	margin-top: 2px;
 	color: var(--color-text-maxcontrast);
-
 	font-style: italic;
-	font-size: .9rem;
+	font-size: .85rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.person-card__actions {
+	flex: 0 0 auto;
+	margin: -6px -6px 0 0;
+}
+
+.person-card__meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
 }
 
 .person-card__status {
-	margin-top: 14px;
-
-	padding: 4px 12px;
-
-	border-radius: 999px;
-
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: var(--border-radius-pill, 999px);
 	background: rgba(46, 160, 67, .12);
 	color: #2ea043;
-
-	font-size: .78rem;
+	font-size: .72rem;
 	font-weight: 600;
+	line-height: 1.4;
 }
 
 .person-card__status.deceased {
@@ -221,52 +234,21 @@ const detailTo = computed(() => ({
 	color: rgb(102, 71, 0);
 }
 
-.person-card__details {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-
-	width: 100%;
-
-	margin-top: 18px;
-	padding-top: 16px;
-
-	border-top: 1px solid var(--color-border);
-}
-
-.detail {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-
+.person-card__lifespan {
 	color: var(--color-text-maxcontrast);
-
-	font-size: .9rem;
-}
-
-.detail svg {
-	flex-shrink: 0;
+	font-size: .85rem;
 }
 
 .person-card__detail-link {
 	display: inline-flex;
 	align-items: center;
-	justify-content: center;
-	gap: 0.35rem;
-	margin-top: 16px;
-	padding-top: 14px;
-	width: 100%;
-	border-top: 1px solid var(--color-border);
+	gap: 0.3rem;
+	margin-top: auto;
+	width: fit-content;
 	color: var(--color-primary-element);
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 	font-weight: 600;
 	text-decoration: none;
-}
-
-.person-card__details + .person-card__detail-link {
-	margin-top: 14px;
-	padding-top: 0;
-	border-top: none;
 }
 
 .person-card__detail-link:hover {

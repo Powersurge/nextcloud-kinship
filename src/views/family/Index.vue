@@ -104,9 +104,9 @@ onMounted(loadFamilies)
 }
 
 .families__list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+	gap: 16px;
 	margin: 16px;
 }
 

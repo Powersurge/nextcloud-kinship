@@ -41,13 +41,31 @@ const where = computed(() => placeDisplay(props.event.place))
 <template>
 	<div
 		class="event-card"
+		:class="`event-card--${event.type || 'custom'}`"
 		role="button"
 		tabindex="0"
 		@click="emit('click')"
 		@keydown.enter.prevent="emit('click')">
+		<div class="event-card__accent" aria-hidden="true" />
+
 		<div class="event-card__body">
-			<div class="event-card__header">
+			<div class="event-card__top">
 				<span class="event-card__badge">{{ typeLabel }}</span>
+
+				<NcActions v-if="canEdit || canDelete" class="event-card__actions" @click.stop>
+					<NcActionButton v-if="canEdit" @click="emit('edit')">
+						<template #icon>
+							<Pencil :size="20" />
+						</template>
+						Edit
+					</NcActionButton>
+					<NcActionButton v-if="canDelete" @click="emit('delete')">
+						<template #icon>
+							<Delete :size="20" />
+						</template>
+						Delete
+					</NcActionButton>
+				</NcActions>
 			</div>
 
 			<h3 class="event-card__name">
@@ -64,43 +82,69 @@ const where = computed(() => placeDisplay(props.event.place))
 				{{ where }}
 			</p>
 		</div>
-
-		<NcActions v-if="canEdit || canDelete" class="event-card__actions" @click.stop>
-			<NcActionButton v-if="canEdit" @click="emit('edit')">
-				<template #icon>
-					<Pencil :size="20" />
-				</template>
-				Edit
-			</NcActionButton>
-			<NcActionButton v-if="canDelete" @click="emit('delete')">
-				<template #icon>
-					<Delete :size="20" />
-				</template>
-				Delete
-			</NcActionButton>
-		</NcActions>
 	</div>
 </template>
 
 <style scoped>
 .event-card {
+	position: relative;
+	display: flex;
+	height: 100%;
+	overflow: hidden;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 8px);
+	background-color: var(--color-main-background);
+	cursor: pointer;
+	transition: border-color .15s, box-shadow .15s;
+}
+
+.event-card:hover,
+.event-card:focus-visible {
+	border-color: var(--color-primary-element);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+	outline: none;
+}
+
+.event-card__accent {
+	flex: 0 0 4px;
+	background: var(--color-primary-element);
+}
+
+.event-card--birth .event-card__accent {
+	background: #2ea043;
+}
+
+.event-card--death .event-card__accent {
+	background: var(--color-text-maxcontrast);
+}
+
+.event-card--marriage .event-card__accent {
+	background: #a371f7;
+}
+
+.event-card--education .event-card__accent {
+	background: #1f6feb;
+}
+
+.event-card--military .event-card__accent {
+	background: #9a6700;
+}
+
+.event-card__body {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+	padding: 12px 14px;
+}
+
+.event-card__top {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 8px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius-large, 8px);
-	padding: 12px 16px;
-	background-color: var(--color-main-background);
-	cursor: pointer;
-}
-
-.event-card:hover {
-	border-color: var(--color-primary-element);
-}
-
-.event-card__header {
-	margin-bottom: 4px;
+	margin-bottom: 2px;
 }
 
 .event-card__badge {
@@ -115,18 +159,27 @@ const where = computed(() => placeDisplay(props.event.place))
 	color: var(--color-text-maxcontrast);
 }
 
+.event-card__actions {
+	margin: -6px -8px 0 0;
+}
+
 .event-card__name {
-	margin: 0 0 6px;
+	margin: 0;
 	font-size: 1rem;
+	line-height: 1.35;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
 }
 
 .event-card__meta {
 	display: flex;
 	align-items: flex-start;
 	gap: 0.3rem;
-	margin: 0 0 2px;
+	margin: 0;
 	color: var(--color-text-maxcontrast);
-	font-size: 0.9em;
+	font-size: 0.88em;
 	line-height: 1.4;
 }
 
