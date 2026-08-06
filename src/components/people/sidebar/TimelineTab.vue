@@ -13,9 +13,7 @@ import { usePersonSidebarStore } from '@/stores/use-person-sidebar-store.ts'
 import { deleteEvent as deleteEventApi } from '@/api/events.ts'
 import type { Event } from '@/types'
 import { showConfirmation, showError } from '@nextcloud/dialogs'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const peopleStore = usePeopleStore()
 const { selectedPerson } = storeToRefs(peopleStore)
 const timelineStore = usePersonTimelineStore()
@@ -39,13 +37,6 @@ function openCreateEventModal() {
 		placeId: null,
 		subjectId: selectedPerson.value.id,
 	})
-}
-
-function openEvent(event: Record<string, any>) {
-	if (!event?.id) {
-		return
-	}
-	router.push({ name: 'event-detail', params: { id: String(event.id) } })
 }
 
 function openEditEvent(event: Event) {
@@ -173,7 +164,6 @@ onBeforeUnmount(() => observer?.disconnect())
 					:key="event.id ?? index"
 					:event="event"
 					:is-last="index === events.length - 1 && !hasMore"
-					@click="openEvent(event)"
 					@edit="openEditEvent(event)"
 					@delete="onDeleteEvent(event)" />
 

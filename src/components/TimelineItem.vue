@@ -1,8 +1,7 @@
 <template>
-	<div class="timeline-item"
-		:class="{ 'timeline-item--last': isLast }"
-		@click="emit('click')"
-		@keydown.enter.prevent="emit('click')">
+	<div
+		class="timeline-item"
+		:class="{ 'timeline-item--last': isLast }">
 		<div class="timeline-marker">
 			<div class="timeline-dot" :class="`timeline-dot--${event.type}`" />
 			<div v-if="!isLast" class="timeline-line" />
@@ -19,7 +18,7 @@
 					</span>
 				</div>
 
-				<NcActions v-if="showActions" class="timeline-actions" @click.stop>
+				<NcActions v-if="showActions" class="timeline-actions">
 					<CiteAction
 						v-if="event.id"
 						subject-type="event"
@@ -39,30 +38,44 @@
 				</NcActions>
 			</div>
 
-			<h3 v-if="heading !== typeLabel" class="timeline-title">
-				{{ heading }}
-			</h3>
+			<component
+				:is="detailTo ? RouterLink : 'div'"
+				:to="detailTo ?? undefined"
+				class="timeline-main"
+				:class="{ 'timeline-main--link': !!detailTo }"
+				@click="onMainClick">
+				<h3 class="timeline-title">
+					{{ heading }}
+				</h3>
 
-			<div v-if="where" class="timeline-meta">
-				<MapMarkerOutline :size="14" class="timeline-meta__icon" />
-				<span>{{ where }}</span>
-			</div>
+				<div v-if="where" class="timeline-meta">
+					<MapMarkerOutline :size="14" class="timeline-meta__icon" />
+					<span>{{ where }}</span>
+				</div>
 
-			<p
-				v-if="event.description"
-				class="timeline-description">
-				{{ event.description }}
-			</p>
+				<p
+					v-if="event.description"
+					class="timeline-description">
+					{{ event.description }}
+				</p>
+
+				<span v-if="detailTo" class="timeline-detail-link">
+					View details
+					<OpenInNew :size="14" />
+				</span>
+			</component>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { NcActions, NcActionButton } from '@nextcloud/vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
+import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
 import type { Event } from '@/types'
@@ -96,6 +109,20 @@ const when = computed(() => dateDisplay(props.event.date))
 const where = computed(() => placeDisplay(props.event.place))
 const typeLabel = computed(() => TYPE_LABELS[props.event.type] ?? props.event.type)
 const heading = computed(() => props.event.title || typeLabel.value)
+
+const detailTo = computed(() => {
+	if (!props.event.id) {
+		return null
+	}
+	return {
+		name: 'event-detail',
+		params: { id: String(props.event.id) },
+	}
+})
+
+function onMainClick() {
+	emit('click')
+}
 </script>
 
 <style scoped>
@@ -163,9 +190,27 @@ const heading = computed(() => props.event.title || typeLabel.value)
 	transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-.timeline-content:hover {
+.timeline-content:has(.timeline-main--link:hover),
+.timeline-content:has(.timeline-main--link:focus-visible) {
 	border-color: var(--color-primary-element);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+}
+
+.timeline-main {
+	display: block;
+	min-width: 0;
+	color: inherit;
+	text-decoration: none;
+}
+
+.timeline-main--link {
+	cursor: pointer;
+}
+
+.timeline-main--link:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+	border-radius: var(--border-radius);
 }
 
 .timeline-content__top {
@@ -237,6 +282,24 @@ const heading = computed(() => props.event.title || typeLabel.value)
 	font-size: .95rem;
 	font-weight: 600;
 	color: var(--color-main-text);
+}
+
+.timeline-main--link:hover .timeline-title {
+	color: var(--color-primary-element);
+}
+
+.timeline-detail-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin-top: 0.55rem;
+	color: var(--color-primary-element);
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.timeline-main--link:hover .timeline-detail-link {
+	text-decoration: underline;
 }
 
 .timeline-meta {
