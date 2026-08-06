@@ -1,10 +1,6 @@
 @import "tailwindcss";
 
-.viewer.modal-mask {
-    width: 100% !important;
-}
-
-.viewer__file-wrapper {
-    width: 100%;
-    height: auto;
+/* Fancybox sits above Nextcloud app chrome / dialogs */
+.fancybox__container {
+	z-index: 10050 !important;
 }

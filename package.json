@@ -15,6 +15,7 @@
     ],
     "dependencies": {
         "@dagrejs/dagre": "^3.0.0",
+        "@fancyapps/ui": "^6.1.14",
         "@nextcloud/auth": "^2.6.0",
         "@nextcloud/axios": "^2.6.0",
         "@nextcloud/dialogs": "^7.4.1",

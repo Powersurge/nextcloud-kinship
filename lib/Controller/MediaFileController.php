@@ -118,9 +118,10 @@ class MediaFileController extends Controller {
 
 		$response = new StreamResponse($handle);
 		$response->addHeader('Content-Type', $file->getMimeType());
+		// inline so <video>/<img> can play/display; download UX uses the download attribute
 		$response->addHeader(
 			'Content-Disposition',
-			'attachment; filename="' . $this->escapeFilename($file->getName()) . '"',
+			'inline; filename="' . $this->escapeFilename($file->getName()) . '"',
 		);
 		$response->addHeader('Content-Length', (string)$file->getSize());
 

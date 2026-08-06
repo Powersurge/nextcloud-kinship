@@ -164,19 +164,23 @@ async function onTogglePrimary(media: Media) {
 }
 
 function onOpenMedia(media: Media) {
-	if (!media.file) {
+	if (!media.fileId) {
 		showError('File is unavailable')
+		return
+	}
+	if (!canPreview(media)) {
+		downloadMediaFile(media.file, media.fileId)
 		return
 	}
 	openMediaInViewer(media, mediaItems.value)
 }
 
 function onDownloadMedia(media: Media) {
-	downloadMediaFile(media.file)
+	downloadMediaFile(media.file, media.fileId)
 }
 
 function canPreview(media: Media): boolean {
-	return canOpenInViewer(media.file?.mime)
+	return Boolean(media.fileId) && canOpenInViewer(media.file?.mime)
 }
 
 function coverUrl(album: Album): string | null {
@@ -189,7 +193,7 @@ function coverUrl(album: Album): string | null {
 function thumbUrl(media: Media): string {
 	const mime = media.file?.mime ?? ''
 
-	if (media.file?.hasPreview) {
+	if (media.file?.hasPreview || mime.startsWith('image/')) {
 		return mediaPreviewUrl(media.fileId, 256)
 	}
 
@@ -315,7 +319,7 @@ function thumbUrl(media: Media): string {
 				<button
 					type="button"
 					class="media-section__thumb media-section__thumb--button"
-					:title="canPreview(media) ? 'Open preview' : 'Open file'"
+					:title="canPreview(media) ? 'Open preview' : 'Download file'"
 					@click="onOpenMedia(media)">
 					<img
 						v-if="thumbUrl(media)"
@@ -335,11 +339,14 @@ function thumbUrl(media: Media): string {
 						{{ media.caption || media.file?.name || `File #${media.fileId}` }}
 					</div>
 					<NcActions>
-						<NcActionButton close-after-click @click="onOpenMedia(media)">
+						<NcActionButton
+							v-if="canPreview(media)"
+							close-after-click
+							@click="onOpenMedia(media)">
 							<template #icon>
 								<EyeOutline :size="20" />
 							</template>
-							{{ canPreview(media) ? 'Open' : 'Preview' }}
+							Open
 						</NcActionButton>
 						<NcActionButton close-after-click @click="onDownloadMedia(media)">
 							<template #icon>
