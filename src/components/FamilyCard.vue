@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NcActions, NcActionButton } from '@nextcloud/vue'
-import Pencil from 'vue-material-design-icons/Pencil.vue'
 
 const props = withDefaults(defineProps<{
 	family: Record<string, any>
@@ -36,7 +34,6 @@ const typeLabel = computed(() =>
 		<div class="family-card__body">
 			<h3 class="family-card__name">
 				{{ name }}
-				<span v-if="family.isDerived" class="family-card__badge">Auto</span>
 			</h3>
 
 			<p v-if="typeLabel" class="family-card__meta">
@@ -47,15 +44,6 @@ const typeLabel = computed(() =>
 				{{ family.description }}
 			</p>
 		</div>
-
-		<NcActions v-if="canEdit" class="family-card__actions" @click.stop>
-			<NcActionButton @click="emit('edit')">
-				<template #icon>
-					<Pencil :size="20" />
-				</template>
-				Edit
-			</NcActionButton>
-		</NcActions>
 	</div>
 </template>
 
@@ -81,16 +69,6 @@ const typeLabel = computed(() =>
 	display: flex;
 	align-items: center;
 	gap: 8px;
-}
-
-.family-card__badge {
-	font-size: 0.7em;
-	font-weight: 600;
-	text-transform: uppercase;
-	padding: 2px 8px;
-	border-radius: 999px;
-	background: var(--color-background-hover);
-	color: var(--color-text-maxcontrast);
 }
 
 .family-card__meta {
