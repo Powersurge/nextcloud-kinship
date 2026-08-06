@@ -10,6 +10,7 @@ import Delete from 'vue-material-design-icons/Delete.vue'
 import Account from 'vue-material-design-icons/AccountCircle.vue'
 import OpenInNew from 'vue-material-design-icons/OpenInNew.vue'
 import { getLivingStatusLabel } from '@/utils/helpers.ts'
+import { generateAvatarUrl } from '@nextcloud/router'
 
 const props = withDefaults(defineProps<{
 	person: Record<string, any>
@@ -45,7 +46,9 @@ const photoUrl = computed(() => {
 	const fileId = props.person.photoFileId
 	return typeof fileId === 'number' && fileId > 0
 		? mediaPreviewUrl(fileId, 168)
-		: null
+		: generateAvatarUrl(props.person.firstName, {
+			isGuestUser: true,
+		})
 })
 
 const detailTo = computed(() => ({
@@ -62,7 +65,6 @@ const detailTo = computed(() => ({
 				:src="photoUrl"
 				:alt="person.fullName || 'Person photo'"
 				class="person-card__photo">
-			<Account v-else :size="36" />
 		</div>
 
 		<div class="person-card__body">
