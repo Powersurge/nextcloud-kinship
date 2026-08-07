@@ -54,7 +54,7 @@ export function createEmptyGenealogyDate(): GenealogyDateType {
 			month: '',
 			day: '',
 		},
-		kind: 'unknown',
-		precision: 'year',
+		kind: 'exact',
+		precision: 'yearMonthDay',
 	}
 }
