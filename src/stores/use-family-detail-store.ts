@@ -18,6 +18,56 @@ export type FamilyRelativeBundle = {
 	siblings: Person[]
 }
 
+const EMPTY_DERIVED: DerivedRelationships = {
+	parents: [],
+	children: [],
+	spouses: [],
+	formerSpouses: [],
+	siblings: [],
+	grandparents: [],
+	grandchildren: [],
+}
+
+function uniquePeople(people: Person[]): Person[] {
+	const byId = new Map<number, Person>()
+	for (const person of people) {
+		if (person?.id) {
+			byId.set(person.id, person)
+		}
+	}
+	return [...byId.values()]
+}
+
+/**
+ * Shared children of every list (by person id).
+ * @param lists
+ */
+function intersectPeople(lists: Person[][]): Person[] {
+	if (lists.length === 0) {
+		return []
+	}
+	const [first, ...rest] = lists
+	if (rest.length === 0) {
+		return uniquePeople(first)
+	}
+	return uniquePeople(
+		first.filter((person) =>
+			rest.every((list) => list.some((other) => other.id === person.id)),
+		),
+	)
+}
+
+function indexPeople(
+	target: Record<number, Person>,
+	people: Person[],
+): void {
+	for (const person of people) {
+		if (person?.id) {
+			target[person.id] = person
+		}
+	}
+}
+
 export const useFamilyDetailStore = defineStore('familyDetailStore', () => {
 	const familyId = ref<number | null>(null)
 	const family = ref<Record<string, unknown> | null>(null)
@@ -27,19 +77,35 @@ export const useFamilyDetailStore = defineStore('familyDetailStore', () => {
 	const loading = ref(false)
 	const error = ref<string | null>(null)
 
-	const parents = computed(() =>
-		members.value
-			.filter((member) => member.role === 'parent')
+	function peopleWithRole(role: 'parent' | 'child'): Person[] {
+		return members.value
+			.filter((member) => member.role === role)
 			.map((member) => peopleById.value[member.personId])
-			.filter((person): person is Person => Boolean(person)),
-	)
+			.filter((person): person is Person => Boolean(person))
+	}
 
-	const children = computed(() =>
-		members.value
-			.filter((member) => member.role === 'child')
-			.map((member) => peopleById.value[member.personId])
-			.filter((person): person is Person => Boolean(person)),
-	)
+	const parents = computed(() => peopleWithRole('parent'))
+
+	/**
+	 * Household children for this family.
+	 *
+	 * Membership rows are the intended source of truth, but derived parenthood
+	 * (natalByPersonId) often has children when membership is incomplete
+	 * (e.g. partnership sync only keeps children linked to every parent).
+	 * Prefer children shared by all spouses; if none, use the union of each
+	 * spouse's derived children; always merge in any child membership rows.
+	 */
+	const children = computed(() => {
+		const natalLists = parents.value.map(
+			(parent) => natalByPersonId.value[parent.id]?.children ?? [],
+		)
+		const shared = intersectPeople(natalLists)
+		const fromNatal = shared.length > 0
+			? shared
+			: uniquePeople(natalLists.flat())
+		const fromMembers = peopleWithRole('child')
+		return uniquePeople([...fromNatal, ...fromMembers])
+	})
 
 	const natalBundles = computed((): FamilyRelativeBundle[] =>
 		parents.value.map((person) => {
@@ -84,7 +150,6 @@ export const useFamilyDetailStore = defineStore('familyDetailStore', () => {
 					nextPeople[person.id] = person
 				}
 			}
-			peopleById.value = nextPeople
 
 			const parentIds = memberRows
 				.filter((member) => member.role === 'parent')
@@ -96,15 +161,7 @@ export const useFamilyDetailStore = defineStore('familyDetailStore', () => {
 						return [personId, await fetchPersonDerived(personId)] as const
 					} catch (e) {
 						console.error('Failed to load derived relationships', personId, e)
-						return [personId, {
-							parents: [],
-							children: [],
-							spouses: [],
-							formerSpouses: [],
-							siblings: [],
-							grandparents: [],
-							grandchildren: [],
-						} satisfies DerivedRelationships] as const
+						return [personId, { ...EMPTY_DERIVED }] as const
 					}
 				}),
 			)
@@ -112,7 +169,16 @@ export const useFamilyDetailStore = defineStore('familyDetailStore', () => {
 			const nextNatal: Record<number, DerivedRelationships> = {}
 			for (const [personId, derived] of derivedEntries) {
 				nextNatal[personId] = derived
+				indexPeople(nextPeople, [
+					...derived.parents,
+					...derived.children,
+					...derived.siblings,
+					...derived.spouses,
+					...derived.formerSpouses,
+				])
 			}
+
+			peopleById.value = nextPeople
 			natalByPersonId.value = nextNatal
 		} catch (e) {
 			console.error('Failed to load family detail', e)
