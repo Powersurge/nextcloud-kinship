@@ -132,7 +132,7 @@ async function onSaved(saved: Record<string, unknown>) {
 				<span class="citation-overview__label">Source</span>
 				<span class="citation-overview__value citation-overview__meta">
 					<BookOpenPageVariantOutline :size="16" />
-					<RouterLink :to="{ name: 'source-detail', params: { id: String(citation.sourceId) } }">
+					<RouterLink :to="{ name: 'source-detail', params: { id: String(citation.sourceId) } }" class="!underline">
 						{{ citation.source?.title ?? `Source #${citation.sourceId}` }}
 					</RouterLink>
 				</span>

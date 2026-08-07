@@ -294,6 +294,7 @@ function onSaved(saved: Source) {
 }
 
 .source-citations__title {
+	text-decoration: underline;
 	font-weight: 600;
 	color: var(--color-main-text);
 }
@@ -309,6 +310,7 @@ function onSaved(saved: Source) {
 }
 
 .source-citations__subject a {
+	text-decoration: underline;
 	color: var(--color-main-text);
 }
 
