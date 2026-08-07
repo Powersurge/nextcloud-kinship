@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
 	edit: []
 	delete: []
+	click: []
 }>()
 
 const { getTypeLabel, getMetaLine } = useSourceStore()
@@ -29,7 +30,12 @@ const metaLine = computed(() => getMetaLine(props.source as Source))
 </script>
 
 <template>
-	<div class="source-card">
+	<div
+		class="source-card"
+		role="button"
+		tabindex="0"
+		@click="emit('click')"
+		@keydown.enter.prevent="emit('click')">
 		<div class="source-card__body">
 			<div class="source-card__header">
 				<span v-if="typeLabel" class="source-card__badge">{{ typeLabel }}</span>
@@ -46,13 +52,20 @@ const metaLine = computed(() => getMetaLine(props.source as Source))
 
 			<p v-if="source.url" class="source-card__meta">
 				<LinkVariant :size="14" class="source-card__meta-icon" />
-				<a :href="source.url" target="_blank" rel="noopener noreferrer">
-					{{ source.url }}
-				</a>
+			<a
+				:href="source.url"
+				target="_blank"
+				rel="noopener noreferrer"
+				@click.stop>
+				{{ source.url }}
+			</a>
 			</p>
 		</div>
 
-		<NcActions v-if="canEdit || canDelete" class="source-card__actions">
+		<NcActions
+			v-if="canEdit || canDelete"
+			class="source-card__actions"
+			@click.stop>
 			<NcActionButton v-if="canEdit" close-after-click @click="emit('edit')">
 				<template #icon>
 					<Pencil :size="20" />
@@ -79,6 +92,15 @@ const metaLine = computed(() => getMetaLine(props.source as Source))
 	border-radius: var(--border-radius-large, 8px);
 	padding: 12px 16px;
 	background-color: var(--color-main-background);
+	cursor: pointer;
+	transition: border-color .15s, box-shadow .15s;
+}
+
+.source-card:hover,
+.source-card:focus-visible {
+	border-color: var(--color-primary-element);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+	outline: none;
 }
 
 .source-card__header {

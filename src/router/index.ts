@@ -54,6 +54,18 @@ const routes = [
 		component: () => import('../views/Sources.vue'),
 	},
 	{
+		path: '/sources/:id',
+		name: 'source-detail',
+		component: () => import('../views/source/Detail.vue'),
+		props: true,
+	},
+	{
+		path: '/citations/:id',
+		name: 'citation-detail',
+		component: () => import('../views/citation/Detail.vue'),
+		props: true,
+	},
+	{
 		path: '/tree',
 		name: 'family-tree',
 		component: () => import('../views/FamilyTree.vue'),

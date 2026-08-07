@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { NcButton, NcEmptyContent, NcLoadingIcon } from '@nextcloud/vue'
 import BookOpenPageVariantOutline from 'vue-material-design-icons/BookOpenPageVariantOutline.vue'
@@ -12,6 +13,7 @@ import { showError } from '@nextcloud/dialogs'
 import { showDeleteConfirmationDialog } from '@/utils/dialogs.ts'
 import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
+const router = useRouter()
 const { canAddSources, canEdit, canDelete } = storeToRefs(usePermissionsStore())
 
 const sources = ref<Source[]>([])
@@ -29,6 +31,10 @@ async function loadSources() {
 	} finally {
 		loading.value = false
 	}
+}
+
+function openSource(source: Source) {
+	router.push({ name: 'source-detail', params: { id: String(source.id) } })
 }
 
 function openCreate() {
@@ -99,6 +105,7 @@ onMounted(loadSources)
 				:source="source"
 				:can-edit="canEdit"
 				:can-delete="canDelete"
+				@click="openSource(source)"
 				@edit="openEdit(source)"
 				@delete="deleteSource(source)" />
 		</div>

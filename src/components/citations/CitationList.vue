@@ -92,9 +92,11 @@ async function onDelete(citation: Citation) {
 				:key="citation.id"
 				class="citation-list__item">
 				<div class="citation-list__main">
-					<div class="citation-list__title">
+					<RouterLink
+						class="citation-list__title"
+						:to="{ name: 'citation-detail', params: { id: String(citation.id) } }">
 						{{ citation.source?.title ?? `Source #${citation.sourceId}` }}
-					</div>
+					</RouterLink>
 					<div v-if="citation.detail" class="citation-list__detail">
 						{{ citation.detail }}
 					</div>
@@ -181,8 +183,14 @@ async function onDelete(citation: Citation) {
 }
 
 .citation-list__title {
+	display: block;
 	font-size: 0.85rem;
 	font-weight: 500;
+	color: var(--color-main-text);
+}
+
+.citation-list__title:hover {
+	text-decoration: underline;
 }
 
 .citation-list__detail,

@@ -12,6 +12,11 @@ export async function fetchCitations(params: CitationsQueryParams): Promise<Cita
 	return data.citations ?? []
 }
 
+export async function fetchCitation(id: number): Promise<Citation> {
+	const { data } = await axios.get(apiUrl(`/citations/${id}`))
+	return data
+}
+
 export async function createCitation(payload: unknown): Promise<Citation> {
 	const { data } = await axios.post(apiUrl('/citations'), { data: payload })
 	return data
