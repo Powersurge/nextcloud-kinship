@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import HumanMaleFemaleChild from 'vue-material-design-icons/HumanMaleFemaleChild.vue'
+import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 
 const props = withDefaults(defineProps<{
 	family: Record<string, any>
@@ -23,6 +24,12 @@ const name = computed(() => props.family.name || 'Unnamed family')
 const typeLabel = computed(() =>
 	props.family.type ? (typeLabels[props.family.type] ?? props.family.type) : '',
 )
+const coverUrl = computed(() => {
+	const fileId = props.family.photoFileId
+	return typeof fileId === 'number' && fileId > 0
+		? mediaPreviewUrl(fileId, 168)
+		: null
+})
 </script>
 
 <template>
@@ -33,7 +40,12 @@ const typeLabel = computed(() =>
 		@click="emit('click')"
 		@keydown.enter.prevent="emit('click')">
 		<div class="family-card__icon" aria-hidden="true">
-			<HumanMaleFemaleChild :size="28" />
+			<img
+				v-if="coverUrl"
+				:src="coverUrl"
+				:alt="name"
+				class="family-card__cover">
+			<HumanMaleFemaleChild v-else :size="28" />
 		</div>
 
 		<div class="family-card__body">
@@ -80,9 +92,16 @@ const typeLabel = computed(() =>
 	justify-content: center;
 	width: 48px;
 	height: 48px;
+	overflow: hidden;
 	border-radius: var(--border-radius-large, 8px);
 	background: var(--color-background-dark);
 	color: var(--color-primary-element);
+}
+
+.family-card__cover {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .family-card__body {

@@ -35,6 +35,7 @@ class Version0002Date20260718000000 extends SimpleMigrationStep {
 			$table->addColumn('name', 'string', ['length' => 255, 'notnull' => false]);
 			$table->addColumn('type', 'string', ['length' => 32, 'notnull' => false]);
 			$table->addColumn('description', 'text', ['notnull' => false]);
+			$table->addColumn('photo_file_id', 'integer', [ 'notnull' => false,  'unsigned' => true]);
 			$table->addColumn('is_derived', 'boolean', ['notnull' => false, 'default' => true]);
 			$table->addColumn('owner_uid', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_by', 'string', ['length' => 64, 'notnull' => false]);

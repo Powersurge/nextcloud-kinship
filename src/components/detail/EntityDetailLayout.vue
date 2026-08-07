@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
 	title: string
 	subtitle?: string
 	avatarUrl?: string
+	coverUrl?: string
 	backTo: string
 	backLabel?: string
 	tabs: DetailTab[]
@@ -61,6 +62,12 @@ function selectTab(id: string) {
 		</header>
 
 		<div class="entity-detail__content">
+			<slot name="cover">
+				<div v-if="coverUrl" class="w-full h-52 overflow-hidden !mb-6 rounded-lg">
+					<img :src="coverUrl" class="object-center">
+				</div>
+			</slot>
+
 			<slot name="hero" />
 
 			<div class="entity-detail__content-header">

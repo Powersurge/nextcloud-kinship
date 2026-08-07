@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import SourceForm from '../forms/SourceForm.vue'
+import MediaSection from '@/components/media/MediaSection.vue'
 import { createSource, updateSource } from '@/api/sources.ts'
 import type { Source } from '@/types'
 import { getErrorMessage, getFieldErrors, type FieldErrors } from '@/utils/api-errors.ts'
@@ -22,6 +23,7 @@ const fieldErrors = ref<FieldErrors | null>(null)
 
 const isEdit = computed(() => Boolean(props.source?.id))
 const title = computed(() => (isEdit.value ? 'Edit source' : 'New source'))
+const sourceId = computed(() => (typeof props.source?.id === 'number' ? props.source.id : null))
 
 watch(
 	() => props.open,
@@ -82,6 +84,13 @@ async function onSubmit(data: Record<string, unknown>) {
 				:field-errors="fieldErrors"
 				@submit="onSubmit"
 				@cancel="close" />
+
+			<MediaSection
+				v-if="sourceId"
+				class="source-dialog-media"
+				subject-type="source"
+				:subject-id="sourceId"
+				:show-primary-action="false" />
 		</div>
 	</NcDialog>
 </template>
@@ -89,5 +98,11 @@ async function onSubmit(data: Record<string, unknown>) {
 <style>
 .source-dialog-content {
 	padding: 10px 0;
+}
+
+.source-dialog-media {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border);
 }
 </style>

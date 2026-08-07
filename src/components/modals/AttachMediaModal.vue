@@ -46,6 +46,11 @@ const selectedAlbum = computed({
 	},
 })
 
+const canSetPrimary = computed(() => {
+	const type = attachContext.value?.subjectType
+	return type === 'person' || type === 'family' || type === 'event'
+})
+
 const pendingCount = computed(() => {
 	const ctx = attachContext.value
 	if (!ctx) {
@@ -83,12 +88,13 @@ async function onSubmit() {
 	error.value = ''
 
 	try {
+		const setPrimary = canSetPrimary.value && isPrimary.value
 		const meta = {
 			subjectType: ctx.subjectType,
 			subjectId: ctx.subjectId,
 			albumId: albumId.value,
 			caption: caption.value || null,
-			isPrimary: isPrimary.value,
+			isPrimary: setPrimary,
 		}
 
 		if (ctx.fileIds?.length) {
@@ -96,7 +102,7 @@ async function onSubmit() {
 				const media = await createMedia({
 					fileId,
 					...meta,
-					isPrimary: isPrimary.value && fileId === ctx.fileIds[0],
+					isPrimary: setPrimary && fileId === ctx.fileIds[0],
 				})
 				upsertMedia(media)
 			}
@@ -106,7 +112,7 @@ async function onSubmit() {
 			for (let i = 0; i < ctx.files.length; i++) {
 				const media = await uploadMedia(ctx.files[i], {
 					...meta,
-					isPrimary: isPrimary.value && i === 0,
+					isPrimary: setPrimary && i === 0,
 				})
 				upsertMedia(media)
 			}
@@ -154,10 +160,11 @@ async function onSubmit() {
 			</div>
 
 			<NcCheckboxRadioSwitch
+				v-if="canSetPrimary"
 				v-model="isPrimary"
 				type="switch"
 				:disabled="saving">
-				Set as primary photo
+				Set as primary photo / cover
 			</NcCheckboxRadioSwitch>
 
 			<p

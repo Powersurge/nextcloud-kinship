@@ -32,6 +32,10 @@ const props = withDefaults(defineProps<{
 	showPrimaryAction: true,
 })
 
+const emit = defineEmits<{
+	'primary-changed': [fileId: number | null]
+}>()
+
 const mediaStore = useMediaStore()
 const albumStore = useAlbumStore()
 const { mediaBySubject } = storeToRefs(mediaStore)
@@ -155,8 +159,10 @@ async function onDeleteMedia(media: Media) {
 
 async function onTogglePrimary(media: Media) {
 	try {
-		const updated = await updateMedia(media.id, { isPrimary: !media.isPrimary })
+		const nextPrimary = !media.isPrimary
+		const updated = await updateMedia(media.id, { isPrimary: nextPrimary })
 		upsertMedia(updated)
+		emit('primary-changed', nextPrimary ? updated.fileId : null)
 	} catch (e) {
 		showError('Failed to update primary photo')
 		console.error(e)

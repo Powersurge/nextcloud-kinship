@@ -16,6 +16,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setDescription(?string $description)
  * @method bool getIsDerived()
  * @method void setIsDerived(bool $isDerived)
+ * @method ?int getPhotoFileId()
+ * @method void setPhotoFileId(?int $photoFileId)
  * @method ?string getOwnerUid()
  * @method void setOwnerUid(?string $ownerUid)
  * @method ?string getCreatedBy()
@@ -30,6 +32,7 @@ class Family extends Entity implements JsonSerializable {
 	protected ?string $type = null;
 	protected ?string $description = null;
 	protected bool $isDerived = true;
+	protected ?int $photoFileId = null;
 	protected ?string $ownerUid = null;
 	protected ?string $createdBy = null;
 	protected ?int $createdAt = null;
@@ -37,6 +40,7 @@ class Family extends Entity implements JsonSerializable {
 
 	public function __construct() {
 		$this->addType('isDerived', 'boolean');
+		$this->addType('photoFileId', 'integer');
 		$this->addType('createdAt', 'integer');
 		$this->addType('updatedAt', 'integer');
 	}
@@ -48,6 +52,7 @@ class Family extends Entity implements JsonSerializable {
 			'type' => $this->type,
 			'description' => $this->description,
 			'isDerived' => $this->isDerived,
+			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,
 			'createdBy' => $this->createdBy,
 			'createdAt' => $this->createdAt,

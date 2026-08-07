@@ -23,7 +23,7 @@ class AlbumRequest extends FormRequest {
 			'title.required' => 'Title is required',
 			'title.max' => 'Title must be 255 characters or fewer',
 			'ownerType.required' => 'Owner type is required',
-			'ownerType.in' => 'Albums can only belong to a person, family, or event',
+			'ownerType.in' => 'Albums can only belong to a person, family, event, source, or citation',
 			'ownerId.required' => 'Owner is required',
 			'ownerId.min' => 'Owner is required',
 		];

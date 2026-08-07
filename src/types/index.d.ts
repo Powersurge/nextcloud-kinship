@@ -68,6 +68,15 @@ export type PersonFamily = {
 	parents: FamilyRelationship[]
 }
 
+export interface Family {
+	id: number;
+	name: string | null;
+	type: string | null;
+	description: string | null;
+	isDerived?: boolean;
+	photoFileId?: number | null;
+}
+
 export interface Event {
 	id?: number | null;
 	type: string;
@@ -78,6 +87,7 @@ export interface Event {
 	place?: PlaceSummary | null;
 	customEventId?: number | null;
 	familyId?: number | null;
+	photoFileId?: number | null;
 }
 
 export interface PaginatedResult<T> {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Service;
 
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\Citation;
 use OCA\Kinship\Db\CitationMapper;
 use OCA\Kinship\Db\Source;
@@ -19,6 +20,8 @@ class CitationService {
 	public function __construct(
 		private CitationMapper $mapper,
 		private SourceMapper $sourceMapper,
+		private MediaService $mediaService,
+		private AlbumService $albumService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -98,19 +101,32 @@ class CitationService {
 	}
 
 	public function delete(int $id): void {
-		$this->mapper->delete($this->mapper->find($id));
+		$citation = $this->mapper->find($id);
+		$this->deleteMediaForCitation($citation->getId());
+		$this->mapper->delete($citation);
 	}
 
 	public function deleteBySource(int $sourceId): void {
+		foreach ($this->mapper->findBySource($sourceId) as $citation) {
+			$this->deleteMediaForCitation($citation->getId());
+		}
 		$this->mapper->deleteBySource($sourceId);
 	}
 
 	public function deleteBySubject(string $subjectType, int $subjectId): void {
+		foreach ($this->mapper->findBySubject($subjectType, $subjectId) as $citation) {
+			$this->deleteMediaForCitation($citation->getId());
+		}
 		$this->mapper->deleteBySubject($subjectType, $subjectId);
 	}
 
 	public function countBySource(int $sourceId): int {
 		return $this->mapper->countBySource($sourceId);
+	}
+
+	private function deleteMediaForCitation(int $citationId): void {
+		$this->albumService->deleteByOwner(SubjectType::CITATION, $citationId);
+		$this->mediaService->deleteBySubject(SubjectType::CITATION, $citationId);
 	}
 
 	/**

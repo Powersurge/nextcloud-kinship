@@ -48,7 +48,7 @@ class Version0004Date20260718000000 extends SimpleMigrationStep {
 			$table->addColumn('date_end_year', 'integer', ['length' => 4, 'notnull' => false]);
 			$table->addColumn('date_end_month', 'integer', ['length' => 2, 'notnull' => false]);
 			$table->addColumn('date_end_day', 'integer', ['length' => 2, 'notnull' => false]);
-
+			$table->addColumn('photo_file_id', 'integer', [ 'notnull' => false, 'unsigned' => true]);
 			$table->addColumn('family_id', 'integer', ['notnull' => false, 'unsigned' => true]);
 			$table->addColumn('owner_uid', 'string', ['length' => 64, 'notnull' => false]);
 			$table->addColumn('created_by', 'string', ['length' => 64, 'notnull' => false]);

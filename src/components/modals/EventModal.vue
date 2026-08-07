@@ -76,8 +76,7 @@ async function onSubmit(data: Record<string, unknown>) {
 				v-if="eventId"
 				class="event-dialog-media"
 				subject-type="event"
-				:subject-id="eventId"
-				:show-primary-action="false" />
+				:subject-id="eventId" />
 		</div>
 	</NcDialog>
 </template>

@@ -6,6 +6,8 @@ namespace OCA\Kinship\Service;
 
 use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\AlbumMapper;
+use OCA\Kinship\Db\EventMapper;
+use OCA\Kinship\Db\FamilyMapper;
 use OCA\Kinship\Db\Media;
 use OCA\Kinship\Db\MediaMapper;
 use OCA\Kinship\Db\PersonMapper;
@@ -21,6 +23,8 @@ class MediaService {
 		private MediaMapper $mapper,
 		private AlbumMapper $albumMapper,
 		private PersonMapper $personMapper,
+		private FamilyMapper $familyMapper,
+		private EventMapper $eventMapper,
 		private FilesService $filesService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
@@ -131,7 +135,7 @@ class MediaService {
 		if ($becamePrimary) {
 			$this->applyPrimary($media);
 		} elseif ($clearedPrimary) {
-			$this->clearPersonPhotoIfMatches($media);
+			$this->clearCoverPhotoIfMatches($media);
 		}
 
 		return $this->hydrateFiles([$this->mapper->find($media->getId())])[0];
@@ -141,7 +145,7 @@ class MediaService {
 		$media = $this->mapper->find($id);
 		$this->mapper->clearCoverReferences($id);
 		if ($media->getIsPrimary()) {
-			$this->clearPersonPhotoIfMatches($media);
+			$this->clearCoverPhotoIfMatches($media);
 		}
 		$this->mapper->delete($media);
 	}
@@ -175,24 +179,66 @@ class MediaService {
 			$media->getId(),
 		);
 
-		if ($media->getSubjectType() === SubjectType::PERSON) {
-			$person = $this->personMapper->find($media->getSubjectId());
-			$person->setPhotoFileId($media->getFileId());
-			$person->setUpdatedAt($this->timeFactory->getTime());
-			$this->personMapper->update($person);
-		}
+		$this->setCoverPhoto($media->getSubjectType(), $media->getSubjectId(), $media->getFileId());
 	}
 
-	private function clearPersonPhotoIfMatches(Media $media): void {
-		if ($media->getSubjectType() !== SubjectType::PERSON) {
+	private function clearCoverPhotoIfMatches(Media $media): void {
+		$type = $media->getSubjectType();
+		$id = $media->getSubjectId();
+		$fileId = $media->getFileId();
+
+		if ($type === SubjectType::PERSON) {
+			$person = $this->personMapper->find($id);
+			if ($person->getPhotoFileId() === $fileId) {
+				$person->setPhotoFileId(null);
+				$person->setUpdatedAt($this->timeFactory->getTime());
+				$this->personMapper->update($person);
+			}
 			return;
 		}
 
-		$person = $this->personMapper->find($media->getSubjectId());
-		if ($person->getPhotoFileId() === $media->getFileId()) {
-			$person->setPhotoFileId(null);
+		if ($type === SubjectType::FAMILY) {
+			$family = $this->familyMapper->find($id);
+			if ($family->getPhotoFileId() === $fileId) {
+				$family->setPhotoFileId(null);
+				$family->setUpdatedAt($this->timeFactory->getTime());
+				$this->familyMapper->update($family);
+			}
+			return;
+		}
+
+		if ($type === SubjectType::EVENT) {
+			$event = $this->eventMapper->find($id);
+			if ($event->getPhotoFileId() === $fileId) {
+				$event->setPhotoFileId(null);
+				$event->setUpdatedAt($this->timeFactory->getTime());
+				$this->eventMapper->update($event);
+			}
+		}
+	}
+
+	private function setCoverPhoto(string $subjectType, int $subjectId, int $fileId): void {
+		if ($subjectType === SubjectType::PERSON) {
+			$person = $this->personMapper->find($subjectId);
+			$person->setPhotoFileId($fileId);
 			$person->setUpdatedAt($this->timeFactory->getTime());
 			$this->personMapper->update($person);
+			return;
+		}
+
+		if ($subjectType === SubjectType::FAMILY) {
+			$family = $this->familyMapper->find($subjectId);
+			$family->setPhotoFileId($fileId);
+			$family->setUpdatedAt($this->timeFactory->getTime());
+			$this->familyMapper->update($family);
+			return;
+		}
+
+		if ($subjectType === SubjectType::EVENT) {
+			$event = $this->eventMapper->find($subjectId);
+			$event->setPhotoFileId($fileId);
+			$event->setUpdatedAt($this->timeFactory->getTime());
+			$this->eventMapper->update($event);
 		}
 	}
 

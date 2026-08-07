@@ -20,6 +20,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setPlaceId(?int $placeId)
  * @method ?int getFamilyId()
  * @method void setFamilyId(?int $familyId)
+ * @method ?int getPhotoFileId()
+ * @method void setPhotoFileId(?int $photoFileId)
  * @method ?string getOwnerUid()
  * @method void setOwnerUid(?string $ownerUid)
  * @method ?string getCreatedBy()
@@ -46,6 +48,7 @@ class Event extends Entity implements JsonSerializable {
 	protected ?string $description = null;
 	protected ?int $placeId = null;
 	protected ?int $familyId = null;
+	protected ?int $photoFileId = null;
 	protected ?string $ownerUid = null;
 	protected ?string $createdBy = null;
 	protected ?int $createdAt = null;
@@ -62,6 +65,7 @@ class Event extends Entity implements JsonSerializable {
 		$this->addType('customEventId', 'integer');
 		$this->addType('placeId', 'integer');
 		$this->addType('familyId', 'integer');
+		$this->addType('photoFileId', 'integer');
 		$this->addType('createdAt', 'integer');
 		$this->addType('updatedAt', 'integer');
 	}
@@ -84,6 +88,7 @@ class Event extends Entity implements JsonSerializable {
 			'place' => $this->place,
 			'date' => $this->getDate(),
 			'familyId' => $this->familyId,
+			'photoFileId' => $this->photoFileId,
 			'ownerUid' => $this->ownerUid,
 			'createdBy' => $this->createdBy,
 			'createdAt' => $this->createdAt,

@@ -8,7 +8,9 @@ import FamilyMembersTree from '@/components/families/FamilyMembersTree.vue'
 import FamilyModal from '@/components/modals/FamilyModal.vue'
 import MediaSection from '@/components/media/MediaSection.vue'
 import { useFamilyDetailStore } from '@/stores/use-family-detail-store.ts'
+import { useMediaStore } from '@/stores/use-media-store.ts'
 import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
+import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 
 const props = defineProps<{
 	id: string | number
@@ -40,6 +42,39 @@ const subtitle = computed(() => {
 	const label = typeLabels[type] ?? type
 	return family.value?.isDerived ? `${label} · Auto-generated` : label
 })
+
+const coverUrl = computed(() => {
+	const fileId = family.value?.photoFileId
+	return typeof fileId === 'number' && fileId > 0
+		? mediaPreviewUrl(fileId, 1200)
+		: undefined
+})
+
+function onPrimaryChanged(fileId: number | null) {
+	if (!family.value) {
+		return
+	}
+	family.value = { ...family.value, photoFileId: fileId }
+}
+
+const mediaStore = useMediaStore()
+watch(
+	() => {
+		if (!familyId.value) {
+			return null
+		}
+		return mediaStore.getMedia('family', familyId.value).find((item) => item.isPrimary)?.fileId ?? null
+	},
+	(fileId) => {
+		if (!family.value) {
+			return
+		}
+		const current = typeof family.value.photoFileId === 'number' ? family.value.photoFileId : null
+		if (current !== fileId) {
+			family.value = { ...family.value, photoFileId: fileId }
+		}
+	},
+)
 
 const tabs = [
 	{ id: 'overview', label: 'Overview' },
@@ -81,6 +116,7 @@ async function onSaved() {
 	<EntityDetailLayout
 		:title="title"
 		:subtitle="subtitle"
+		:cover-url="coverUrl"
 		back-to="/families"
 		back-label="Back to families"
 		:tabs="tabs"
@@ -130,7 +166,7 @@ async function onSaved() {
 			v-else-if="activeTab === 'media' && familyId"
 			subject-type="family"
 			:subject-id="familyId"
-			:show-primary-action="false" />
+			@primary-changed="onPrimaryChanged" />
 	</EntityDetailLayout>
 
 	<FamilyModal

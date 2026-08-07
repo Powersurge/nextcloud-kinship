@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { NcDialog, NcNoteCard } from '@nextcloud/vue'
 import CitationForm from '../forms/CitationForm.vue'
+import MediaSection from '@/components/media/MediaSection.vue'
 import { createCitation, updateCitation } from '@/api/citations.ts'
 import { getErrorMessage, getFieldErrors, type FieldErrors } from '@/utils/api-errors.ts'
 
@@ -21,6 +22,7 @@ const fieldErrors = ref<FieldErrors | null>(null)
 
 const isEdit = computed(() => Boolean(props.citation?.id))
 const title = computed(() => (isEdit.value ? 'Edit citation' : 'Add citation'))
+const citationId = computed(() => (typeof props.citation?.id === 'number' ? props.citation.id : null))
 
 watch(
 	() => props.open,
@@ -87,6 +89,13 @@ async function onSubmit(data: Record<string, unknown>) {
 				:field-errors="fieldErrors"
 				@submit="onSubmit"
 				@cancel="close" />
+
+			<MediaSection
+				v-if="citationId"
+				class="citation-dialog-media"
+				subject-type="citation"
+				:subject-id="citationId"
+				:show-primary-action="false" />
 		</div>
 	</NcDialog>
 </template>
@@ -94,5 +103,11 @@ async function onSubmit(data: Record<string, unknown>) {
 <style>
 .citation-dialog-content {
 	padding: 10px 0;
+}
+
+.citation-dialog-media {
+	margin-top: 1rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--color-border);
 }
 </style>

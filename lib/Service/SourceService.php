@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OCA\Kinship\Service;
 
+use OCA\Kinship\Constants\SubjectType;
 use OCA\Kinship\Db\Source;
 use OCA\Kinship\Db\SourceMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -17,6 +18,8 @@ class SourceService {
 	public function __construct(
 		private SourceMapper $mapper,
 		private CitationService $citationService,
+		private MediaService $mediaService,
+		private AlbumService $albumService,
 		private IUserSession $userSession,
 		private ITimeFactory $timeFactory,
 	) {
@@ -92,6 +95,8 @@ class SourceService {
 	public function delete(int $id): void {
 		$source = $this->mapper->find($id);
 		$this->citationService->deleteBySource($id);
+		$this->albumService->deleteByOwner(SubjectType::SOURCE, $id);
+		$this->mediaService->deleteBySubject(SubjectType::SOURCE, $id);
 		$this->mapper->delete($source);
 	}
 }

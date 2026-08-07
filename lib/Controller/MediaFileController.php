@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OCA\Kinship\Controller;
 
 use OCA\Kinship\Constants\PermissionRole;
+use OCA\Kinship\Db\EventMapper;
+use OCA\Kinship\Db\FamilyMapper;
 use OCA\Kinship\Db\MediaMapper;
 use OCA\Kinship\Db\PersonMapper;
 use OCA\Kinship\Service\FilesService;
@@ -34,6 +36,8 @@ class MediaFileController extends Controller {
 		private FilesService $filesService,
 		private MediaMapper $mediaMapper,
 		private PersonMapper $personMapper,
+		private FamilyMapper $familyMapper,
+		private EventMapper $eventMapper,
 		private IPreview $previewManager,
 	) {
 		parent::__construct($appName, $request);
@@ -140,6 +144,16 @@ class MediaFileController extends Controller {
 		$person = $this->personMapper->findFirstByPhotoFileId($fileId);
 		if ($person !== null) {
 			return $person->getOwnerUid() ?? $person->getCreatedBy();
+		}
+
+		$family = $this->familyMapper->findFirstByPhotoFileId($fileId);
+		if ($family !== null) {
+			return $family->getOwnerUid() ?? $family->getCreatedBy();
+		}
+
+		$event = $this->eventMapper->findFirstByPhotoFileId($fileId);
+		if ($event !== null) {
+			return $event->getOwnerUid() ?? $event->getCreatedBy();
 		}
 
 		return null;

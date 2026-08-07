@@ -15,6 +15,7 @@ final class SubjectType {
 	public const RELATIONSHIP = 'relationship';
 	public const FAMILY = 'family';
 	public const SOURCE = 'source';
+	public const CITATION = 'citation';
 	public const PLACE = 'place';
 	public const CLAIM = 'claim';
 
@@ -25,6 +26,7 @@ final class SubjectType {
 		self::RELATIONSHIP,
 		self::FAMILY,
 		self::SOURCE,
+		self::CITATION,
 		self::PLACE,
 		self::CLAIM,
 	];
@@ -43,6 +45,15 @@ final class SubjectType {
 		self::PERSON,
 		self::FAMILY,
 		self::EVENT,
+		self::SOURCE,
+		self::CITATION,
+	];
+
+	/** Subjects whose primary media syncs to photo_file_id cover. */
+	public const PRIMARY_PHOTO_OWNERS = [
+		self::PERSON,
+		self::FAMILY,
+		self::EVENT,
 	];
 
 	public static function isValid(string $type): bool {
@@ -55,5 +66,9 @@ final class SubjectType {
 
 	public static function isAlbumOwner(string $type): bool {
 		return in_array($type, self::ALBUM_OWNERS, true);
+	}
+
+	public static function isPrimaryPhotoOwner(string $type): bool {
+		return in_array($type, self::PRIMARY_PHOTO_OWNERS, true);
 	}
 }

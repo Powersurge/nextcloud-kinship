@@ -74,6 +74,23 @@ class EventMapper extends QBMapper {
 	}
 
 	/**
+	 * First event using this Nextcloud file as primary photo (for proxy authorization).
+	 */
+	public function findFirstByPhotoFileId(int $fileId): ?Event {
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('*')
+			->from($this->getTableName())
+			->where($qb->expr()->eq('photo_file_id', $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT)))
+			->setMaxResults(1);
+
+		try {
+			return $this->findEntity($qb);
+		} catch (DoesNotExistException) {
+			return null;
+		}
+	}
+
+	/**
 	 * Find events for a family.
 	 *
 	 * @return Event[]

@@ -13,6 +13,8 @@ import { fetchEvent } from '@/api/events.ts'
 import type { Event } from '@/types'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
+import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
+import { useMediaStore } from '@/stores/use-media-store.ts'
 import { usePermissionsStore } from '@/stores/use-permissions-store.ts'
 
 const { canEdit } = storeToRefs(usePermissionsStore())
@@ -50,6 +52,39 @@ const title = computed(() => event.value?.title || typeLabel.value || 'Event')
 const subtitle = computed(() => typeLabel.value)
 const when = computed(() => dateDisplay(event.value?.date))
 const where = computed(() => placeDisplay(event.value?.place))
+
+const coverUrl = computed(() => {
+	const fileId = event.value?.photoFileId
+	return typeof fileId === 'number' && fileId > 0
+		? mediaPreviewUrl(fileId, 1200)
+		: undefined
+})
+
+function onPrimaryChanged(fileId: number | null) {
+	if (!event.value) {
+		return
+	}
+	event.value = { ...event.value, photoFileId: fileId }
+}
+
+const mediaStore = useMediaStore()
+watch(
+	() => {
+		if (!eventId.value) {
+			return null
+		}
+		return mediaStore.getMedia('event', eventId.value).find((item) => item.isPrimary)?.fileId ?? null
+	},
+	(fileId) => {
+		if (!event.value) {
+			return
+		}
+		const current = event.value.photoFileId ?? null
+		if (current !== fileId) {
+			event.value = { ...event.value, photoFileId: fileId }
+		}
+	},
+)
 
 const tabs = [
 	{ id: 'details', label: 'Details' },
@@ -92,7 +127,10 @@ function openEdit() {
 }
 
 async function onSaved(saved: Record<string, unknown>) {
-	event.value = saved as Event
+	event.value = {
+		...saved as Event,
+		photoFileId: (saved as Event).photoFileId ?? event.value?.photoFileId ?? null,
+	}
 }
 </script>
 
@@ -100,6 +138,7 @@ async function onSaved(saved: Record<string, unknown>) {
 	<EntityDetailLayout
 		:title="title"
 		:subtitle="subtitle"
+		:cover-url="coverUrl"
 		back-to="/events"
 		back-label="Back to events"
 		:tabs="tabs"
@@ -164,7 +203,7 @@ async function onSaved(saved: Record<string, unknown>) {
 			v-else-if="activeTab === 'media' && eventId"
 			subject-type="event"
 			:subject-id="eventId"
-			:show-primary-action="false" />
+			@primary-changed="onPrimaryChanged" />
 	</EntityDetailLayout>
 
 	<EventModal

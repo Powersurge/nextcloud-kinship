@@ -7,6 +7,7 @@ import MapMarkerOutline from 'vue-material-design-icons/MapMarkerOutline.vue'
 import CalendarOutline from 'vue-material-design-icons/CalendarOutline.vue'
 import { dateDisplay } from '@/utils/date.ts'
 import { placeDisplay } from '@/utils/place.ts'
+import { mediaPreviewUrl } from '@/utils/mediaPreview.ts'
 
 const props = withDefaults(defineProps<{
 	event: Record<string, any>
@@ -36,6 +37,12 @@ const typeLabel = computed(() => typeLabels[props.event.type] ?? props.event.typ
 const heading = computed(() => props.event.title || typeLabel.value)
 const when = computed(() => dateDisplay(props.event.date))
 const where = computed(() => placeDisplay(props.event.place))
+const coverUrl = computed(() => {
+	const fileId = props.event.photoFileId
+	return typeof fileId === 'number' && fileId > 0
+		? mediaPreviewUrl(fileId, 168)
+		: null
+})
 </script>
 
 <template>
@@ -46,7 +53,19 @@ const where = computed(() => placeDisplay(props.event.place))
 		tabindex="0"
 		@click="emit('click')"
 		@keydown.enter.prevent="emit('click')">
-		<div class="event-card__accent" aria-hidden="true" />
+		<div
+			v-if="coverUrl"
+			class="event-card__cover"
+			aria-hidden="true">
+			<img
+				:src="coverUrl"
+				:alt="heading"
+				class="event-card__cover-img">
+		</div>
+		<div
+			v-else
+			class="event-card__accent"
+			aria-hidden="true" />
 
 		<div class="event-card__body">
 			<div class="event-card__top">
@@ -108,6 +127,19 @@ const where = computed(() => placeDisplay(props.event.place))
 .event-card__accent {
 	flex: 0 0 4px;
 	background: var(--color-primary-element);
+}
+
+.event-card__cover {
+	flex: 0 0 100px;
+	align-self: stretch;
+	overflow: hidden;
+	background: var(--color-background-dark);
+}
+
+.event-card__cover-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
 }
 
 .event-card--birth .event-card__accent {
