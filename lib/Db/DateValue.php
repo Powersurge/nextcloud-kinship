@@ -85,22 +85,19 @@ class DateValue implements JsonSerializable {
 	}
 
 	public function isEmpty(): bool {
+		if (empty($this->kind) || empty($this->precision)) {
+			return true;
+		}
+
 		if ($this->kind === self::KIND_UNKNOWN) {
 			return true;
 		}
 
-		if ($this->kind === null) {
+		if (empty($this->start_year)) {
 			return true;
 		}
 
-		return $this->kind === null
-			&& $this->precision === null
-			&& $this->start_year === null
-			&& $this->start_month === null
-			&& $this->start_day === null
-			&& $this->end_year === null
-			&& $this->end_month === null
-			&& $this->end_day === null;
+		return false;
 	}
 
 	/**
