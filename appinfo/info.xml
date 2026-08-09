@@ -14,10 +14,10 @@
 Designed as an extensible genealogy platform.</description>
 	<version>0.1.1</version>
 	<licence>AGPL-3.0-or-later</licence>
-	<author mail="hello@mahmudz.dev" homepage="https://mahmudz.dev">Mahmudul Hasan</author>
+	<author mail="pwrsurge65@gmail.com" homepage="https://christophernewell.com">Christopher Newell</author>
 	<namespace>Kinship</namespace>
 	<category>social</category>
-	<bugs>https://github.com/mahmudz/kinship</bugs>
+	<bugs>https://github.com/Powersurge/nextcloud-kinship</bugs>
 	<dependencies>
 		<nextcloud min-version="31" max-version="34"/>
 	</dependencies>
