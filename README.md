@@ -34,7 +34,7 @@ Preserve people, relationships, events, and evidence on your own server.
 
 ```bash
 cd /path/to/nextcloud/apps
-git clone https://github.com/mahmudz/nextcloud-kinship.git kinship
+git clone https://github.com/Powersurge/nextcloud-kinship.git kinship
 cd kinship
 composer install --no-dev
 npm ci
