@@ -65,7 +65,7 @@ No geocoding traffic is sent unless an admin enables and uses place lookup. Medi
 ## Development
 
 ```bash
-git clone https://github.com/mahmudz/nextcloud-kinship.git kinship
+git clone https://github.com/Powersurge/nextcloud-kinship.git kinship
 cd kinship
 composer install
 npm install
