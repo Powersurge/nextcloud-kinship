@@ -1,222 +1,97 @@
 # Kinship
 
-Kinship is a genealogy and family history platform for Nextcloud.
+Kinship is a family management and genealogy app for Nextcloud.
 
-It provides a foundation for managing:
-
-- People
-- Families
-- Relationships
-- Events
-- Family timelines
-- Family trees
-
-Kinship is designed as a core platform that developers can extend with additional modules.
+Preserve people, relationships, events, and evidence on your own server.
 
 ## Features
 
-### Core
-
-- Person management
-- Family groups
-- Relationship tracking
-- Historical events
-- Timeline views
-- Family tree visualization
-
-### Import
-
-- GEDCOM import foundation
-
-### Developer Platform
-
-Kinship includes an extension framework for:
-
-- DNA analysis
-- Photo archives
-- Historical records
-- Research tools
-- AI genealogy assistants
+- **People and families** — manage individuals, family groups, and membership
+- **Relationships** — store parent, partner, and other links; derived relationships are computed from the graph
+- **Events and timelines** — record life events with participants; view a person timeline
+- **Family trees** — build a nested tree from parent relationships
+- **Places** — store locations; optional map lookup via Nominatim or Google Geocoding (admin-configurable)
+- **Evidence** — sources, citations, and facts for research workflows
+- **Media** — attach Nextcloud files and albums to genealogy records
+- **Permissions** — role-based access (owner, editor, contributor, viewer)
+- **Privacy controls** — living-person handling and an admin privacy threshold for unknown death dates
 
 ## Requirements
 
-- Nextcloud
-- PHP 8+
-- MariaDB / PostgreSQL / SQLite
+- Nextcloud **31–34**
+- PHP **8.1+**
+- A supported Nextcloud database (SQLite, MariaDB/MySQL, or PostgreSQL)
 
 ## Installation
 
-Clone into:
+### From the App Store (recommended)
 
+1. In Nextcloud, open **Apps**
+2. Search for **Kinship**
+3. Install and enable the app
 
-nextcloud/apps/kinship
-
-
-Enable the app:
-
-
-Settings → Apps → Kinship
-
-
-## Development
-
-Install dependencies:
-
-```
-composer install
-npm install
-```
-
-Build frontend:
-
-```
-npm run build
-```
-
-## API
-
-API base:
-
-
-/api/v1
-
-
-Available resources:
-
-
-- /people
-- /families
-- /relationships
-- /events
-- /tree
-- /import/gedcom
-
-
-## Extension Development
-
-See:
-
-
-docs/EXTENSIONS.md
-
-
-## License
-
-AGPL-3.0
-# Kinship
-
-A modern family management and genealogy platform for Nextcloud.
-
-## Overview
-
-Kinship is an open-source Nextcloud application for managing family information, genealogy, events, and shared memories.
-
-Unlike traditional genealogy software, Kinship is designed as a platform. The core application provides the fundamental building blocks for family management while allowing additional functionality to be added through extensions.
-
-## Features (v0.1)
-
-- People management
-- Family management
-- Relationship management
-- Family events
-- Timeline
-- Media attachments
-- Search
-- REST API
-- Role-based permissions
-
-## Planned Extensions
-
-- GEDCOM Import/Export
-- Interactive Family Tree
-- Calendar Synchronization
-- AI-assisted Record Extraction
-- DNA Integration
-- Historical Maps
-- Family Recipes
-- Memorial Pages
-- Reports
-- Dashboard Widgets
-
-## Architecture
-
-```
-People
-    │
-Relationships
-    │
-Families
-    │
-Events
-    │
-Media
-```
-
-The core remains intentionally lightweight. Advanced functionality is implemented as optional extensions.
-
-## Technology
-
-- PHP 8.2+
-- Nextcloud App Framework
-- Vue 3
-- Vite
-- Composer
-- PHPUnit
-
-## Development
-
-Clone the repository:
+### Manual install
 
 ```bash
-git clone https://github.com/Powersurge/Kinship.git
+cd /path/to/nextcloud/apps
+git clone https://github.com/mahmudz/nextcloud-kinship.git kinship
 cd kinship
+composer install --no-dev
+npm ci
+npm run build
+php occ app:enable kinship
 ```
 
-Install PHP dependencies:
+Then open **Kinship** from the Nextcloud navigation menu.
+
+## Configuration
+
+Admin settings are under **Administration settings → Kinship**:
+
+- **Privacy threshold** — age used when a death date is unknown to decide living-person privacy (default 110)
+- **Place lookup** — choose Nominatim or Google Geocoding, and set provider options
+
+## Privacy
+
+Genealogy data stays in your Nextcloud instance.
+
+Optional place lookup can send search text or coordinates to an external geocoder:
+
+- **Nominatim** (default base URL: OpenStreetMap Nominatim), or
+- **Google Geocoding**, if configured with an API key
+
+No geocoding traffic is sent unless an admin enables and uses place lookup. Media is stored as Nextcloud files; Kinship stores references, not a separate media silo.
+
+## Development
 
 ```bash
+git clone https://github.com/mahmudz/nextcloud-kinship.git kinship
+cd kinship
 composer install
-```
-
-Install JavaScript dependencies:
-
-```bash
 npm install
-```
-
-Build assets:
-
-```bash
 npm run build
 ```
 
-## Roadmap
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for project structure and contribution notes.
 
-### v0.1
-- Project foundation
-- People
-- Families
-- Relationships
-- Events
-- Timeline
+### Documentation
 
-### v0.2
-- Search
-- Notifications
-- Dashboard
-- Plugin SDK
+| Doc | Topic |
+| --- | --- |
+| [docs/API.md](docs/API.md) | REST API |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Planned work |
 
-### v1.0
-- Stable Extension API
-- Complete Documentation
-- Production Release
+### API
 
-## Contributing
+REST base path (relative to the Kinship app): `/api/v1`
 
-Contributions are welcome.
+Main resources include people, families, relationships, events, places, facts, sources, citations, media, albums, tree, and timeline.
 
-Please submit pull requests for bug fixes, documentation improvements, and new extensions.
+## Support
+
+- Bugs and feature requests: [GitHub Issues](https://github.com/mahmudz/nextcloud-kinship/issues)
+- Author: [Mahmudul Hasan](https://mahmudz.dev) (`hello@mahmudz.dev`)
 
 ## License
 
-GNU Affero General Public License v3.0
+[AGPL-3.0-or-later](https://www.gnu.org/licenses/agpl-3.0.html)
