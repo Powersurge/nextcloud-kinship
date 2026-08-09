@@ -89,8 +89,8 @@ Main resources include people, families, relationships, events, places, facts, s
 
 ## Support
 
-- Bugs and feature requests: [GitHub Issues](https://github.com/mahmudz/nextcloud-kinship/issues)
-- Author: [Mahmudul Hasan](https://mahmudz.dev) (`hello@mahmudz.dev`)
+- Bugs and feature requests: [GitHub Issues](https://github.com/Powersurge/nextcloud-kinship/issues)
+- Author: [Christopher Newell(https://christophernewell.com) (`pwrsurge65@gmail.com`)
 
 ## License
 
