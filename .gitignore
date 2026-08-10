@@ -11,3 +11,8 @@
 /js/
 /css/
 /build/
+
+# Ignore signing keys
+*.key
+*.crt
+keys/
