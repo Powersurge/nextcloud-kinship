@@ -13,6 +13,10 @@
 
 Designed as an extensible genealogy platform.</description>
 	<version>0.1.1</version>
+    <screenshots>
+        <screenshot>https://raw.githubusercontent.com/Powersurge/nextcloud-kinship/main/screenshots/kinship-family-tree.png</screenshot>
+        <screenshot>https://raw.githubusercontent.com/Powersurge/nextcloud-kinship/main/screenshots/kinship-new-relationship.png</screenshot>
+    </screenshots>
 	<licence>AGPL-3.0-or-later</licence>
 	<author mail="pwrsurge65@gmail.com" homepage="https://christophernewell.com">Christopher Newell</author>
 	<namespace>Kinship</namespace>
