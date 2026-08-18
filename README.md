@@ -1,6 +1,6 @@
 # Kinship
 
-![Kinship Family Tree](screenshots/kindship-family-tree.png)
+![Kinship Family Tree](screenshots/kinship-family-tree.png)
 
 Kinship is a family management and genealogy app for Nextcloud.
 
